@@ -11,6 +11,7 @@ interface PlayerCardProps {
 }
 
 export const PlayerCard = ({ player, isAnimated, isSold, className }: PlayerCardProps) => {
+  // console.log("Rendering PlayerCard for:", player);
   const formatPrice = (price: number) => {
     return `₹${(price / 100000).toFixed(1)}L`;
   };
@@ -67,15 +68,15 @@ export const PlayerCard = ({ player, isAnimated, isSold, className }: PlayerCard
           <div>
             <p className="text-sm text-muted-foreground mb-1">Base Price</p>
             <p className="text-lg font-bold text-foreground">
-              {formatPrice(player.basePrice)}
+              {player.basePrice}
             </p>
           </div>
 
-          {player.soldPrice && (
+          {player.amtSold > 0 && (
             <div>
               <p className="text-sm text-muted-foreground mb-1">Sold Price</p>
               <p className="text-lg font-bold text-secondary">
-                {formatPrice(player.soldPrice)}
+                {player.amtSold}
               </p>
             </div>
           )}

@@ -1,19 +1,77 @@
-import { useState } from "react";
-import { mockPlayers } from "@/data/mockData";
+import { useState, useEffect } from "react";
 import { PlayerCard } from "@/components/auction/PlayerCard";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import { PlayerStatus } from "@/types/auction";
 
 const Players = () => {
-  const [filter, setFilter] = useState<PlayerStatus | "All">("All");
+  const [players, setPlayers] = useState([]);
+  const [filter, setFilter] = useState<PlayerStatus | "All" | "Remaining">("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const filteredPlayers = filter === "All" 
-    ? mockPlayers 
-    : mockPlayers.filter(p => p.status === filter);
+  useEffect(() => {
+    const fetchPlayers = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/player/player_report", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            touranmentId: "671b0a000000000000000001",
+          }),
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch players");
+        }
+        const data = await response.json();
+        if (!Array.isArray(data.data)) {
+          console.warn("API response does not contain a valid players array. Setting players to an empty array.");
+          setPlayers([]);
+        } else {
+          // console.log("Fetched players:", data.data);
+          setPlayers(data.data);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const soldCount = mockPlayers.filter(p => p.status === "Sold").length;
-  const unsoldCount = mockPlayers.filter(p => p.status === "Unsold").length;
+    fetchPlayers();
+  }, []);
+
+  const filteredPlayers = filter === "All"
+    ? players
+    : filter === "Sold"
+    ? players.filter(p => p.sold === true)
+    : filter === "Unsold"
+    ? players.filter(p => p.auctionStatus === true && p.sold === false)
+    : filter === "Remaining"
+    ? players.filter(p => p.auctionStatus === false)
+    : players;
+
+  const soldCount = players.filter(p => p.sold === true).length;
+  const unsoldCount = players.filter(p => p.auctionStatus === true && p.sold === false).length;
+  const remainingCount = players.filter(p => p.auctionStatus === false).length;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-xl text-muted-foreground">Loading players...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-xl text-destructive">Error: {error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-dark">
@@ -28,7 +86,7 @@ const Players = () => {
             All Players
           </h1>
           <p className="text-xl text-muted-foreground mb-8">
-            {mockPlayers.length} registered players
+            {players.length} registered players
           </p>
 
           {/* Stats */}
@@ -41,6 +99,10 @@ const Players = () => {
               <p className="text-4xl font-black text-destructive">{unsoldCount}</p>
               <p className="text-sm text-muted-foreground">Unsold</p>
             </div>
+            <div className="text-center">
+              <p className="text-4xl font-black text-warning">{remainingCount}</p>
+              <p className="text-sm text-muted-foreground">Remaining</p>
+            </div>
           </div>
 
           {/* Filters */}
@@ -50,7 +112,7 @@ const Players = () => {
               onClick={() => setFilter("All")}
               className={filter === "All" ? "bg-gradient-primary" : ""}
             >
-              All ({mockPlayers.length})
+              All ({players.length})
             </Button>
             <Button
               variant={filter === "Sold" ? "default" : "outline"}
@@ -66,6 +128,13 @@ const Players = () => {
             >
               Unsold ({unsoldCount})
             </Button>
+            <Button
+              variant={filter === "Remaining" ? "default" : "outline"}
+              onClick={() => setFilter("Remaining")}
+              className={filter === "Remaining" ? "bg-gradient-warning" : ""}
+            >
+              Remaining ({remainingCount})
+            </Button>
           </div>
         </div>
 
@@ -73,7 +142,7 @@ const Players = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredPlayers.map((player, index) => (
             <div
-              key={player.id}
+              key={player._id}
               className="animate-scale-in"
               style={{ animationDelay: `${index * 0.05}s` }}
             >

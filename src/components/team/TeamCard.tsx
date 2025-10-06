@@ -9,26 +9,26 @@ interface TeamCardProps {
 }
 
 export const TeamCard = ({ team }: TeamCardProps) => {
-  const budgetUsedPercentage = (team.spentBudget / team.totalBudget) * 100;
-  const playersFilledPercentage = (team.currentPlayers / team.maxPlayers) * 100;
-  const remainingBudget = team.totalBudget - team.spentBudget;
+  const budgetUsedPercentage = (team.totalSpent / (team.remainingBudget + team.totalSpent)) * 100;
+
+  const playersBoughtPercentage = (team.players.length / team.maxPlayersPerTeam) * 100;
 
   return (
-    <Link to={`/team/${team.id}`}>
+    <Link to={`/team/${team._id}`}>
       <Card className="group relative overflow-hidden border-2 hover:border-primary transition-all hover:shadow-glow cursor-pointer">
         <div className="p-6 space-y-6">
           {/* Team Header */}
           <div className="flex items-center gap-4">
-            <div
-              className="text-5xl p-4 rounded-2xl shadow-lg transition-transform group-hover:scale-110"
-              style={{ backgroundColor: team.color }}
-            >
-              {team.logo}
-            </div>
+            <img
+              src={team.logo}
+              alt={`${team.name} logo`}
+              className="h-16 w-16 rounded-full shadow-lg transition-transform group-hover:scale-110"
+            />
             <div className="flex-1">
               <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
                 {team.name}
               </h3>
+              <p className="text-sm text-muted-foreground">Owner: {team.owner.name}</p>
             </div>
           </div>
 
@@ -40,32 +40,46 @@ export const TeamCard = ({ team }: TeamCardProps) => {
                 <span>Budget Used</span>
               </div>
               <span className="font-bold text-foreground">
-                ₹{(team.spentBudget / 10000000).toFixed(1)}Cr / ₹{(team.totalBudget / 10000000).toFixed(1)}Cr
+                ₹{team.totalSpent} / ₹{(team.remainingBudget + team.totalSpent)}
               </span>
             </div>
             <Progress value={budgetUsedPercentage} className="h-2" />
             <p className="text-sm font-medium text-accent">
-              Remaining: ₹{(remainingBudget / 10000000).toFixed(2)}Cr
+              Remaining: ₹{team.remainingBudget}
             </p>
           </div>
 
-          {/* Players Info */}
+          {/* Player Info */}
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Users className="h-4 w-4" />
+                <Wallet className="h-4 w-4" />
                 <span>Squad</span>
               </div>
               <span className="font-bold text-foreground">
-                {team.currentPlayers} / {team.maxPlayers}
+                {team.players.length} / {team.maxPlayersPerTeam}
               </span>
             </div>
-            <Progress value={playersFilledPercentage} className="h-2" />
-            <p className="text-sm font-medium text-muted-foreground">
-              {team.maxPlayers - team.currentPlayers} slots remaining
+            <Progress value={playersBoughtPercentage} className="h-2" />
+            <p className="text-sm font-medium text-accent">
+              {team.maxPlayersPerTeam - team.players.length} slots remaining
             </p>
+          </div> 
+          </div>         
+
+          {/* Players Info */}
+          {/* <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span>Players</span>
+              </div>
+              <span className="font-bold text-foreground">
+                {team.players.length} players
+              </span>
+            </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Hover Effect */}
         <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />

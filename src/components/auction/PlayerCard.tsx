@@ -28,7 +28,11 @@ export const PlayerCard = ({ player, isAnimated, isSold, className }: PlayerCard
       {/* Player Image */}
       <div className="relative h-80 overflow-hidden">
         <img
-          src={placeholderImage}
+          // src={placeholderImage}
+          // src = 'https://drive.google.com/open?id=1jrlVLLlWK_Ji5-4MeadsY5b9xBbwSUBa'
+          // src = 'https://drive.google.com/uc?export=view&id=1jrlVLLlWK_Ji5-4MeadsY5b9xBbwSUBa'
+            src="https://drive.google.com/thumbnail?id=1jrlVLLlWK_Ji5-4MeadsY5b9xBbwSUBa"
+
           alt={player.name}
           className="h-full w-full object-cover"
         />

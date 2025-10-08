@@ -3,6 +3,7 @@ export type PlayerSkill = "Batsman" | "Bowler" | "All-Rounder" | "Wicket-Keeper"
 export type PlayerStatus = "Unsold" | "Sold";
 
 export interface Player {
+  amtSold: ReactNode;
   id: string;
   name: string;
   skill: PlayerSkill;

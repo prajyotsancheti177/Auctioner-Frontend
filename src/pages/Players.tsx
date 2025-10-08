@@ -13,7 +13,7 @@ const Players = () => {
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/player/player_report", {
+        const response = await fetch("http://3.109.139.206:3000/api/player/player_report", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

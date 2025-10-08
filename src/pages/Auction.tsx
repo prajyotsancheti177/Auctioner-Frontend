@@ -21,7 +21,7 @@ const Auction = () => {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/team/report", {
+        const response = await fetch("http://3.109.139.206:3000/api/team/report", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -54,7 +54,7 @@ const Auction = () => {
   useEffect(() => {
     const fetchPlayerCategories = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/auction/playerCategories", {
+        const response = await fetch("http://3.109.139.206:3000/api/auction/playerCategories", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -83,7 +83,7 @@ const Auction = () => {
 
     const fetchNextPlayer = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/player/nextAuctionPlayer", {
+        const response = await fetch("http://3.109.139.206:3000/api/player/nextAuctionPlayer", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -130,7 +130,7 @@ const Auction = () => {
 
         // Update auction result in the backend
         try {
-          const updateResponse = await fetch("http://localhost:3000/api/player/updatePlayer", {
+          const updateResponse = await fetch("http://3.109.139.206:3000/api/player/updatePlayer", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -155,7 +155,7 @@ const Auction = () => {
 
         // Fetch the next player for auction
         try {
-          const response = await fetch("http://localhost:3000/api/player/nextAuctionPlayer", {
+          const response = await fetch("http://3.109.139.206:3000/api/player/nextAuctionPlayer", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -186,7 +186,7 @@ const Auction = () => {
     setPlayerNumber(prev => prev + 1); // Increment player number
 
     try {
-      const updateResponse = await fetch("http://localhost:3000/api/player/updatePlayer", {
+      const updateResponse = await fetch("http://3.109.139.206:3000/api/player/updatePlayer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -208,7 +208,7 @@ const Auction = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/player/nextAuctionPlayer", {
+      const response = await fetch("http://3.109.139.206:3000/api/player/nextAuctionPlayer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

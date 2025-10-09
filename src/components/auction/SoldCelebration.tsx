@@ -78,7 +78,7 @@ export const SoldCelebration = ({ show, playerName, teamName, amount }: SoldCele
               <h2 className="text-4xl font-bold text-primary-foreground">{playerName}</h2>
               <p className="text-2xl text-primary-foreground/90">to {teamName}</p>
               <p className="text-5xl font-black text-secondary">
-                ₹{(amount / 100000).toFixed(1)}L
+                ₹{amount}
               </p>
             </div>
           </motion.div>

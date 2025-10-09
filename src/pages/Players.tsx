@@ -7,13 +7,15 @@ import { PlayerStatus } from "@/types/auction";
 const Players = () => {
   const [players, setPlayers] = useState([]);
   const [filter, setFilter] = useState<PlayerStatus | "All" | "Remaining">("All");
+  const [selectedCategory, setSelectedCategory] = useState<string | "All">("All");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch("http://13.233.149.244:3000/api/player/player_report", {
+        const response = await fetch("http://localhost:3000/api/player/player_report", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -43,6 +45,12 @@ const Players = () => {
     fetchPlayers();
   }, []);
 
+  // derive available categories from players
+  const categories = Array.from(
+    new Set(players.map((p: any) => (p.playerCategory ? p.playerCategory : null)).filter(Boolean))
+  );
+
+  // apply status + category filters
   const filteredPlayers = filter === "All"
     ? players
     : filter === "Sold"
@@ -52,6 +60,15 @@ const Players = () => {
     : filter === "Remaining"
     ? players.filter(p => p.auctionStatus === false)
     : players;
+
+  const filteredByCategory = selectedCategory === "All"
+    ? filteredPlayers
+    : filteredPlayers.filter((p: any) => p.playerCategory === selectedCategory);
+
+  const filteredBySearch = filteredByCategory.filter((p: any) => {
+    if (!search) return true;
+    return p.name.toLowerCase().includes(search.toLowerCase());
+  });
 
   const soldCount = players.filter(p => p.sold === true).length;
   const unsoldCount = players.filter(p => p.auctionStatus === true && p.sold === false).length;
@@ -106,41 +123,64 @@ const Players = () => {
           </div>
 
           {/* Filters */}
-          <div className="flex justify-center gap-4">
-            <Button
-              variant={filter === "All" ? "default" : "outline"}
-              onClick={() => setFilter("All")}
-              className={filter === "All" ? "bg-gradient-primary" : ""}
-            >
-              All ({players.length})
-            </Button>
-            <Button
-              variant={filter === "Sold" ? "default" : "outline"}
-              onClick={() => setFilter("Sold")}
-              className={filter === "Sold" ? "bg-gradient-accent" : ""}
-            >
-              Sold ({soldCount})
-            </Button>
-            <Button
-              variant={filter === "Unsold" ? "default" : "outline"}
-              onClick={() => setFilter("Unsold")}
-              className={filter === "Unsold" ? "bg-gradient-secondary" : ""}
-            >
-              Unsold ({unsoldCount})
-            </Button>
-            <Button
-              variant={filter === "Remaining" ? "default" : "outline"}
-              onClick={() => setFilter("Remaining")}
-              className={filter === "Remaining" ? "bg-gradient-warning" : ""}
-            >
-              Remaining ({remainingCount})
-            </Button>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                placeholder="Search player name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="px-3 py-2 rounded-md bg-card border border-border text-foreground w-64"
+              />
+              <label className="text-sm text-muted-foreground mr-2">Category:</label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-2 rounded-md bg-card border border-border text-foreground"
+              >
+                <option value="All">All</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Button
+                variant={filter === "All" ? "default" : "outline"}
+                onClick={() => setFilter("All")}
+                className={filter === "All" ? "bg-gradient-primary" : ""}
+              >
+                All ({players.length})
+              </Button>
+              <Button
+                variant={filter === "Sold" ? "default" : "outline"}
+                onClick={() => setFilter("Sold")}
+                className={filter === "Sold" ? "bg-gradient-accent" : ""}
+              >
+                Sold ({soldCount})
+              </Button>
+              <Button
+                variant={filter === "Unsold" ? "default" : "outline"}
+                onClick={() => setFilter("Unsold")}
+                className={filter === "Unsold" ? "bg-gradient-secondary" : ""}
+              >
+                Unsold ({unsoldCount})
+              </Button>
+              <Button
+                variant={filter === "Remaining" ? "default" : "outline"}
+                onClick={() => setFilter("Remaining")}
+                className={filter === "Remaining" ? "bg-gradient-warning" : ""}
+              >
+                Remaining ({remainingCount})
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Players Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredPlayers.map((player, index) => (
+          {filteredBySearch.map((player, index) => (
             <div
               key={player._id}
               className="animate-scale-in"
@@ -151,7 +191,7 @@ const Players = () => {
           ))}
         </div>
 
-        {filteredPlayers.length === 0 && (
+        {filteredBySearch.length === 0 && (
           <div className="text-center py-20">
             <p className="text-2xl text-muted-foreground">No players found</p>
           </div>

@@ -3,26 +3,41 @@ export type PlayerSkill = "Batsman" | "Bowler" | "All-Rounder" | "Wicket-Keeper"
 export type PlayerStatus = "Unsold" | "Sold";
 
 export interface Player {
-  amtSold: ReactNode;
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
-  skill: PlayerSkill;
-  basePrice: number;
-  soldPrice?: number;
-  status: PlayerStatus;
+  age?: number;
+  photo?: string;
+  skills?: PlayerSkill[];
+  mobile?: number | string;
+  email?: string | null;
+  address?: string | null;
+  touranmentId?: string;
   teamId?: string;
-  photo: string;
+  teamName?: string;
+  sold?: boolean;
+  auctionStatus?: boolean;
+  basePrice?: number;
+  amtSold?: number;
+  playerCategory?: string;
+  status?: PlayerStatus;
 }
 
 export interface Team {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
-  logo: string;
-  totalBudget: number;
-  spentBudget: number;
-  maxPlayers: number;
-  currentPlayers: number;
-  color: string;
+  logo?: string;
+  owner?: {
+    name?: string;
+    email?: string | null;
+    mobile?: string | null;
+  };
+  players?: Player[];
+  totalSpent?: number;
+  remainingBudget?: number;
+  maxPlayersPerTeam?: number;
+  playersCount?: number;
 }
 
 export interface AuctionState {

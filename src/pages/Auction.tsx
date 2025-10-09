@@ -1,10 +1,33 @@
 import { useState, useEffect } from "react";
 import { PlayerCard } from "@/components/auction/PlayerCard";
 import { SoldCelebration } from "@/components/auction/SoldCelebration";
+import { UnsoldAnimation } from "@/components/auction/UnsoldAnimation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Gavel } from "lucide-react";
 import stadiumBg from "@/assets/stadium-bg.jpg";
+import placeholderImg from "@/assets/player-placeholder.jpg";
+
+
+// Helper: convert common Google Drive share URLs to thumbnail format
+const getDriveThumbnail = (url?: string) => {
+  if (!url) return placeholderImg;
+  try {
+    const driveFileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (driveFileIdMatch && driveFileIdMatch[1]) {
+      return `https://drive.google.com/thumbnail?id=${driveFileIdMatch[1]}`;
+    }
+    const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idParamMatch && idParamMatch[1]) {
+      return `https://drive.google.com/thumbnail?id=${idParamMatch[1]}`;
+    }
+    // if it's already a direct image or thumbnail URL, return as-is
+    return url;
+  } catch (e) {
+    return placeholderImg;
+  }
+};
+
 
 const Auction = () => {
   const [currentPlayer, setCurrentPlayer] = useState(null);
@@ -13,48 +36,54 @@ const Auction = () => {
   const [leadingTeamId, setLeadingTeamId] = useState<string | null>(null);
   const [teamBids, setTeamBids] = useState<Record<string, number>>({});
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showUnsoldAnimation, setShowUnsoldAnimation] = useState(false);
   const [playerNumber, setPlayerNumber] = useState(1); // Track player number dynamically
   const [teams, setTeams] = useState([]); // Store fetched teams
   const [playerCategories, setPlayerCategories] = useState([]); // Store fetched player categories
   const [selectedCategory, setSelectedCategory] = useState(null); // Track selected category
+  const [bidError, setBidError] = useState<Record<string, string>>({});
+
+  // make fetchTeams callable so we can refresh after updates
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/team/report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          touranmentId: "671b0a000000000000000001",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch teams");
+      }
+
+      const data = await response.json();
+      console.log("Fetched teams data:", data); // Debugging line
+      const extractedTeams = data.data[0].teams.map((team) => ({
+        _id: team._id || team.name, // Use team name as fallback if ID is missing
+        name: team.name,
+        logo: getDriveThumbnail(team.logo),
+        remainingBudget: team.remainingBudget,
+        playersCount: team.players.length,
+        maxPlayersPerTeam: team.maxPlayersPerTeam,
+      }));
+      setTeams(extractedTeams); // Update state with extracted team data
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const response = await fetch("http://13.233.149.244:3000/api/team/report", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            touranmentId: "671b0a000000000000000001",
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch teams");
-        }
-
-        const data = await response.json();
-        console.log("Fetched teams data:", data); // Debugging line
-        const extractedTeams = data.data[0].teams.map((team) => ({
-          _id: team._id || team.name, // Use team name as fallback if ID is missing
-          name: team.name,
-          logo: team.logo,
-        }));
-        setTeams(extractedTeams); // Update state with extracted team data
-      } catch (error) {
-        console.error("Error fetching teams:", error);
-      }
-    };
-
     fetchTeams();
   }, []);
 
   useEffect(() => {
     const fetchPlayerCategories = async () => {
       try {
-        const response = await fetch("http://13.233.149.244:3000/api/auction/playerCategories", {
+        const response = await fetch("http://localhost:3000/api/auction/playerCategories", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -83,7 +112,7 @@ const Auction = () => {
 
     const fetchNextPlayer = async () => {
       try {
-        const response = await fetch("http://13.233.149.244:3000/api/player/nextAuctionPlayer", {
+        const response = await fetch("http://localhost:3000/api/player/nextAuctionPlayer", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -112,11 +141,39 @@ const Auction = () => {
   const bidIncrement = 50;
 
   const handleTeamBid = (teamId: string) => {
+    const team = teams.find(t => t._id === teamId);
+    if (!team) {
+      window.alert("Team not found");
+      return;
+    }
+
+    const slotsRemaining = (team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0);
+    if (slotsRemaining <= 0) {
+      window.alert(`${team.name} has no remaining slots.`);
+      return;
+    }
+
     const newBid = currentBid + bidIncrement;
+    if ((team.remainingBudget ?? 0) < newBid) {
+      window.alert(`${team.name} does not have enough remaining budget (₹${team.remainingBudget}).`);
+      return;
+    }
+
     setCurrentBid(newBid);
     setLeadingTeam(teamId);
     setLeadingTeamId(teamId);
     setTeamBids(prev => ({ ...prev, [teamId]: newBid }));
+  };
+
+  const showBidError = (teamId: string, message: string) => {
+    setBidError(prev => ({ ...prev, [teamId]: message }));
+    setTimeout(() => {
+      setBidError(prev => {
+        const copy = { ...prev };
+        delete copy[teamId];
+        return copy;
+      });
+    }, 3000);
   };
 
   const handleSold = async () => {
@@ -130,7 +187,7 @@ const Auction = () => {
 
         // Update auction result in the backend
         try {
-          const updateResponse = await fetch("http://13.233.149.244:3000/api/player/updatePlayer", {
+          const updateResponse = await fetch("http://localhost:3000/api/player/updatePlayer", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -149,19 +206,22 @@ const Auction = () => {
           }
 
           console.log("Auction result updated successfully");
+          // Refresh teams data so remainingBudget and players count update
+          fetchTeams();
         } catch (error) {
           console.error("Error updating auction result:", error);
         }
 
         // Fetch the next player for auction
         try {
-          const response = await fetch("http://13.233.149.244:3000/api/player/nextAuctionPlayer", {
+          const response = await fetch("http://localhost:3000/api/player/nextAuctionPlayer", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
               touranmentId: "671b0a000000000000000001",
+              playerCategory: selectedCategory,
             }),
           });
 
@@ -180,13 +240,21 @@ const Auction = () => {
   };
 
   const handleUnsold = async () => {
+
+    setShowUnsoldAnimation(true);
+    setTimeout(async () => {
+      setShowUnsoldAnimation(false);
+      setLeadingTeam(null);
+      setTeamBids({});
+      setPlayerNumber(prev => prev + 1); // Increment player number
+
     console.log("Marking player as unsold");
     setLeadingTeam(null);
     setTeamBids({});
     setPlayerNumber(prev => prev + 1); // Increment player number
 
     try {
-      const updateResponse = await fetch("http://13.233.149.244:3000/api/player/updatePlayer", {
+      const updateResponse = await fetch("http://localhost:3000/api/player/updatePlayer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -203,18 +271,21 @@ const Auction = () => {
       }
 
       console.log("Auction result updated successfully");
+      // Refresh teams data after marking unsold
+      fetchTeams();
     } catch (error) {
       console.error("Error updating auction result:", error);
     }
 
     try {
-      const response = await fetch("http://13.233.149.244:3000/api/player/nextAuctionPlayer", {
+      const response = await fetch("http://localhost:3000/api/player/nextAuctionPlayer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           touranmentId: "671b0a000000000000000001",
+          playerCategory: selectedCategory,
         }),
       });
 
@@ -228,6 +299,7 @@ const Auction = () => {
     } catch (error) {
       console.error("Error fetching next player for auction:", error);
     }
+  }, 4000);
   };
 
   if (!selectedCategory) {
@@ -304,26 +376,53 @@ const Auction = () => {
             <h2 className="text-lg font-bold mb-3 text-foreground text-center">Click on Team to Bid</h2>
 
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-3">
-              {teams.map((team) => (
-                <button
-                  key={team._id}
-                  onClick={() => handleTeamBid(team._id)}
-                  className={`p-2 rounded-lg border-2 transition-all ${leadingTeam === team._id
-                      ? "border-primary bg-primary/20 shadow-glow scale-105"
-                      : "border-border hover:border-primary/50 hover:scale-105"
-                    }`}
-                >
-                  <div className="text-2xl mb-1">
-                    <img src={team.logo} alt={team.name} className="h-8 w-8 object-contain" />
+              {teams.map((team) => {
+                const isDisabled = ((team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0) || ((team.remainingBudget ?? 0) < (currentBid + bidIncrement));
+                return (
+                  <div key={team._id} className="flex flex-col items-center">
+                    <div
+                      onClick={() => {
+                        if (isDisabled) {
+                          // show appropriate message
+                          if ((team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0) {
+                            showBidError(team._id, `${team.name} has no remaining slots.`);
+                          } else {
+                            showBidError(team._id, `${team.name} does not have enough remaining budget (₹${team.remainingBudget}).`);
+                          }
+                          return;
+                        }
+                        handleTeamBid(team._id);
+                      }}
+                      className="w-full"
+                    >
+                      <button
+                        // keep native disabled so it appears disabled
+                        disabled={isDisabled}
+                        className={`w-full p-2 rounded-lg border-2 transition-all ${leadingTeam === team._id
+                          ? "border-primary bg-primary/20 shadow-glow scale-105"
+                          : "border-border hover:border-primary/50 hover:scale-105"
+                        }`}
+                      >
+                        <div className="text-2xl mb-1">
+                          <img src={team.logo} alt={team.name} className="h-8 w-8 object-contain mx-auto" />
+                        </div>
+                        <p className="font-bold text-[10px] text-foreground mb-0.5 text-center">{team.name}</p>
+                        <div className="text-[10px] text-muted-foreground text-center">
+                          ₹{team.remainingBudget} • {team.maxPlayersPerTeam - team.playersCount} slots
+                        </div>
+                        {teamBids[team._id] && (
+                          <p className="text-[9px] text-primary font-bold mt-1 text-center">
+                            ₹{(teamBids[team._id] / 100000).toFixed(1)}L
+                          </p>
+                        )}
+                      </button>
+                    </div>
+                    {bidError[team._id] && (
+                      <p className="text-red-500 text-xs mt-1">{bidError[team._id]}</p>
+                    )}
                   </div>
-                  <p className="font-bold text-[10px] text-foreground mb-0.5">{team.name}</p>
-                  {teamBids[team._id] && (
-                    <p className="text-[9px] text-primary font-bold">
-                      ₹{(teamBids[team._id] / 100000).toFixed(1)}L
-                    </p>
-                  )}
-                </button>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex gap-3 justify-center">
@@ -355,6 +454,13 @@ const Auction = () => {
         teamName={teams.find(t => t._id === leadingTeam)?.name || ""}
         amount={currentBid}
       />
+
+      <UnsoldAnimation
+        show={showUnsoldAnimation}
+        playerName={currentPlayer.name}
+        teamName={teams.find(t => t._id === leadingTeam)?.name || ""}
+        amount={currentBid}
+      />      
     </div>
   );
 };

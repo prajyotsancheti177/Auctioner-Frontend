@@ -15,7 +15,7 @@ const TeamDetail = () => {
   useEffect(() => {
     const fetchTeamDetails = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/team/individual_report", {
+        const response = await fetch("http://13.233.149.244:3000/api/team/individual_report", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

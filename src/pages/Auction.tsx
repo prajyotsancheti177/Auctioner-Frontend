@@ -46,7 +46,7 @@ const Auction = () => {
   // make fetchTeams callable so we can refresh after updates
   const fetchTeams = async () => {
     try {
-      const response = await fetch("http://13.233.149.244:3000/api/team/report", {
+      const response = await fetch("https://auction.vardhamanpaper.com/api/team/report", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -83,7 +83,7 @@ const Auction = () => {
   useEffect(() => {
     const fetchPlayerCategories = async () => {
       try {
-        const response = await fetch("http://13.233.149.244:3000/api/auction/playerCategories", {
+        const response = await fetch("https://auction.vardhamanpaper.com/api/auction/playerCategories", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -112,7 +112,7 @@ const Auction = () => {
 
     const fetchNextPlayer = async () => {
       try {
-        const response = await fetch("http://13.233.149.244:3000/api/player/nextAuctionPlayer", {
+        const response = await fetch("https://auction.vardhamanpaper.com/api/player/nextAuctionPlayer", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -187,7 +187,7 @@ const Auction = () => {
 
         // Update auction result in the backend
         try {
-          const updateResponse = await fetch("http://13.233.149.244:3000/api/player/updatePlayer", {
+          const updateResponse = await fetch("https://auction.vardhamanpaper.com/api/player/updatePlayer", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -214,7 +214,7 @@ const Auction = () => {
 
         // Fetch the next player for auction
         try {
-          const response = await fetch("http://13.233.149.244:3000/api/player/nextAuctionPlayer", {
+          const response = await fetch("https://auction.vardhamanpaper.com/api/player/nextAuctionPlayer", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -254,7 +254,7 @@ const Auction = () => {
     setPlayerNumber(prev => prev + 1); // Increment player number
 
     try {
-      const updateResponse = await fetch("http://13.233.149.244:3000/api/player/updatePlayer", {
+      const updateResponse = await fetch("https://auction.vardhamanpaper.com/api/player/updatePlayer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -278,7 +278,7 @@ const Auction = () => {
     }
 
     try {
-      const response = await fetch("http://13.233.149.244:3000/api/player/nextAuctionPlayer", {
+      const response = await fetch("https://auction.vardhamanpaper.com/api/player/nextAuctionPlayer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

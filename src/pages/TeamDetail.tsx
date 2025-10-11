@@ -5,6 +5,29 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Users, Wallet, Trophy } from "lucide-react";
 import { PlayerCard } from "@/components/auction/PlayerCard";
+import placeholderImg from "@/assets/player-placeholder.jpg";
+
+// Helper: convert common Google Drive share URLs to thumbnail format
+const getDriveThumbnail = (url?: string) => {
+  if (!url) return placeholderImg;
+  try {
+    const driveFileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (driveFileIdMatch && driveFileIdMatch[1]) {
+      return `https://drive.google.com/thumbnail?id=${driveFileIdMatch[1]}`;
+    }
+    const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idParamMatch && idParamMatch[1]) {
+      return `https://drive.google.com/thumbnail?id=${idParamMatch[1]}`;
+    }
+    // if it's already a direct image or thumbnail URL, return as-is
+    return url;
+  } catch (e) {
+    return placeholderImg;
+  }
+};
+
+
+
 
 const TeamDetail = () => {
   const { teamId } = useParams();
@@ -96,7 +119,7 @@ const TeamDetail = () => {
         <div className="mb-12 animate-fade-in">
           <div className="flex items-center gap-6 mb-8">
             <img
-              src={team.logo}
+              src={getDriveThumbnail(team.logo)}
               alt={`${team.name} logo`}
               className="h-32 w-32 rounded-full shadow-lg"
             />
@@ -174,7 +197,7 @@ const TeamDetail = () => {
             </Card>
 
             {/* Performance Card */}
-            <Card className="p-6 bg-card/80 backdrop-blur-sm border-2 border-border shadow-elevated">
+            {/* <Card className="p-6 bg-card/80 backdrop-blur-sm border-2 border-border shadow-elevated">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 rounded-xl bg-accent/10">
                   <Trophy className="h-6 w-6 text-accent" />
@@ -196,7 +219,7 @@ const TeamDetail = () => {
                   </p>
                 </div>
               </div>
-            </Card>
+            </Card> */}
           </div>
         </div>
 

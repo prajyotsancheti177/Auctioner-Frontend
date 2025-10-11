@@ -123,54 +123,63 @@ const Players = () => {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 w-full">
+            {/* Search + Category: stack on mobile, inline on md+ */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
               <input
                 type="text"
                 placeholder="Search player name..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="px-3 py-2 rounded-md bg-card border border-border text-foreground w-64"
+                className="px-3 py-2 rounded-md bg-card border border-border text-foreground w-full md:w-64"
               />
-              <label className="text-sm text-muted-foreground mr-2">Category:</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 rounded-md bg-card border border-border text-foreground"
-              >
-                <option value="All">All</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
+
+              {/* Desktop label */}
+              <label className="hidden md:block text-sm text-muted-foreground mr-2 self-center">Category:</label>
+
+              {/* Category select: full width on mobile */}
+              <div className="w-full md:w-auto">
+                <label className="text-sm text-muted-foreground md:hidden mb-1 block">Category</label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="px-3 py-2 rounded-md bg-card border border-border text-foreground w-full"
+                >
+                  <option value="All">All</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            {/* Filter buttons: wrap and compact on mobile, normal on md+ */}
+            <div className="flex items-center gap-3 flex-wrap justify-center">
               <Button
                 variant={filter === "All" ? "default" : "outline"}
                 onClick={() => setFilter("All")}
-                className={filter === "All" ? "bg-gradient-primary" : ""}
+                className={`${filter === "All" ? "bg-gradient-primary" : ""} px-3 py-1 text-sm md:px-4 md:py-2 md:text-base`}
               >
                 All ({players.length})
               </Button>
               <Button
                 variant={filter === "Sold" ? "default" : "outline"}
                 onClick={() => setFilter("Sold")}
-                className={filter === "Sold" ? "bg-gradient-accent" : ""}
+                className={`${filter === "Sold" ? "bg-gradient-accent" : ""} px-3 py-1 text-sm md:px-4 md:py-2 md:text-base`}
               >
                 Sold ({soldCount})
               </Button>
               <Button
                 variant={filter === "Unsold" ? "default" : "outline"}
                 onClick={() => setFilter("Unsold")}
-                className={filter === "Unsold" ? "bg-gradient-secondary" : ""}
+                className={`${filter === "Unsold" ? "bg-gradient-secondary" : ""} px-3 py-1 text-sm md:px-4 md:py-2 md:text-base`}
               >
                 Unsold ({unsoldCount})
               </Button>
               <Button
                 variant={filter === "Remaining" ? "default" : "outline"}
                 onClick={() => setFilter("Remaining")}
-                className={filter === "Remaining" ? "bg-gradient-warning" : ""}
+                className={`${filter === "Remaining" ? "bg-gradient-warning" : ""} px-3 py-1 text-sm md:px-4 md:py-2 md:text-base`}
               >
                 Remaining ({remainingCount})
               </Button>

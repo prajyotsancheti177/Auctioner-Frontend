@@ -7,6 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Gavel } from "lucide-react";
 import stadiumBg from "@/assets/stadium-bg.jpg";
 import placeholderImg from "@/assets/player-placeholder.jpg";
+import { useNavigate } from "react-router-dom";
+import { set } from "date-fns";
+
 
 
 // Helper: convert common Google Drive share URLs to thumbnail format
@@ -42,6 +45,19 @@ const Auction = () => {
   const [playerCategories, setPlayerCategories] = useState([]); // Store fetched player categories
   const [selectedCategory, setSelectedCategory] = useState(null); // Track selected category
   const [bidError, setBidError] = useState<Record<string, string>>({});
+  const [bidPrice, setBidPrice] = useState(100);
+
+  const navigate = useNavigate();
+
+   useEffect(() => {
+    const password = localStorage.getItem("auction-password");
+    if (password !== "pushkar_champion") {
+      navigate("/"); // 👈 redirect if password doesn't match
+    }
+
+  }, [navigate]);
+
+ 
 
   // make fetchTeams callable so we can refresh after updates
   const fetchTeams = async () => {
@@ -99,6 +115,7 @@ const Auction = () => {
 
         const data = await response.json();
         setPlayerCategories(data.data); // Update state with fetched categories
+       
       } catch (error) {
         console.error("Error fetching player categories:", error);
       }
@@ -130,6 +147,8 @@ const Auction = () => {
         const data = await response.json();
         setCurrentPlayer(data.data); // Update to use API response structure
         setCurrentBid(data.data.basePrice);
+         console.log("Fetched player categories:", data.data); // Debugging line
+        setBidPrice(data.data.playerCategory=="Icon"?100:50);
       } catch (error) {
         console.error("Error fetching next player for auction:", error);
       }
@@ -142,6 +161,9 @@ const Auction = () => {
 
   const handleTeamBid = (teamId: string) => {
     const team = teams.find(t => t._id === teamId);
+    console.log("Bidding team:", currentBid);
+  
+
     if (!team) {
       window.alert("Team not found");
       return;
@@ -153,10 +175,14 @@ const Auction = () => {
       return;
     }
 
-    const newBid = currentBid + bidIncrement;
+    const newBid = leadingTeam ==null ? currentBid : currentBid + bidPrice;
     if ((team.remainingBudget ?? 0) < newBid) {
       window.alert(`${team.name} does not have enough remaining budget (₹${team.remainingBudget}).`);
       return;
+    }
+
+      if(currentPlayer.playerCategory!="Icon" && newBid>=  500){
+        setBidPrice(100);
     }
 
     setCurrentBid(newBid);
@@ -360,7 +386,7 @@ const Auction = () => {
               </div>
             )}
             <p className="text-sm text-muted-foreground">
-              Base: ₹{currentPlayer.basePrice} | Increment: ₹{bidIncrement}
+              Base: ₹{currentPlayer.basePrice} | Increment: ₹{bidPrice}
             </p>
           </div>
         </div>
@@ -377,7 +403,7 @@ const Auction = () => {
 
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-3">
               {teams.map((team) => {
-                const isDisabled = ((team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0) || ((team.remainingBudget ?? 0) < (currentBid + bidIncrement));
+                const isDisabled = ((team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0) || ((team.remainingBudget ?? 0) < (currentBid + bidPrice));
                 return (
                   <div key={team._id} className="flex flex-col items-center">
                     <div

@@ -1,11 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import { Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import path from "path";
 
 const navLinks = [
-  { path: "/", label: "Live Auction" },
+  {path:"/auction", label: "Live Auction"},
+  { path: "/", label: "Players" },
   { path: "/teams", label: "All Teams" },
-  { path: "/players", label: "Players" },
 ];
 
 export const Navbar = () => {

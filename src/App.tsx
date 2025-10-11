@@ -21,7 +21,8 @@ const App = () => (
         <div className="min-h-screen bg-background text-foreground">
           <Navbar />
           <Routes>
-            <Route path="/" element={<Auction />} />
+            <Route path="/" element={<Players />} />
+            <Route path="/auction" element={<Auction />} />
             <Route path="/teams" element={<Teams />} />
             <Route path="/team/:teamId" element={<TeamDetail />} />
             <Route path="/players" element={<Players />} />

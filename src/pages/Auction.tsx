@@ -230,8 +230,6 @@ const Auction = () => {
           if (!updateResponse.ok) {
             throw new Error("Failed to update auction result");
           }
-
-          console.log("Auction result updated successfully");
           // Refresh teams data so remainingBudget and players count update
           fetchTeams();
         } catch (error) {
@@ -274,7 +272,6 @@ const Auction = () => {
       setTeamBids({});
       setPlayerNumber(prev => prev + 1); // Increment player number
 
-    console.log("Marking player as unsold");
     setLeadingTeam(null);
     setTeamBids({});
     setPlayerNumber(prev => prev + 1); // Increment player number
@@ -296,7 +293,6 @@ const Auction = () => {
         throw new Error("Failed to update auction result");
       }
 
-      console.log("Auction result updated successfully");
       // Refresh teams data after marking unsold
       fetchTeams();
     } catch (error) {
@@ -329,7 +325,6 @@ const Auction = () => {
   };
 
   if (!selectedCategory) {
-    console.log("Inside select category");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-dark">
         <div className="text-center">

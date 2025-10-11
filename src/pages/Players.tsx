@@ -178,8 +178,8 @@ const Players = () => {
           </div>
         </div>
 
-        {/* Players Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Players Grid: single column on mobile for compact single-line cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {filteredBySearch.map((player, index) => (
             <div
               key={player._id}

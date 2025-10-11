@@ -50,29 +50,31 @@ const Players = () => {
     new Set(players.map((p: any) => (p.playerCategory ? p.playerCategory : null)).filter(Boolean))
   );
 
-  // apply status + category filters
-  const filteredPlayers = filter === "All"
+  // First, filter by selected category so counts reflect the category selection
+  const playersInCategory = selectedCategory === "All"
     ? players
+    : players.filter((p: any) => p.playerCategory === selectedCategory);
+
+  // apply status filter on playersInCategory
+  const filteredPlayers = filter === "All"
+    ? playersInCategory
     : filter === "Sold"
-    ? players.filter(p => p.sold === true)
+    ? playersInCategory.filter(p => p.sold === true)
     : filter === "Unsold"
-    ? players.filter(p => p.auctionStatus === true && p.sold === false)
+    ? playersInCategory.filter(p => p.auctionStatus === true && p.sold === false)
     : filter === "Remaining"
-    ? players.filter(p => p.auctionStatus === false)
-    : players;
+    ? playersInCategory.filter(p => p.auctionStatus === false)
+    : playersInCategory;
 
-  const filteredByCategory = selectedCategory === "All"
-    ? filteredPlayers
-    : filteredPlayers.filter((p: any) => p.playerCategory === selectedCategory);
-
-  const filteredBySearch = filteredByCategory.filter((p: any) => {
+  const filteredBySearch = filteredPlayers.filter((p: any) => {
     if (!search) return true;
     return p.name.toLowerCase().includes(search.toLowerCase());
   });
 
-  const soldCount = players.filter(p => p.sold === true).length;
-  const unsoldCount = players.filter(p => p.auctionStatus === true && p.sold === false).length;
-  const remainingCount = players.filter(p => p.auctionStatus === false).length;
+  // counts (based on selected category)
+  const soldCount = playersInCategory.filter(p => p.sold === true).length;
+  const unsoldCount = playersInCategory.filter(p => p.auctionStatus === true && p.sold === false).length;
+  const remainingCount = playersInCategory.filter(p => p.auctionStatus === false).length;
 
   if (loading) {
     return (
@@ -145,7 +147,7 @@ const Players = () => {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="px-3 py-2 rounded-md bg-card border border-border text-foreground w-full"
                 >
-                  <option value="All">All</option>
+                  <option value="All">All Categories</option>
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
@@ -160,7 +162,7 @@ const Players = () => {
                 onClick={() => setFilter("All")}
                 className={`${filter === "All" ? "bg-gradient-primary" : ""} px-3 py-1 text-sm md:px-4 md:py-2 md:text-base`}
               >
-                All ({players.length})
+                All Players ({playersInCategory.length})
               </Button>
               <Button
                 variant={filter === "Sold" ? "default" : "outline"}

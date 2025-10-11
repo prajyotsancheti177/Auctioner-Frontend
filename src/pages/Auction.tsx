@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { PlayerCard } from "@/components/auction/PlayerCard";
+import { AuctionPlayerCard } from "@/components/auction/AuctionPlayerCard";
 import { SoldCelebration } from "@/components/auction/SoldCelebration";
 import { UnsoldAnimation } from "@/components/auction/UnsoldAnimation";
 import { Button } from "@/components/ui/button";
@@ -326,7 +326,7 @@ const Auction = () => {
 
   if (!selectedCategory) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-dark">
+      <div className="min-h-screen flex items-center justify-center ">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-foreground mb-4">Select a Player Category to Start the Auction</h2>
           <div className="flex flex-wrap justify-center gap-4">
@@ -347,7 +347,7 @@ const Auction = () => {
   
   if (!currentPlayer) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-dark">
+      <div className="min-h-screen flex items-center justify-center ">
         <p className="text-xl text-muted-foreground">Loading next player for auction...</p>
       </div>
     );
@@ -356,12 +356,23 @@ const Auction = () => {
 
   return (
     <div className="min-h-screen relative">
-      {/* Background */}
+      {/* Background: desktop and mobile optimized versions */}
+      {/* Desktop background (shown on md+) */}
       <div
-        className="fixed inset-0 bg-cover bg-center opacity-20"
-        style={{ backgroundImage: `url(${stadiumBg})` }}
+        className="hidden md:block fixed inset-0 bg-cover bg-center opacity-30"
+        style={{ backgroundImage: `url(${stadiumBg})`, backgroundPosition: 'center center' }}
+        aria-hidden
       />
-      <div className="fixed inset-0 bg-gradient-dark" />
+
+      {/* Mobile background (shown on small screens) */}
+      <div
+        className="block md:hidden fixed inset-0 bg-cover bg-top opacity-20"
+        style={{ backgroundImage: `url(${stadiumBg})`, backgroundPosition: 'top center', backgroundSize: 'cover' }}
+        aria-hidden
+      />
+
+      {/* Gradient overlay to keep content readable */}
+      {/* <div className="fixed inset-0 bg-gradient-dark" /> */}
 
       <div className="relative container mx-auto px-4 py-8">
         {/* Header */}
@@ -386,10 +397,10 @@ const Auction = () => {
           </div>
         </div>
 
-        <div className="space-y-6 max-w-7xl mx-auto">
+        <div className="space-y-20 max-w-7xl mx-auto">
           {/* Large Player Card */}
           <div className="flex justify-center animate-scale-in">
-            <PlayerCard player={currentPlayer} isAnimated className="max-w-4xl w-full" />
+            <AuctionPlayerCard player={currentPlayer} isAnimated className="max-w-4xl w-full" />
           </div>
 
           {/* Team Bidding Grid */}

@@ -3,11 +3,32 @@ import { Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import path from "path";
 
-const navLinks = [
-  {path:"/auction", label: "Live Auction"},
-  { path: "/", label: "Players" },
-  { path: "/teams", label: "All Teams" },
-];
+const buildNavLinks = () => {
+  let showAuction = false;
+
+  try {
+    const password =
+      typeof window !== "undefined"
+        ? localStorage.getItem("auction-password")
+        : null;
+    if (password === "pushkar_champion") {
+      showAuction = true;
+    }
+  } catch {
+    // ignore localStorage errors
+  }
+
+  const links = [
+    { path: "/", label: "Players" },
+    { path: "/teams", label: "All Teams" },
+  ];
+
+  if (showAuction) {
+    links.unshift({ path: "/auction", label: "Live Auction" });
+  }
+
+  return links;
+};
 
 export const Navbar = () => {
   const location = useLocation();
@@ -26,7 +47,7 @@ export const Navbar = () => {
           </Link>
 
           <div className="flex gap-1 overflow-x-auto no-scrollbar">
-            {navLinks.map((link) => (
+            {buildNavLinks().map((link) => (
               <Link
                 key={link.path}
                 to={link.path}

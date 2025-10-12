@@ -46,6 +46,7 @@ const Auction = () => {
   const [selectedCategory, setSelectedCategory] = useState(null); // Track selected category
   const [bidError, setBidError] = useState<Record<string, string>>({});
   const [bidPrice, setBidPrice] = useState(100);
+  const [bidHistory, setBidHistory] = useState<Array<{bid: number, teamId: string | null}>>([]);
 
   const navigate = useNavigate();
 
@@ -147,6 +148,7 @@ const Auction = () => {
         const data = await response.json();
         setCurrentPlayer(data.data); // Update to use API response structure
         setCurrentBid(data.data.basePrice);
+        setBidHistory([]); // Clear bid history for new player
          console.log("Fetched player categories:", data.data); // Debugging line
         setBidPrice(data.data.playerCategory=="Icon"?100:50);
       } catch (error) {
@@ -185,6 +187,9 @@ const Auction = () => {
         setBidPrice(100);
     }
 
+    // Add current state to history before making changes
+    setBidHistory(prev => [...prev, { bid: currentBid, teamId: leadingTeam }]);
+    
     setCurrentBid(newBid);
     setLeadingTeam(teamId);
     setLeadingTeamId(teamId);
@@ -202,6 +207,39 @@ const Auction = () => {
     }, 3000);
   };
 
+  const handleUndoBid = () => {
+    if (bidHistory.length === 0) return;
+    
+    // Get the last bid state from history
+    const lastBidState = bidHistory[bidHistory.length - 1];
+    
+    // Revert to previous state
+    setCurrentBid(lastBidState.bid);
+    setLeadingTeam(lastBidState.teamId);
+    setLeadingTeamId(lastBidState.teamId);
+    
+    // Update increment logic if price goes below 500 for non-Icon players
+    if (currentPlayer.playerCategory !== "Icon" && lastBidState.bid < 500) {
+      setBidPrice(50);
+    }
+    
+    // Update team bids - remove the current leading team's bid or revert to previous
+    if (leadingTeam) {
+      if (lastBidState.teamId) {
+        setTeamBids(prev => ({ ...prev, [lastBidState.teamId]: lastBidState.bid }));
+      } else {
+        setTeamBids(prev => {
+          const copy = { ...prev };
+          delete copy[leadingTeam];
+          return copy;
+        });
+      }
+    }
+    
+    // Remove the last entry from history
+    setBidHistory(prev => prev.slice(0, -1));
+  };
+
   const handleSold = async () => {
     if (leadingTeam && currentPlayer) {
       setShowCelebration(true);
@@ -209,6 +247,7 @@ const Auction = () => {
         setShowCelebration(false);
         setLeadingTeam(null);
         setTeamBids({});
+        setBidHistory([]); // Clear bid history for new player
         setPlayerNumber(prev => prev + 1); // Increment player number
 
         // Update auction result in the backend
@@ -270,6 +309,7 @@ const Auction = () => {
       setShowUnsoldAnimation(false);
       setLeadingTeam(null);
       setTeamBids({});
+      setBidHistory([]); // Clear bid history for new player
       setPlayerNumber(prev => prev + 1); // Increment player number
 
     setLeadingTeam(null);
@@ -376,35 +416,31 @@ const Auction = () => {
 
       <div className="relative container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8 animate-fade-in">
+        <div className="flex justify-center items-center mb-8 animate-fade-in">
           <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-card border-2 border-primary shadow-glow">
             <Gavel className="h-6 w-6 text-primary animate-glow-pulse" />
             <span className="text-xl font-bold text-foreground">Live Auction - Player #{playerNumber}</span>
           </div>
-
-          <div className="text-right">
-            <div className="text-8xl font-black text-secondary mb-2">
-              {currentBid} Pts.
-            </div>
-            {leadingTeam && (
-              <div className="text-4xl font-black text-primary mb-1">
-                {teams.find(t => t._id === leadingTeam)?.name}
-              </div>
-            )}
-            <p className="text-sm text-muted-foreground">
-              Base: {currentPlayer.basePrice} Pts. | Increment: {bidPrice} Pts.
-            </p>
-          </div>
         </div>
 
-        <div className="space-y-20 max-w-7xl mx-auto">
+        <div className="space-y-8 max-w-full mx-auto">
           {/* Large Player Card */}
           <div className="flex justify-center animate-scale-in">
-            <AuctionPlayerCard player={currentPlayer} isAnimated className="max-w-4xl w-full" />
+            <div className="w-full max-w-7xl h-[60vh]">
+              <AuctionPlayerCard 
+                player={currentPlayer} 
+                isAnimated 
+                className="w-full h-full"
+                currentBid={currentBid}
+                leadingTeamName={teams.find(t => t._id === leadingTeam)?.name}
+                leadingTeamLogo={teams.find(t => t._id === leadingTeam)?.logo}
+                bidPrice={bidPrice}
+              />
+            </div>
           </div>
 
           {/* Team Bidding Grid */}
-          <Card className="p-3 bg-card/80 backdrop-blur-sm border-2 border-border shadow-elevated max-w-3xl mx-auto">
+          <Card className="p-3 bg-card/80 backdrop-blur-sm border-2 border-border shadow-elevated max-w-5xl mx-auto">
             <h2 className="text-lg font-bold mb-3 text-foreground text-center">Click on Team to Bid</h2>
 
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-3">
@@ -459,6 +495,15 @@ const Auction = () => {
 
             <div className="flex gap-3 justify-center">
               <Button
+                onClick={handleUndoBid}
+                disabled={bidHistory.length === 0}
+                variant="secondary"
+                size="default"
+                className="px-6"
+              >
+                Undo Bid
+              </Button>
+              <Button
                 onClick={handleUnsold}
                 variant="outline"
                 size="default"
@@ -490,8 +535,6 @@ const Auction = () => {
       <UnsoldAnimation
         show={showUnsoldAnimation}
         playerName={currentPlayer.name}
-        teamName={teams.find(t => t._id === leadingTeam)?.name || ""}
-        amount={currentBid}
       />      
     </div>
   );

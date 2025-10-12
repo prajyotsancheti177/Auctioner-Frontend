@@ -63,12 +63,12 @@ export const TeamCard = ({ team }: TeamCardProps) => {
                 <span>Budget Used</span>
               </div>
               <span className="font-bold text-foreground">
-                ₹{team.totalSpent} / ₹{(team.remainingBudget + team.totalSpent)}
+                {team.totalSpent} / {team.remainingBudget + team.totalSpent} Pts.
               </span>
             </div>
             <Progress value={budgetUsedPercentage} className="h-2" />
             <p className="text-sm font-medium text-accent">
-              Remaining: ₹{team.remainingBudget}
+              Remaining: {team.remainingBudget} Pts.
             </p>
           </div>
 

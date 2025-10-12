@@ -33,7 +33,7 @@ const getDriveThumbnail = (url?: string) => {
 export const AuctionPlayerCard = ({ player, isAnimated, isSold, className }: PlayerCardProps) => {
   // console.log("Rendering PlayerCard for:", player);
   const formatPrice = (price: number) => {
-    return `₹ ${price}`;
+    return `${price} Pts.`;
   };
 
   const logoSrc = getDriveThumbnail(player.photo as unknown as string);

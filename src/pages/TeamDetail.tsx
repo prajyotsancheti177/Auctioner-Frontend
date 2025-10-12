@@ -144,21 +144,21 @@ const TeamDetail = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Total Budget</span>
                   <span className="font-bold text-foreground">
-                    ₹{team.tournament.totalBudget}
+                    {team.tournament.totalBudget} Pts.
                   </span>
                 </div>
                 <Progress value={budgetUsedPercentage} className="h-2" />
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Spent</span>
                   <span className="font-bold text-secondary">
-                    ₹{team.totalSpent}
+                    {team.totalSpent} Pts.
                   </span>
                 </div>
                 <div className="pt-2 border-t border-border">
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Remaining</span>
                     <span className="font-bold text-accent">
-                      ₹{team.remainingBudget} 
+                      {team.remainingBudget} Pts.
                     </span>
                   </div>
                 </div>
@@ -213,9 +213,9 @@ const TeamDetail = () => {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Avg. Price</p>
                   <p className="text-2xl font-bold text-secondary">
-                    ₹{team.players.length > 0 
+                    {team.players.length > 0 
                       ? ((team.totalSpent / team.players.length)) 
-                      : 0}
+                      : 0} Pts.
                   </p>
                 </div>
               </div>

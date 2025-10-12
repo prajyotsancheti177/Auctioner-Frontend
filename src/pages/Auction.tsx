@@ -177,7 +177,7 @@ const Auction = () => {
 
     const newBid = leadingTeam ==null ? currentBid : currentBid + bidPrice;
     if ((team.remainingBudget ?? 0) < newBid) {
-      window.alert(`${team.name} does not have enough remaining budget (₹${team.remainingBudget}).`);
+      window.alert(`${team.name} does not have enough remaining budget (${team.remainingBudget} Pts.).`);
       return;
     }
 
@@ -384,7 +384,7 @@ const Auction = () => {
 
           <div className="text-right">
             <div className="text-8xl font-black text-secondary mb-2">
-              ₹{currentBid}
+              {currentBid} Pts.
             </div>
             {leadingTeam && (
               <div className="text-4xl font-black text-primary mb-1">
@@ -392,7 +392,7 @@ const Auction = () => {
               </div>
             )}
             <p className="text-sm text-muted-foreground">
-              Base: ₹{currentPlayer.basePrice} | Increment: ₹{bidPrice}
+              Base: {currentPlayer.basePrice} Pts. | Increment: {bidPrice} Pts.
             </p>
           </div>
         </div>
@@ -419,7 +419,7 @@ const Auction = () => {
                           if ((team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0) {
                             showBidError(team._id, `${team.name} has no remaining slots.`);
                           } else {
-                            showBidError(team._id, `${team.name} does not have enough remaining budget (₹${team.remainingBudget}).`);
+                            showBidError(team._id, `${team.name} does not have enough remaining budget (Pts. ${team.remainingBudget}).`);
                           }
                           return;
                         }
@@ -440,11 +440,11 @@ const Auction = () => {
                         </div>
                         <p className="font-bold text-[10px] text-foreground mb-0.5 text-center">{team.name}</p>
                         <div className="text-[10px] text-muted-foreground text-center">
-                          ₹{team.remainingBudget} • {team.maxPlayersPerTeam - team.playersCount} slots
+                          {team.remainingBudget} Pts. • {team.maxPlayersPerTeam - team.playersCount} slots
                         </div>
                         {teamBids[team._id] && (
                           <p className="text-[9px] text-primary font-bold mt-1 text-center">
-                            ₹{(teamBids[team._id] / 100000).toFixed(1)}L
+                            {teamBids[team._id]} Pts.
                           </p>
                         )}
                       </button>

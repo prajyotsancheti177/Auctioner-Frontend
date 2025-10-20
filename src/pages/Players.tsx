@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { PlayerCard } from "@/components/auction/PlayerCard";
+import { PlayerDetailsModal } from "@/components/player/PlayerDetailsModal";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
-import { PlayerStatus } from "@/types/auction";
+import { PlayerStatus, Player } from "@/types/auction";
+import apiConfig from "@/config/apiConfig";
+import { getSelectedTournamentId } from "@/lib/tournamentUtils";
 
 const Players = () => {
   const [players, setPlayers] = useState([]);
@@ -11,17 +14,20 @@ const Players = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch("https://auction.vardhamanpaper.com/api/player/player_report", {
+        const tournamentId = getSelectedTournamentId();
+        const response = await fetch(`${apiConfig.baseUrl}/api/player/player_report`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            touranmentId: "671b0a000000000000000001",
+            touranmentId: tournamentId,
           }),
         });
         if (!response.ok) {
@@ -75,6 +81,29 @@ const Players = () => {
   const soldCount = playersInCategory.filter(p => p.sold === true).length;
   const unsoldCount = playersInCategory.filter(p => p.auctionStatus === true && p.sold === false).length;
   const remainingCount = playersInCategory.filter(p => p.auctionStatus === false).length;
+
+  // Modal handlers
+  const handlePlayerClick = (player: Player) => {
+    setSelectedPlayer(player);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedPlayer(null);
+  };
+
+  const handlePlayerUpdate = (updatedPlayer: Player) => {
+    // Update the player in the local state
+    setPlayers(prev => prev.map(p => 
+      p._id === updatedPlayer._id ? updatedPlayer : p
+    ));
+  };
+
+  const handlePlayerDelete = (playerId: string) => {
+    // Remove the player from the local state
+    setPlayers(prev => prev.filter(p => p._id !== playerId));
+  };
 
   if (loading) {
     return (
@@ -197,7 +226,7 @@ const Players = () => {
               className="animate-scale-in"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <PlayerCard player={player} />
+              <PlayerCard player={player} onClick={handlePlayerClick} />
             </div>
           ))}
         </div>
@@ -208,6 +237,15 @@ const Players = () => {
           </div>
         )}
       </div>
+
+      {/* Player Details Modal */}
+      <PlayerDetailsModal
+        player={selectedPlayer}
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onUpdate={handlePlayerUpdate}
+        onDelete={handlePlayerDelete}
+      />
     </div>
   );
 };

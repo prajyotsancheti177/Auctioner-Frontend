@@ -8,6 +8,8 @@ import Auction from "./pages/Auction";
 import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
 import Players from "./pages/Players";
+import PlayerRegistration from "./pages/PlayerRegistration";
+import Tournaments from "./pages/Tournaments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,11 +23,13 @@ const App = () => (
         <div className="min-h-screen bg-background text-foreground">
           <Navbar />
           <Routes>
-            <Route path="/" element={<Players />} />
+            <Route path="/" element={<Tournaments />} />
+            <Route path="/tournaments" element={<Tournaments />} />
             <Route path="/auction" element={<Auction />} />
             <Route path="/teams" element={<Teams />} />
             <Route path="/team/:teamId" element={<TeamDetail />} />
             <Route path="/players" element={<Players />} />
+            <Route path="/register" element={<PlayerRegistration />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

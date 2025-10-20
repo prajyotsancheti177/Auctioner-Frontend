@@ -1,7 +1,7 @@
 import { Player } from "@/types/auction";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import placeholderImg from "@/assets/player-placeholder.jpg";
+import { getDriveThumbnail } from "@/lib/imageUtils";
 
 interface PlayerCardProps {
   player: Player;
@@ -12,29 +12,11 @@ interface PlayerCardProps {
   leadingTeamName?: string;
   leadingTeamLogo?: string;
   bidPrice?: number;
+  onClick?: (player: Player) => void;
 }
 
-// Helper: convert common Google Drive share URLs to thumbnail format
-const getDriveThumbnail = (url?: string) => {
-  if (!url) return placeholderImg;
-  try {
-    const driveFileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (driveFileIdMatch && driveFileIdMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${driveFileIdMatch[1]}`;
-    }
-    const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (idParamMatch && idParamMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${idParamMatch[1]}`;
-    }
-    // if it's already a direct image or thumbnail URL, return as-is
-    return url;
-  } catch (e) {
-    return placeholderImg;
-  }
-};
 
-
-export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, currentBid, leadingTeamName, leadingTeamLogo, bidPrice }: PlayerCardProps) => {
+export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, currentBid, leadingTeamName, leadingTeamLogo, bidPrice, onClick }: PlayerCardProps) => {
   // console.log("Rendering PlayerCard for:", player);
   const formatPrice = (price: number) => {
     return `${price} Pts.`;
@@ -42,12 +24,21 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
 
   const logoSrc = getDriveThumbnail(player.photo as unknown as string);
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(player);
+    }
+  };
+
   return (
     <div
+      onClick={handleClick}
       className={cn(
         "relative overflow-hidden rounded-2xl bg-card/60 border-2 border-border shadow-elevated transition-all w-full h-full",
         // keep row layout (image left, details right) across breakpoints
         "flex flex-row items-stretch",
+        // Add cursor pointer and hover effects when clickable
+        onClick && "cursor-pointer hover:shadow-2xl hover:scale-[1.02] hover:border-primary/50",
         // hover lift
         "hover:shadow-2xl hover:scale-[1.02] focus-within:scale-[1.02] transition-transform duration-200",
         isAnimated && "animate-pop-in",

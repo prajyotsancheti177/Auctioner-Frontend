@@ -5,29 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Users, Wallet, Trophy } from "lucide-react";
 import { PlayerCard } from "@/components/auction/PlayerCard";
-import placeholderImg from "@/assets/player-placeholder.jpg";
-
-// Helper: convert common Google Drive share URLs to thumbnail format
-const getDriveThumbnail = (url?: string) => {
-  if (!url) return placeholderImg;
-  try {
-    const driveFileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (driveFileIdMatch && driveFileIdMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${driveFileIdMatch[1]}`;
-    }
-    const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (idParamMatch && idParamMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${idParamMatch[1]}`;
-    }
-    // if it's already a direct image or thumbnail URL, return as-is
-    return url;
-  } catch (e) {
-    return placeholderImg;
-  }
-};
-
-
-
+import apiConfig from "@/config/apiConfig";
+import { getDriveThumbnail } from "@/lib/imageUtils";
 
 const TeamDetail = () => {
   const { teamId } = useParams();
@@ -38,7 +17,7 @@ const TeamDetail = () => {
   useEffect(() => {
     const fetchTeamDetails = async () => {
       try {
-        const response = await fetch("https://auction.vardhamanpaper.com/api/team/individual_report", {
+        const response = await fetch(`${apiConfig.baseUrl}/api/team/individual_report`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

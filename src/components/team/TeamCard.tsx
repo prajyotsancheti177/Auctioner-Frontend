@@ -3,30 +3,12 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Users, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getDriveThumbnail } from "@/lib/imageUtils";
 import placeholderImg from "@/assets/player-placeholder.jpg";
 
 interface TeamCardProps {
   team: Team;
 }
-
-// Helper: convert common Google Drive share URLs to thumbnail format
-const getDriveThumbnail = (url?: string) => {
-  if (!url) return placeholderImg;
-  try {
-    const driveFileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (driveFileIdMatch && driveFileIdMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${driveFileIdMatch[1]}`;
-    }
-    const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (idParamMatch && idParamMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${idParamMatch[1]}`;
-    }
-    // if it's already a direct image or thumbnail URL, return as-is
-    return url;
-  } catch (e) {
-    return placeholderImg;
-  }
-};
 
 export const TeamCard = ({ team }: TeamCardProps) => {
   const budgetUsedPercentage = (team.totalSpent / (team.remainingBudget + team.totalSpent)) * 100;

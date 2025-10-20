@@ -1,36 +1,17 @@
 import { Player } from "@/types/auction";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import placeholderImg from "@/assets/player-placeholder.jpg";
+import { getDriveThumbnail } from "@/lib/imageUtils";
 
 interface PlayerCardProps {
   player: Player;
   isAnimated?: boolean;
   isSold?: boolean;
   className?: string;
+  onClick?: (player: Player) => void;
 }
 
-// Helper: convert common Google Drive share URLs to thumbnail format
-const getDriveThumbnail = (url?: string) => {
-  if (!url) return placeholderImg;
-  try {
-    const driveFileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (driveFileIdMatch && driveFileIdMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${driveFileIdMatch[1]}`;
-    }
-    const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (idParamMatch && idParamMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${idParamMatch[1]}`;
-    }
-    // if it's already a direct image or thumbnail URL, return as-is
-    return url;
-  } catch (e) {
-    return placeholderImg;
-  }
-};
-
-
-export const PlayerCard = ({ player, isAnimated, isSold, className }: PlayerCardProps) => {
+export const PlayerCard = ({ player, isAnimated, isSold, className, onClick }: PlayerCardProps) => {
   // console.log("Rendering PlayerCard for:", player);
   const formatPrice = (price: number) => {
     return `${price} Pts.`;
@@ -38,12 +19,21 @@ export const PlayerCard = ({ player, isAnimated, isSold, className }: PlayerCard
 
   const logoSrc = getDriveThumbnail(player.photo as unknown as string);
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(player);
+    }
+  };
+
   return (
     <div
+      onClick={handleClick}
       className={cn(
         "relative overflow-hidden rounded-2xl bg-card border-2 border-border shadow-elevated transition-all w-full",
         // mobile: row (image left, details right). md+: stacked column
         "flex flex-row md:flex-col items-center md:items-stretch",
+        // Add cursor pointer and hover effects when clickable
+        onClick && "cursor-pointer hover:shadow-2xl hover:scale-[1.02] hover:border-primary/50",
         isAnimated && "animate-pop-in",
         isSold && "animate-celebrate",
         className

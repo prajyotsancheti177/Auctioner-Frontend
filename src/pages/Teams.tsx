@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Trophy } from "lucide-react";
 
 import { TeamCard } from "@/components/team/TeamCard";
+import apiConfig from "@/config/apiConfig";
+import { getSelectedTournamentId } from "@/lib/tournamentUtils";
 
 const Teams = () => {
   const [teams, setTeams] = useState([]);
@@ -11,13 +13,14 @@ const Teams = () => {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await fetch("https://auction.vardhamanpaper.com/api/team/report", {
+        const tournamentId = getSelectedTournamentId();
+        const response = await fetch(`${apiConfig.baseUrl}/api/team/report`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            touranmentId: "671b0a000000000000000001",
+            touranmentId: tournamentId,
           }),
         });
         if (!response.ok) {

@@ -19,8 +19,10 @@ const buildNavLinks = () => {
   }
 
   const links = [
-    { path: "/", label: "Players" },
-    { path: "/teams", label: "All Teams" },
+    { path: "/tournaments", label: "Tournaments" },
+    { path: "/players", label: "Players" },
+    { path: "/teams", label: "Teams" },
+    { path: "/register", label: "Register" },
   ];
 
   if (showAuction) {
@@ -37,7 +39,7 @@ export const Navbar = () => {
     <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-xl">
       <div className="container mx-auto px-3">
         <div className="flex h-12 md:h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/tournaments" className="flex items-center gap-2 group">
             <div className="rounded-lg bg-gradient-primary p-1.5 md:p-2 shadow-glow transition-all group-hover:scale-110">
               <Trophy className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />
             </div>

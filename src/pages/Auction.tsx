@@ -1,35 +1,17 @@
 import { useState, useEffect } from "react";
 import { AuctionPlayerCard } from "@/components/auction/AuctionPlayerCard";
+import { PlayerDetailsModal } from "@/components/player/PlayerDetailsModal";
 import { SoldCelebration } from "@/components/auction/SoldCelebration";
 import { UnsoldAnimation } from "@/components/auction/UnsoldAnimation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Gavel } from "lucide-react";
 import stadiumBg from "@/assets/stadium-bg.jpg";
-import placeholderImg from "@/assets/player-placeholder.jpg";
 import { useNavigate } from "react-router-dom";
-import { set } from "date-fns";
-
-
-
-// Helper: convert common Google Drive share URLs to thumbnail format
-const getDriveThumbnail = (url?: string) => {
-  if (!url) return placeholderImg;
-  try {
-    const driveFileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (driveFileIdMatch && driveFileIdMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${driveFileIdMatch[1]}`;
-    }
-    const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (idParamMatch && idParamMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${idParamMatch[1]}`;
-    }
-    // if it's already a direct image or thumbnail URL, return as-is
-    return url;
-  } catch (e) {
-    return placeholderImg;
-  }
-};
+import { Player } from "@/types/auction";
+import apiConfig from "@/config/apiConfig";
+import { getDriveThumbnail } from "@/lib/imageUtils";
+import { getSelectedTournamentId } from "@/lib/tournamentUtils";
 
 
 const Auction = () => {
@@ -47,6 +29,8 @@ const Auction = () => {
   const [bidError, setBidError] = useState<Record<string, string>>({});
   const [bidPrice, setBidPrice] = useState(100);
   const [bidHistory, setBidHistory] = useState<Array<{bid: number, teamId: string | null}>>([]);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -63,13 +47,14 @@ const Auction = () => {
   // make fetchTeams callable so we can refresh after updates
   const fetchTeams = async () => {
     try {
-      const response = await fetch("https://auction.vardhamanpaper.com/api/team/report", {
+      const tournamentId = getSelectedTournamentId();
+      const response = await fetch(`${apiConfig.baseUrl}/api/team/report`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          touranmentId: "671b0a000000000000000001",
+          touranmentId: tournamentId,
         }),
       });
 
@@ -100,13 +85,14 @@ const Auction = () => {
   useEffect(() => {
     const fetchPlayerCategories = async () => {
       try {
-        const response = await fetch("https://auction.vardhamanpaper.com/api/auction/playerCategories", {
+        const tournamentId = getSelectedTournamentId();
+        const response = await fetch(`${apiConfig.baseUrl}/api/auction/playerCategories`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            touranmentId: "671b0a000000000000000001",
+            touranmentId: tournamentId,
           }),
         });
 
@@ -130,13 +116,14 @@ const Auction = () => {
 
     const fetchNextPlayer = async () => {
       try {
-        const response = await fetch("https://auction.vardhamanpaper.com/api/player/nextAuctionPlayer", {
+        const tournamentId = getSelectedTournamentId();
+        const response = await fetch(`${apiConfig.baseUrl}/api/player/nextAuctionPlayer`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            touranmentId: "671b0a000000000000000001",
+            touranmentId: tournamentId,
             playerCategory: selectedCategory, // Pass selected category
           }),
         });
@@ -252,7 +239,7 @@ const Auction = () => {
 
         // Update auction result in the backend
         try {
-          const updateResponse = await fetch("https://auction.vardhamanpaper.com/api/player/updatePlayer", {
+          const updateResponse = await fetch(`${apiConfig.baseUrl}/api/player/updatePlayer`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -277,13 +264,14 @@ const Auction = () => {
 
         // Fetch the next player for auction
         try {
-          const response = await fetch("https://auction.vardhamanpaper.com/api/player/nextAuctionPlayer", {
+          const tournamentId = getSelectedTournamentId();
+          const response = await fetch(`${apiConfig.baseUrl}/api/player/nextAuctionPlayer`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              touranmentId: "671b0a000000000000000001",
+              touranmentId: tournamentId,
               playerCategory: selectedCategory,
             }),
           });
@@ -317,7 +305,7 @@ const Auction = () => {
     setPlayerNumber(prev => prev + 1); // Increment player number
 
     try {
-      const updateResponse = await fetch("https://auction.vardhamanpaper.com/api/player/updatePlayer", {
+      const updateResponse = await fetch(`${apiConfig.baseUrl}/api/player/updatePlayer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -340,13 +328,14 @@ const Auction = () => {
     }
 
     try {
-      const response = await fetch("https://auction.vardhamanpaper.com/api/player/nextAuctionPlayer", {
+      const tournamentId = getSelectedTournamentId();
+      const response = await fetch(`${apiConfig.baseUrl}/api/player/nextAuctionPlayer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          touranmentId: "671b0a000000000000000001",
+          touranmentId: tournamentId,
           playerCategory: selectedCategory,
         }),
       });

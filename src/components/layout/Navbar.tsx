@@ -1,10 +1,12 @@
-import { Link, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Trophy, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import path from "path";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const buildNavLinks = () => {
   let showAuction = false;
+  let showUsers = false;
 
   try {
     const password =
@@ -14,12 +16,22 @@ const buildNavLinks = () => {
     if (password === "pushkar_champion") {
       showAuction = true;
     }
+
+    // Check if user is boss or super_user
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user.role === 'boss' || user.role === 'super_user') {
+        showUsers = true;
+      }
+    }
   } catch {
     // ignore localStorage errors
   }
 
   const links = [
     { path: "/tournaments", label: "Tournaments" },
+    { path: "/tournaments/manage", label: "Manage Tournaments" },
     { path: "/players", label: "Players" },
     { path: "/teams", label: "Teams" },
     { path: "/register", label: "Register" },
@@ -29,11 +41,42 @@ const buildNavLinks = () => {
     links.unshift({ path: "/auction", label: "Live Auction" });
   }
 
+  if (showUsers) {
+    links.unshift({ path: "/users", label: "Users" });
+  }
+
   return links;
 };
 
 export const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("isAuthenticated");
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
+    navigate("/login");
+  };
+
+  const getUserName = () => {
+    try {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        return user.name;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  };
+
+  const userName = getUserName();
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-xl">
@@ -48,21 +91,41 @@ export const Navbar = () => {
             </span>
           </Link>
 
-          <div className="flex gap-1 overflow-x-auto no-scrollbar">
-            {buildNavLinks().map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={cn(
-                  "px-2 md:px-4 py-1 md:py-2 rounded-lg font-medium text-sm md:text-base transition-all whitespace-nowrap",
-                  location.pathname === link.path
-                    ? "bg-gradient-primary text-primary-foreground shadow-glow"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex gap-1 overflow-x-auto no-scrollbar">
+              {buildNavLinks().map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={cn(
+                    "px-2 md:px-4 py-1 md:py-2 rounded-lg font-medium text-sm md:text-base transition-all whitespace-nowrap",
+                    location.pathname === link.path
+                      ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
+            {userName && (
+              <div className="flex items-center gap-2 border-l pl-2 md:pl-4">
+                <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="h-4 w-4" />
+                  <span>{userName}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="gap-1 md:gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden md:inline">Logout</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

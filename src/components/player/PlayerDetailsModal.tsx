@@ -82,7 +82,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
       }
 
       try {
-        const response = await fetch(`${apiConfig.baseUrl}/api/team/report`, {
+        const response = await fetch(`${apiConfig.baseUrl}/api/team/all`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -192,7 +192,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
         Object.entries(payload).filter(([_, value]) => value !== undefined)
       );
 
-      const response = await fetch(`${apiConfig.baseUrl}/api/player/updatePlayer`, {
+      const response = await fetch(`${apiConfig.baseUrl}/api/player/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

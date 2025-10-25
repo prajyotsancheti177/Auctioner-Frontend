@@ -48,7 +48,7 @@ const Auction = () => {
   const fetchTeams = async () => {
     try {
       const tournamentId = getSelectedTournamentId();
-      const response = await fetch(`${apiConfig.baseUrl}/api/team/report`, {
+      const response = await fetch(`${apiConfig.baseUrl}/api/team/all`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -86,7 +86,7 @@ const Auction = () => {
     const fetchPlayerCategories = async () => {
       try {
         const tournamentId = getSelectedTournamentId();
-        const response = await fetch(`${apiConfig.baseUrl}/api/auction/playerCategories`, {
+        const response = await fetch(`${apiConfig.baseUrl}/api/auction/player-categories`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -117,7 +117,7 @@ const Auction = () => {
     const fetchNextPlayer = async () => {
       try {
         const tournamentId = getSelectedTournamentId();
-        const response = await fetch(`${apiConfig.baseUrl}/api/player/nextAuctionPlayer`, {
+        const response = await fetch(`${apiConfig.baseUrl}/api/auction/next-player`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -239,7 +239,7 @@ const Auction = () => {
 
         // Update auction result in the backend
         try {
-          const updateResponse = await fetch(`${apiConfig.baseUrl}/api/player/updatePlayer`, {
+          const updateResponse = await fetch(`${apiConfig.baseUrl}/api/player/update`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -265,7 +265,7 @@ const Auction = () => {
         // Fetch the next player for auction
         try {
           const tournamentId = getSelectedTournamentId();
-          const response = await fetch(`${apiConfig.baseUrl}/api/player/nextAuctionPlayer`, {
+          const response = await fetch(`${apiConfig.baseUrl}/api/auction/next-player`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -305,7 +305,7 @@ const Auction = () => {
     setPlayerNumber(prev => prev + 1); // Increment player number
 
     try {
-      const updateResponse = await fetch(`${apiConfig.baseUrl}/api/player/updatePlayer`, {
+      const updateResponse = await fetch(`${apiConfig.baseUrl}/api/player/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -329,7 +329,7 @@ const Auction = () => {
 
     try {
       const tournamentId = getSelectedTournamentId();
-      const response = await fetch(`${apiConfig.baseUrl}/api/player/nextAuctionPlayer`, {
+      const response = await fetch(`${apiConfig.baseUrl}/api/auction/next-player`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

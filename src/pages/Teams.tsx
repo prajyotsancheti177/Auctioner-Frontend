@@ -14,7 +14,7 @@ const Teams = () => {
     const fetchTeams = async () => {
       try {
         const tournamentId = getSelectedTournamentId();
-        const response = await fetch(`${apiConfig.baseUrl}/api/team/report`, {
+        const response = await fetch(`${apiConfig.baseUrl}/api/team/all`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

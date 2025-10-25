@@ -30,7 +30,7 @@ const Tournaments = () => {
     const fetchTournaments = async () => {
       try {
         const response = await fetch(`${apiConfig.baseUrl}/api/tournament/all`, {
-          method: "GET",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },

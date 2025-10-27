@@ -18,6 +18,12 @@ interface User {
   role: string;
   isActive: boolean;
   createdAt: string;
+  createdBy?: {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
   permissions: {
     canCreateSuperUser: boolean;
     canCreateTournamentHost: boolean;
@@ -68,24 +74,30 @@ const UserManagement = () => {
 
   const fetchUsers = async (user: User) => {
     try {
-      const endpoint = user.role === 'boss' 
-        ? "http://localhost:3000/api/user/all"
-        : "http://localhost:3000/api/user/my-users";
-      
-      const body = user.role === 'boss' ? {} : { creatorId: user._id };
-
-      const response = await fetch(endpoint, {
+      // Use hierarchy endpoint to get all users created by this user and their descendants
+      const response = await fetch("http://localhost:3000/api/user/hierarchy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ userId: user._id }),
       });
 
       const data = await response.json();
       if (data.success) {
         setUsers(data.data);
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to fetch users",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Failed to fetch users:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch users",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -222,7 +234,9 @@ const UserManagement = () => {
             <div>
               <CardTitle className="text-3xl font-bold">User Management</CardTitle>
               <CardDescription className="mt-2">
-                {currentUser?.role === 'boss' ? 'Manage all users in the system' : 'Manage users you have created'}
+                {currentUser?.role === 'boss' 
+                  ? 'Manage all users in the system' 
+                  : 'Manage users you created and their descendants in the hierarchy'}
               </CardDescription>
             </div>
             
@@ -335,6 +349,7 @@ const UserManagement = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Created By</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -343,7 +358,7 @@ const UserManagement = () => {
             <TableBody>
               {users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     No users found. Create your first user to get started.
                   </TableCell>
                 </TableRow>
@@ -353,6 +368,18 @@ const UserManagement = () => {
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{getRoleBadge(user.role)}</TableCell>
+                    <TableCell>
+                      {user.createdBy ? (
+                        <div className="text-sm">
+                          <div className="font-medium">{user.createdBy.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {getRoleBadge(user.createdBy.role)}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">System</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {user.isActive ? (
                         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">

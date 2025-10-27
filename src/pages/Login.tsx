@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,27 @@ const Login = () => {
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+    const userStr = localStorage.getItem("user");
+    
+    if (isAuthenticated && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.role === 'boss' || user.role === 'super_user') {
+          navigate("/users");
+        } else {
+          navigate("/tournaments");
+        }
+      } catch {
+        // If parsing fails, clear storage
+        localStorage.removeItem("user");
+        localStorage.removeItem("isAuthenticated");
+      }
+    }
+  }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

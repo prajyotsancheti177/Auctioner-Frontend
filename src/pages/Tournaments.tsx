@@ -55,8 +55,8 @@ const Tournaments = () => {
   const handleTournamentClick = (tournamentId: string) => {
     // Store the selected tournament ID in localStorage
     setSelectedTournamentId(tournamentId);
-    // Navigate to players page
-    navigate("/players");
+    // Navigate to tournament detail page
+    navigate(`/tournament/${tournamentId}`);
   };
 
   const formatDate = (dateString: string) => {

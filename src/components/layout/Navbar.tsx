@@ -7,8 +7,12 @@ import { useToast } from "@/hooks/use-toast";
 const buildNavLinks = () => {
   let showAuction = false;
   let showUsers = false;
+  let showManageTournaments = false;
+  let isAuthenticated = false;
 
   try {
+    isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+    
     const password =
       typeof window !== "undefined"
         ? localStorage.getItem("auction-password")
@@ -24,18 +28,22 @@ const buildNavLinks = () => {
       if (user.role === 'boss' || user.role === 'super_user') {
         showUsers = true;
       }
+      // Show manage tournaments for authenticated users
+      showManageTournaments = true;
     }
   } catch {
     // ignore localStorage errors
   }
 
+  // Public links (always visible)
   const links = [
     { path: "/tournaments", label: "Tournaments" },
-    { path: "/tournaments/manage", label: "Manage Tournaments" },
-    { path: "/players", label: "Players" },
-    { path: "/teams", label: "Teams" },
-    { path: "/register", label: "Register" },
   ];
+
+  // Protected links (only for authenticated users)
+  if (showManageTournaments) {
+    links.push({ path: "/tournaments/manage", label: "Manage Tournaments" });
+  }
 
   if (showAuction) {
     links.unshift({ path: "/auction", label: "Live Auction" });
@@ -60,7 +68,7 @@ export const Navbar = () => {
       title: "Logged Out",
       description: "You have been successfully logged out.",
     });
-    navigate("/login");
+    navigate("/tournaments"); // Redirect to public page instead of login
   };
 
   const getUserName = () => {
@@ -109,7 +117,7 @@ export const Navbar = () => {
               ))}
             </div>
 
-            {userName && (
+            {userName ? (
               <div className="flex items-center gap-2 border-l pl-2 md:pl-4">
                 <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
                   <User className="h-4 w-4" />
@@ -123,6 +131,18 @@ export const Navbar = () => {
                 >
                   <LogOut className="h-4 w-4" />
                   <span className="hidden md:inline">Logout</span>
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 border-l pl-2 md:pl-4">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => navigate("/login")}
+                  className="gap-1 md:gap-2"
+                >
+                  <User className="h-4 w-4" />
+                  <span>Login</span>
                 </Button>
               </div>
             )}

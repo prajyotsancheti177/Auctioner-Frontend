@@ -45,6 +45,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import apiConfig from "@/config/apiConfig";
 
 interface Tournament {
   _id: string;
@@ -114,7 +115,7 @@ export default function TournamentManagement() {
   const fetchTournaments = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3000/api/tournament/all", {
+      const response = await fetch(`${apiConfig.baseUrl}/api/tournament/all`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -148,7 +149,7 @@ export default function TournamentManagement() {
 
   const fetchTournamentHosts = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/tournament/hosts");
+      const response = await fetch(`${apiConfig.baseUrl}/api/tournament/hosts`);
       const data = await response.json();
       if (response.ok) {
         setTournamentHosts(data.data || []);
@@ -239,9 +240,9 @@ export default function TournamentManagement() {
         ...(canSelectHost && { tournamentHostId: formData.tournamentHostId }),
       };
 
-      let url = "http://localhost:3000/api/tournament/register";
+      let url = `${apiConfig.baseUrl}/api/tournament/register`;
       if (isEditing && editingId) {
-        url = "http://localhost:3000/api/tournament/update";
+        url = `${apiConfig.baseUrl}/api/tournament/update`;
         Object.assign(payload, { tournamentId: editingId });
       }
 
@@ -281,7 +282,7 @@ export default function TournamentManagement() {
     if (!deletingId) return;
 
     try {
-      const response = await fetch("http://localhost:3000/api/tournament/delete", {
+      const response = await fetch(`${apiConfig.baseUrl}/api/tournament/delete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

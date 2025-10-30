@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Loader2, Trash2, Shield, Users, Crown } from "lucide-react";
+import apiConfig from "@/config/apiConfig";
 
 interface User {
   _id: string;
@@ -75,7 +76,7 @@ const UserManagement = () => {
   const fetchUsers = async (user: User) => {
     try {
       // Use hierarchy endpoint to get all users created by this user and their descendants
-      const response = await fetch("http://localhost:3000/api/user/hierarchy", {
+      const response = await fetch(`${apiConfig.baseUrl}/api/user/hierarchy`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user._id }),
@@ -118,7 +119,7 @@ const UserManagement = () => {
     setIsCreating(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/user/create", {
+      const response = await fetch(`${apiConfig.baseUrl}/api/user/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -165,7 +166,7 @@ const UserManagement = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/user/delete", {
+      const response = await fetch(`${apiConfig.baseUrl}/api/user/delete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, hardDelete: false }),

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Shield } from "lucide-react";
+import apiConfig from "@/config/apiConfig";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/user/login", {
+      const response = await fetch(`${apiConfig.baseUrl}/api/user/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -36,9 +36,9 @@ const Auction = () => {
 
    useEffect(() => {
     const password = localStorage.getItem("auction-password");
-    if (password !== "pushkar_champion") {
-      navigate("/"); // 👈 redirect if password doesn't match
-    }
+    // if (password !== "pushkar_champion") {
+    //   navigate("/"); // 👈 redirect if password doesn't match
+    // }
 
   }, [navigate]);
 

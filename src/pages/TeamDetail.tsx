@@ -17,7 +17,7 @@ const TeamDetail = () => {
   useEffect(() => {
     const fetchTeamDetails = async () => {
       try {
-        const response = await fetch(`${apiConfig.baseUrl}/api/team/individual_report`, {
+        const response = await fetch(`${apiConfig.baseUrl}/api/team/detail`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

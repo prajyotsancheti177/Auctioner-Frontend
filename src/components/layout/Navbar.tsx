@@ -21,6 +21,8 @@ const buildNavLinks = () => {
       showAuction = true;
     }
 
+    showAuction = true;
+
     // Check if user is boss or super_user
     const userStr = localStorage.getItem("user");
     if (userStr) {

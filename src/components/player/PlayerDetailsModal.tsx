@@ -230,7 +230,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
     setError("");
 
     try {
-      const response = await fetch(`${apiConfig.baseUrl}/api/player/deletePlayer`, {
+      const response = await fetch(`${apiConfig.baseUrl}/api/player/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

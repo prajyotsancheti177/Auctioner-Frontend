@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AuctionPlayerCard } from "@/components/auction/AuctionPlayerCard";
 import { PlayerDetailsModal } from "@/components/player/PlayerDetailsModal";
 import { SoldCelebration } from "@/components/auction/SoldCelebration";
 import { UnsoldAnimation } from "@/components/auction/UnsoldAnimation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Gavel } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Gavel, Search, Shuffle, Settings, Plus, Trash2 } from "lucide-react";
 import stadiumBg from "@/assets/stadium-bg.jpg";
 import { useNavigate } from "react-router-dom";
 import { Player } from "@/types/auction";
@@ -30,9 +33,115 @@ const Auction = () => {
   const [bidPrice, setBidPrice] = useState(100);
   const [bidHistory, setBidHistory] = useState<Array<{bid: number, teamId: string | null}>>([]);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  
+  // Manual search mode states
+  const [auctionMode, setAuctionMode] = useState<"category" | "manual" | null>(null);
+  const [showSearchDialog, setShowSearchDialog] = useState(false);
+  const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Bid increment settings
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [bidIncrementSlabs, setBidIncrementSlabs] = useState<Array<{
+    id: number;
+    minBid: number;
+    maxBid: number | null;
+    increment: number;
+  }>>(() => {
+    // Load from localStorage or use default
+    const saved = localStorage.getItem('auction-bid-increment-slabs');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved bid increment slabs', e);
+      }
+    }
+    return [
+      { id: 1, minBid: 0, maxBid: 500, increment: 50 },
+      { id: 2, minBid: 501, maxBid: null, increment: 100 }
+    ];
+  });
+
   const navigate = useNavigate();
+
+  // Save bid increment slabs to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('auction-bid-increment-slabs', JSON.stringify(bidIncrementSlabs));
+  }, [bidIncrementSlabs]);
+
+  // Calculate current bid increment based on current bid and slabs
+  const getCurrentBidIncrement = useCallback((currentBidAmount: number) => {
+    // Sort slabs by minBid to ensure correct order
+    const sortedSlabs = [...bidIncrementSlabs].sort((a, b) => a.minBid - b.minBid);
+    
+    // Find the applicable slab
+    for (const slab of sortedSlabs) {
+      if (slab.maxBid === null) {
+        // This is the last slab (no upper limit)
+        if (currentBidAmount >= slab.minBid) {
+          return slab.increment;
+        }
+      } else {
+        // Check if current bid falls within this slab
+        if (currentBidAmount >= slab.minBid && currentBidAmount < slab.maxBid) {
+          return slab.increment;
+        }
+      }
+    }
+    
+    // Default fallback
+    return 50;
+  }, [bidIncrementSlabs]);
+
+  // Add a new bid increment slab
+  const addBidSlab = () => {
+    const lastSlab = bidIncrementSlabs[bidIncrementSlabs.length - 1];
+    const newMinBid = lastSlab.maxBid ? lastSlab.maxBid + 1 : lastSlab.minBid + 500;
+    
+    // Update last slab to have a maxBid
+    const updatedSlabs = bidIncrementSlabs.map((slab, index) => {
+      if (index === bidIncrementSlabs.length - 1) {
+        return { ...slab, maxBid: newMinBid - 1 };
+      }
+      return slab;
+    });
+    
+    // Add new slab
+    const newSlab = {
+      id: Date.now(),
+      minBid: newMinBid,
+      maxBid: null,
+      increment: 100
+    };
+    
+    setBidIncrementSlabs([...updatedSlabs, newSlab]);
+  };
+
+  // Remove a bid increment slab
+  const removeBidSlab = (id: number) => {
+    if (bidIncrementSlabs.length <= 1) return; // Keep at least one slab
+    
+    const updatedSlabs = bidIncrementSlabs.filter(slab => slab.id !== id);
+    
+    // Make the last slab have no upper limit
+    if (updatedSlabs.length > 0) {
+      updatedSlabs[updatedSlabs.length - 1].maxBid = null;
+    }
+    
+    setBidIncrementSlabs(updatedSlabs);
+  };
+
+  // Update a bid increment slab
+  const updateBidSlab = (id: number, field: 'minBid' | 'maxBid' | 'increment', value: number | null) => {
+    setBidIncrementSlabs(slabs => 
+      slabs.map(slab => 
+        slab.id === id ? { ...slab, [field]: value } : slab
+      )
+    );
+  };
 
    useEffect(() => {
     const password = localStorage.getItem("auction-password");
@@ -78,6 +187,52 @@ const Auction = () => {
     }
   };
 
+  // Fetch all unsold players for manual search
+  const fetchAllUnsoldPlayers = async () => {
+    try {
+      const tournamentId = getSelectedTournamentId();
+      const response = await fetch(`${apiConfig.baseUrl}/api/player/all`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          touranmentId: tournamentId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch players");
+      }
+
+      const data = await response.json();
+      // Filter unsold players only
+      const unsoldPlayers = data.data.filter(
+        (player: Player) => !player.sold && !player.auctionStatus
+      );
+      setAllPlayers(unsoldPlayers);
+    } catch (error) {
+      console.error("Error fetching players:", error);
+    }
+  };
+
+  // Handle manual player selection
+  const handleManualPlayerSelect = (player: Player) => {
+    setCurrentPlayer(player);
+    setCurrentBid(player.basePrice || 0);
+    const initialIncrement = getCurrentBidIncrement(player.basePrice || 0);
+    setBidPrice(initialIncrement);
+    setLeadingTeam(null);
+    setLeadingTeamId(null);
+    setTeamBids({});
+    setBidHistory([]);
+    setBidError({});
+    setShowSearchDialog(false);
+    setSearchTerm("");
+    setCategoryFilter("All");
+    setAuctionMode("manual");
+  };
+
   useEffect(() => {
     fetchTeams();
   }, []);
@@ -112,7 +267,7 @@ const Auction = () => {
   }, []);
 
   useEffect(() => {
-    if (!selectedCategory) return; // Do not fetch players until a category is selected
+    if (!selectedCategory || auctionMode === "manual") return; // Do not fetch players until a category is selected or in manual mode
 
     const fetchNextPlayer = async () => {
       try {
@@ -136,15 +291,17 @@ const Auction = () => {
         setCurrentPlayer(data.data); // Update to use API response structure
         setCurrentBid(data.data.basePrice);
         setBidHistory([]); // Clear bid history for new player
-         console.log("Fetched player categories:", data.data); // Debugging line
-        setBidPrice(data.data.playerCategory=="Icon"?100:50);
+        console.log("Fetched player categories:", data.data); // Debugging line
+        const initialIncrement = getCurrentBidIncrement(data.data.basePrice);
+        setBidPrice(initialIncrement);
+        setAuctionMode("category");
       } catch (error) {
         console.error("Error fetching next player for auction:", error);
       }
     };
 
     fetchNextPlayer();
-  }, [selectedCategory]); // Refetch players when category changes
+  }, [selectedCategory, auctionMode, getCurrentBidIncrement]); // Refetch players when category changes
 
   const bidIncrement = 50;
 
@@ -164,14 +321,25 @@ const Auction = () => {
       return;
     }
 
-    const newBid = leadingTeam ==null ? currentBid : currentBid + bidPrice;
+    // For the first bid, use currentBid as is. For subsequent bids, calculate increment first
+    let newBid: number;
+    let nextIncrement: number;
+    
+    if (leadingTeam === null) {
+      // First bid - use base price
+      newBid = currentBid;
+      // Calculate increment for the next bid based on current bid
+      nextIncrement = getCurrentBidIncrement(currentBid);
+    } else {
+      // Subsequent bids - add current increment to get new bid
+      newBid = currentBid + bidPrice;
+      // Calculate increment for the NEXT bid based on the NEW bid amount
+      nextIncrement = getCurrentBidIncrement(newBid);
+    }
+
     if ((team.remainingBudget ?? 0) < newBid) {
       window.alert(`${team.name} does not have enough remaining budget (${team.remainingBudget} Pts.).`);
       return;
-    }
-
-      if(currentPlayer.playerCategory!="Icon" && newBid>=  500){
-        setBidPrice(100);
     }
 
     // Add current state to history before making changes
@@ -181,6 +349,9 @@ const Auction = () => {
     setLeadingTeam(teamId);
     setLeadingTeamId(teamId);
     setTeamBids(prev => ({ ...prev, [teamId]: newBid }));
+    
+    // Set the increment for the next bid
+    setBidPrice(nextIncrement);
   };
 
   const showBidError = (teamId: string, message: string) => {
@@ -205,10 +376,9 @@ const Auction = () => {
     setLeadingTeam(lastBidState.teamId);
     setLeadingTeamId(lastBidState.teamId);
     
-    // Update increment logic if price goes below 500 for non-Icon players
-    if (currentPlayer.playerCategory !== "Icon" && lastBidState.bid < 500) {
-      setBidPrice(50);
-    }
+    // Recalculate increment based on the reverted bid
+    const revertedIncrement = getCurrentBidIncrement(lastBidState.bid);
+    setBidPrice(revertedIncrement);
     
     // Update team bids - remove the current leading team's bid or revert to previous
     if (leadingTeam) {
@@ -262,29 +432,36 @@ const Auction = () => {
           console.error("Error updating auction result:", error);
         }
 
-        // Fetch the next player for auction
-        try {
-          const tournamentId = getSelectedTournamentId();
-          const response = await fetch(`${apiConfig.baseUrl}/api/auction/next-player`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              touranmentId: tournamentId,
-              playerCategory: selectedCategory,
-            }),
-          });
+        // Reset auction mode if in manual mode, otherwise fetch next player
+        if (auctionMode === "manual") {
+          setCurrentPlayer(null);
+          setCurrentBid(0);
+          setAuctionMode(null);
+        } else {
+          // Fetch the next player for auction in category mode
+          try {
+            const tournamentId = getSelectedTournamentId();
+            const response = await fetch(`${apiConfig.baseUrl}/api/auction/next-player`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                touranmentId: tournamentId,
+                playerCategory: selectedCategory,
+              }),
+            });
 
-          if (!response.ok) {
-            throw new Error("Failed to fetch next player for auction");
+            if (!response.ok) {
+              throw new Error("Failed to fetch next player for auction");
+            }
+
+            const data = await response.json();
+            setCurrentPlayer(data.data);
+            setCurrentBid(data.data.basePrice);
+          } catch (error) {
+            console.error("Error fetching next player for auction:", error);
           }
-
-          const data = await response.json();
-          setCurrentPlayer(data.data);
-          setCurrentBid(data.data.basePrice);
-        } catch (error) {
-          console.error("Error fetching next player for auction:", error);
         }
       }, 4000);
     }
@@ -327,36 +504,105 @@ const Auction = () => {
       console.error("Error updating auction result:", error);
     }
 
-    try {
-      const tournamentId = getSelectedTournamentId();
-      const response = await fetch(`${apiConfig.baseUrl}/api/auction/next-player`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          touranmentId: tournamentId,
-          playerCategory: selectedCategory,
-        }),
-      });
+    // Reset auction mode if in manual mode, otherwise fetch next player
+    if (auctionMode === "manual") {
+      setCurrentPlayer(null);
+      setCurrentBid(0);
+      setAuctionMode(null);
+    } else {
+      try {
+        const tournamentId = getSelectedTournamentId();
+        const response = await fetch(`${apiConfig.baseUrl}/api/auction/next-player`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            touranmentId: tournamentId,
+            playerCategory: selectedCategory,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch next player for auction");
+        if (!response.ok) {
+          throw new Error("Failed to fetch next player for auction");
+        }
+
+        const data = await response.json();
+        setCurrentPlayer(data.data);
+        setCurrentBid(data.data.basePrice);
+      } catch (error) {
+        console.error("Error fetching next player for auction:", error);
       }
-
-      const data = await response.json();
-      setCurrentPlayer(data.data);
-      setCurrentBid(data.data.basePrice);
-    } catch (error) {
-      console.error("Error fetching next player for auction:", error);
     }
   }, 4000);
   };
 
-  if (!selectedCategory) {
+  // Filter players based on search and category
+  const filteredPlayers = allPlayers.filter((player) => {
+    const matchesSearch = player.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "All" || player.playerCategory === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Show mode selection screen if no mode is selected
+  if (!auctionMode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-foreground mb-8">
+            Select Auction Mode
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <Card className="p-8 hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary w-80"
+              onClick={() => setAuctionMode("category")}
+            >
+              <div className="flex flex-col items-center gap-4">
+                <Shuffle className="h-16 w-16 text-primary" />
+                <h3 className="text-xl font-bold">Category Based</h3>
+                <p className="text-sm text-muted-foreground text-center">
+                  Select a category and get a random player for auction
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-8 hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary w-80"
+              onClick={() => {
+                setAuctionMode("manual");
+                fetchAllUnsoldPlayers();
+                setShowSearchDialog(true);
+              }}
+            >
+              <div className="flex flex-col items-center gap-4">
+                <Search className="h-16 w-16 text-primary" />
+                <h3 className="text-xl font-bold">Manual Search</h3>
+                <p className="text-sm text-muted-foreground text-center">
+                  Search and select a specific player for auction
+                </p>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show category selection screen for category mode
+  if (auctionMode === "category" && !selectedCategory) {
     return (
       <div className="min-h-screen flex items-center justify-center ">
         <div className="text-center">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setAuctionMode(null);
+            }}
+            className="mb-6"
+          >
+            ← Back to Mode Selection
+          </Button>
           <h2 className="text-2xl font-bold text-foreground mb-4">Select a Player Category to Start the Auction</h2>
           <div className="flex flex-wrap justify-center gap-4">
             {playerCategories.map((category) => (
@@ -371,6 +617,118 @@ const Auction = () => {
           </div>
         </div>
       </div>
+    );
+  }
+  
+  // If in manual mode without a player, show loading/search state
+  if (!currentPlayer && auctionMode === "manual") {
+    return (
+      <>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAuctionMode(null);
+                setShowSearchDialog(false);
+              }}
+              className="mb-6"
+            >
+              ← Back to Mode Selection
+            </Button>
+            <h2 className="text-2xl font-bold text-foreground mb-4">Manual Player Search</h2>
+            <Button
+              onClick={() => {
+                fetchAllUnsoldPlayers();
+                setShowSearchDialog(true);
+              }}
+              size="lg"
+              className="px-8"
+            >
+              <Search className="h-5 w-5 mr-2" />
+              Search for Player
+            </Button>
+          </div>
+        </div>
+
+        {/* Manual Search Dialog */}
+        <Dialog open={showSearchDialog} onOpenChange={setShowSearchDialog}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle>Search Players</DialogTitle>
+              <DialogDescription>
+                Search and select a player to start their auction
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Search and Filter Controls */}
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="search">Search by Name</Label>
+                  <Input
+                    id="search"
+                    placeholder="Enter player name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="w-48">
+                  <Label htmlFor="category">Category</Label>
+                  <select
+                    id="category"
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                  >
+                    <option value="All">All Categories</option>
+                    {playerCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Players List */}
+              <div className="overflow-y-auto max-h-96 space-y-2">
+                {filteredPlayers.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    No players found matching your criteria
+                  </p>
+                ) : (
+                  filteredPlayers.map((player) => (
+                    <Card
+                      key={player._id}
+                      className="p-4 hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => handleManualPlayerSelect(player)}
+                    >
+                      <div className="flex items-center gap-4">
+                        {player.photo && (
+                          <img
+                            src={getDriveThumbnail(player.photo)}
+                            alt={player.name}
+                            className="w-16 h-16 rounded-full object-cover"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h3 className="font-bold text-lg">{player.name}</h3>
+                          <div className="flex gap-4 text-sm text-muted-foreground">
+                            <span>Category: {player.playerCategory}</span>
+                            <span>Base Price: {player.basePrice} Pts</span>
+                          </div>
+                        </div>
+                        <Button size="sm">Select</Button>
+                      </div>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
   
@@ -405,10 +763,21 @@ const Auction = () => {
 
       <div className="relative container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-center items-center mb-8 animate-fade-in">
+        <div className="flex justify-between items-center mb-8 animate-fade-in">
+          <div className="flex-1"></div>
           <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-card border-2 border-primary shadow-glow">
             <Gavel className="h-6 w-6 text-primary animate-glow-pulse" />
             <span className="text-xl font-bold text-foreground">Live Auction - Player #{playerNumber}</span>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowSettingsDialog(true)}
+              className="rounded-full"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
@@ -455,9 +824,12 @@ const Auction = () => {
                       <button
                         // keep native disabled so it appears disabled
                         disabled={isDisabled}
-                        className={`w-full p-2 rounded-lg border-2 transition-all ${leadingTeam === team._id
-                          ? "border-primary bg-primary/20 shadow-glow scale-105"
-                          : "border-border hover:border-primary/50 hover:scale-105"
+                        className={`w-full p-2 rounded-lg border-2 transition-all ${
+                          isDisabled
+                            ? "border-red-500 bg-red-500/20 opacity-60 cursor-not-allowed"
+                            : leadingTeam === team._id
+                            ? "border-primary bg-primary/20 shadow-glow scale-105"
+                            : "border-border hover:border-primary/50 hover:scale-105"
                         }`}
                       >
                         <div className="text-2xl mb-1">
@@ -482,7 +854,21 @@ const Auction = () => {
               })}
             </div>
 
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-3 justify-center flex-wrap">
+              {auctionMode === "manual" && (
+                <Button
+                  onClick={() => {
+                    fetchAllUnsoldPlayers();
+                    setShowSearchDialog(true);
+                  }}
+                  variant="secondary"
+                  size="default"
+                  className="px-6"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Search Another
+                </Button>
+              )}
               <Button
                 onClick={handleUndoBid}
                 disabled={bidHistory.length === 0}
@@ -524,7 +910,182 @@ const Auction = () => {
       <UnsoldAnimation
         show={showUnsoldAnimation}
         playerName={currentPlayer.name}
-      />      
+      />
+
+      {/* Manual Search Dialog */}
+      <Dialog open={showSearchDialog} onOpenChange={setShowSearchDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Search Players</DialogTitle>
+            <DialogDescription>
+              Search and select a player to start their auction
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Search and Filter Controls */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Label htmlFor="search">Search by Name</Label>
+                <Input
+                  id="search"
+                  placeholder="Enter player name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="w-48">
+                <Label htmlFor="category">Category</Label>
+                <select
+                  id="category"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                >
+                  <option value="All">All Categories</option>
+                  {playerCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Players List */}
+            <div className="overflow-y-auto max-h-96 space-y-2">
+              {filteredPlayers.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  No players found matching your criteria
+                </p>
+              ) : (
+                filteredPlayers.map((player) => (
+                  <Card
+                    key={player._id}
+                    className="p-4 hover:bg-accent cursor-pointer transition-colors"
+                    onClick={() => handleManualPlayerSelect(player)}
+                  >
+                    <div className="flex items-center gap-4">
+                      {player.photo && (
+                        <img
+                          src={getDriveThumbnail(player.photo)}
+                          alt={player.name}
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg">{player.name}</h3>
+                        <div className="flex gap-4 text-sm text-muted-foreground">
+                          <span>Category: {player.playerCategory}</span>
+                          <span>Base Price: {player.basePrice} Pts</span>
+                        </div>
+                      </div>
+                      <Button size="sm">Select</Button>
+                    </div>
+                  </Card>
+                ))
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bid Increment Settings Dialog */}
+      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Bid Increment Settings</DialogTitle>
+            <DialogDescription>
+              Configure bid increment amounts based on different bid ranges
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 overflow-y-auto">
+            {bidIncrementSlabs.map((slab, index) => (
+              <Card key={slab.id} className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor={`minBid-${slab.id}`}>Min Bid</Label>
+                      <Input
+                        id={`minBid-${slab.id}`}
+                        type="number"
+                        value={slab.minBid}
+                        onChange={(e) => updateBidSlab(slab.id, 'minBid', parseInt(e.target.value) || 0)}
+                        disabled={index > 0} // Only first slab can have minBid 0
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`maxBid-${slab.id}`}>Max Bid</Label>
+                      <Input
+                        id={`maxBid-${slab.id}`}
+                        type="number"
+                        value={slab.maxBid ?? ''}
+                        onChange={(e) => updateBidSlab(slab.id, 'maxBid', e.target.value ? parseInt(e.target.value) : null)}
+                        placeholder={index === bidIncrementSlabs.length - 1 ? 'No limit' : ''}
+                        disabled={index === bidIncrementSlabs.length - 1}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`increment-${slab.id}`}>Increment</Label>
+                      <Input
+                        id={`increment-${slab.id}`}
+                        type="number"
+                        value={slab.increment}
+                        onChange={(e) => updateBidSlab(slab.id, 'increment', parseInt(e.target.value) || 0)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  
+                  {bidIncrementSlabs.length > 1 && (
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => removeBidSlab(slab.id)}
+                      className="mt-6"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="mt-2 text-sm text-muted-foreground">
+                  {slab.maxBid !== null 
+                    ? `Bids from ${slab.minBid} to ${slab.maxBid} will increment by ${slab.increment}`
+                    : `Bids from ${slab.minBid} and above will increment by ${slab.increment}`
+                  }
+                </div>
+              </Card>
+            ))}
+            
+            <Button
+              onClick={addBidSlab}
+              variant="outline"
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Another Slab
+            </Button>
+            
+            <div className="pt-4 border-t">
+              <h4 className="font-semibold mb-2">Preview</h4>
+              <div className="text-sm text-muted-foreground space-y-1">
+                {bidIncrementSlabs.sort((a, b) => a.minBid - b.minBid).map((slab, index) => (
+                  <div key={slab.id}>
+                    • {slab.maxBid !== null 
+                      ? `₹${slab.minBid} - ₹${slab.maxBid}: +${slab.increment}`
+                      : `₹${slab.minBid}+: +${slab.increment}`
+                    }
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>      
     </div>
   );
 };

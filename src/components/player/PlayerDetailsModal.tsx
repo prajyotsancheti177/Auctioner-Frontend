@@ -66,11 +66,11 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
   const [teams, setTeams] = useState<Team[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [playerCategories, setPlayerCategories] = useState<string[]>([]);
   
   const [editData, setEditData] = useState<Partial<Player>>({});
 
   const skillOptions: PlayerSkill[] = ["Batsman", "Bowler", "All-Rounder", "Wicket-Keeper"];
-  const playerCategories = ["Regular", "Icon", "Youth"];
   const genderOptions = ["Male", "Female", "Other"];
 
   // Fetch teams when modal opens - using player's tournament ID
@@ -103,6 +103,41 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
 
     if (isOpen && player) {
       fetchTeams();
+    }
+  }, [isOpen, player]);
+
+  // Fetch player categories from API
+  useEffect(() => {
+    const fetchPlayerCategories = async () => {
+      if (!player?.touranmentId) {
+        console.warn("Player has no tournament ID");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${apiConfig.baseUrl}/api/player/categories`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            touranmentId: player.touranmentId,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data && Array.isArray(data.data)) {
+            setPlayerCategories(data.data);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching player categories:", err);
+      }
+    };
+
+    if (isOpen && player) {
+      fetchPlayerCategories();
     }
   }, [isOpen, player]);
 

@@ -254,7 +254,7 @@ const TournamentDetail = () => {
           </Card>
 
           {/* Register Player Card */}
-          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary">
+          {/* <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary">
             <CardHeader className="bg-gradient-to-br from-purple-500/10 to-purple-600/10">
               <CardTitle className="text-2xl flex items-center gap-2">
                 <UserPlus className="h-8 w-8 text-purple-500" />
@@ -275,7 +275,7 @@ const TournamentDetail = () => {
                 Register Player
               </Button>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </div>
     </div>

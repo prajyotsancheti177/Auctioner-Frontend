@@ -33,7 +33,7 @@ export const TeamCard = ({ team }: TeamCardProps) => {
               <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
                 {team.name}
               </h3>
-              <p className="text-sm text-muted-foreground">Owner: {team.owner.name}</p>
+              <p className="text-sm text-muted-foreground">Owner: {team.owner?.name || "-"}</p>
             </div>
           </div>
 

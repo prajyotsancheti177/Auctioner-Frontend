@@ -60,8 +60,8 @@ const Auction = () => {
       }
     }
     return [
-      { id: 1, minBid: 0, maxBid: 500, increment: 50 },
-      { id: 2, minBid: 501, maxBid: null, increment: 100 }
+      { id: 1, minBid: 0, maxBid: 499, increment: 50 },
+      { id: 2, minBid: 500, maxBid: null, increment: 100 }
     ];
   });
 

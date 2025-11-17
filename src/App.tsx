@@ -13,6 +13,7 @@ import Tournaments from "./pages/Tournaments";
 import TournamentDetail from "./pages/TournamentDetail";
 import TournamentManagement from "./pages/TournamentManagement";
 import UserManagement from "./pages/UserManagement";
+import BulkUpload from "./pages/BulkUpload";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -67,6 +68,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bulk-upload"
+              element={
+                <ProtectedRoute>
+                  <BulkUpload />
                 </ProtectedRoute>
               }
             />

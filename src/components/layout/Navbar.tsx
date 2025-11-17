@@ -8,6 +8,7 @@ const buildNavLinks = () => {
   let showAuction = false;
   let showUsers = false;
   let showManageTournaments = false;
+  let showBulkUpload = false;
   let isAuthenticated = false;
 
   try {
@@ -32,6 +33,11 @@ const buildNavLinks = () => {
       }
       // Show manage tournaments for authenticated users
       showManageTournaments = true;
+      
+      // Show bulk upload for tournament_host and above
+      if (user.role === 'tournament_host' || user.role === 'super_user' || user.role === 'boss') {
+        showBulkUpload = true;
+      }
     }
   } catch {
     // ignore localStorage errors
@@ -45,6 +51,10 @@ const buildNavLinks = () => {
   // Protected links (only for authenticated users)
   if (showManageTournaments) {
     links.push({ path: "/tournaments/manage", label: "Manage Tournaments" });
+  }
+  
+  if (showBulkUpload) {
+    links.push({ path: "/bulk-upload", label: "Bulk Upload" });
   }
 
   if (showAuction) {

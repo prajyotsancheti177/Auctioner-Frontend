@@ -1,6 +1,5 @@
 const apiConfig = {
-    baseUrl: 'http://localhost:3000',
-    // baseUrl: 'https://auction.vardhamanpaper.com',
+    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000',
 };
 
 export default apiConfig;

@@ -60,6 +60,12 @@ interface Tournament {
   minPlayersPerTeam?: number;
   totalBudget?: number;
   playerCategories?: string[];
+  categoryBasePrices?: { [key: string]: number };
+  bidIncrementSlabs?: Array<{
+    minBid: number;
+    maxBid: number | null;
+    increment: number;
+  }>;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -78,6 +84,12 @@ interface TournamentFormData {
   minPlayersPerTeam: number | string;
   totalBudget: number | string;
   playerCategories: string;
+  categoryBasePrices: { [key: string]: string };
+  bidIncrementSlabs: Array<{
+    minBid: number;
+    maxBid: number | null;
+    increment: number;
+  }>;
 }
 
 export default function TournamentManagement() {
@@ -103,6 +115,11 @@ export default function TournamentManagement() {
     minPlayersPerTeam: "",
     totalBudget: "",
     playerCategories: "",
+    categoryBasePrices: {},
+    bidIncrementSlabs: [
+      { minBid: 0, maxBid: 499, increment: 50 },
+      { minBid: 500, maxBid: null, increment: 100 }
+    ],
   });
 
   useEffect(() => {
@@ -172,6 +189,11 @@ export default function TournamentManagement() {
       minPlayersPerTeam: "",
       totalBudget: "",
       playerCategories: "",
+      categoryBasePrices: {},
+      bidIncrementSlabs: [
+        { minBid: 0, maxBid: 499, increment: 50 },
+        { minBid: 500, maxBid: null, increment: 100 }
+      ],
     });
     setIsEditing(false);
     setEditingId(null);
@@ -181,6 +203,12 @@ export default function TournamentManagement() {
     if (tournament) {
       setIsEditing(true);
       setEditingId(tournament._id);
+      const basePrices: { [key: string]: string } = {};
+      if (tournament.categoryBasePrices) {
+        Object.entries(tournament.categoryBasePrices).forEach(([key, value]) => {
+          basePrices[key] = value.toString();
+        });
+      }
       setFormData({
         name: tournament.name || "",
         tournamentHostId: tournament.tournamentHostId?._id || "",
@@ -189,6 +217,11 @@ export default function TournamentManagement() {
         minPlayersPerTeam: tournament.minPlayersPerTeam || "",
         totalBudget: tournament.totalBudget || "",
         playerCategories: tournament.playerCategories?.join(", ") || "",
+        categoryBasePrices: basePrices,
+        bidIncrementSlabs: tournament.bidIncrementSlabs || [
+          { minBid: 0, maxBid: 499, increment: 50 },
+          { minBid: 500, maxBid: null, increment: 100 }
+        ],
       });
     } else {
       resetForm();
@@ -228,6 +261,21 @@ export default function TournamentManagement() {
         .map((cat) => cat.trim())
         .filter((cat) => cat);
 
+      // Validate base prices for all categories
+      const categoryBasePrices: { [key: string]: number } = {};
+      for (const category of categories) {
+        const basePrice = formData.categoryBasePrices[category];
+        if (!basePrice || Number(basePrice) <= 0) {
+          toast({
+            title: "Validation Error",
+            description: `Please enter a valid base price for category: ${category}`,
+            variant: "destructive",
+          });
+          return;
+        }
+        categoryBasePrices[category] = Number(basePrice);
+      }
+
       const payload = {
         name: formData.name,
         noOfTeams: Number(formData.noOfTeams),
@@ -235,6 +283,8 @@ export default function TournamentManagement() {
         minPlayersPerTeam: Number(formData.minPlayersPerTeam),
         totalBudget: Number(formData.totalBudget),
         playerCategories: categories,
+        categoryBasePrices: categoryBasePrices,
+        bidIncrementSlabs: formData.bidIncrementSlabs,
         userId: user._id,
         userRole: user.role,
         ...(canSelectHost && { tournamentHostId: formData.tournamentHostId }),
@@ -548,18 +598,181 @@ export default function TournamentManagement() {
 
             <div className="grid gap-2">
               <Label htmlFor="categories">
-                Player Categories (comma-separated)
+                Player Categories (comma-separated) *
               </Label>
               <Input
                 id="categories"
                 placeholder="e.g., Batsman, Bowler, All-rounder, Wicket-keeper"
                 value={formData.playerCategories}
-                onChange={(e) =>
-                  handleInputChange("playerCategories", e.target.value)
-                }
+                onChange={(e) => {
+                  const categories = e.target.value;
+                  handleInputChange("playerCategories", categories);
+                  
+                  // Auto-create base price fields for each category
+                  const categoryList = categories
+                    .split(",")
+                    .map((cat) => cat.trim())
+                    .filter((cat) => cat);
+                  
+                  const newBasePrices: { [key: string]: string } = {};
+                  categoryList.forEach((cat) => {
+                    // Keep existing value if category already had a base price
+                    newBasePrices[cat] = formData.categoryBasePrices[cat] || "";
+                  });
+                  setFormData((prev) => ({
+                    ...prev,
+                    playerCategories: categories,
+                    categoryBasePrices: newBasePrices,
+                  }));
+                }}
               />
               <p className="text-xs text-gray-500">
                 Separate multiple categories with commas
+              </p>
+            </div>
+
+            {/* Base Prices for Categories */}
+            {formData.playerCategories.split(",").map((cat) => cat.trim()).filter((cat) => cat).length > 0 && (
+              <div className="grid gap-3 p-4 border rounded-lg bg-gray-50">
+                <Label className="font-semibold text-base dark:text-gray-100 text-gray-900">Base Prices for Categories *</Label>
+                <div className="grid gap-4">
+                  {formData.playerCategories
+                    .split(",")
+                    .map((cat) => cat.trim())
+                    .filter((cat) => cat)
+                    .map((category, idx) => (
+                      <div key={idx} className="grid gap-2">
+                        <Label htmlFor={`basePrice-${idx}`} className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          {category}
+                        </Label>
+                        <Input
+                          id={`basePrice-${idx}`}
+                          type="number"
+                          placeholder="e.g., 500"
+                          value={formData.categoryBasePrices[category] || ""}
+                          onChange={(e) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              categoryBasePrices: {
+                                ...prev.categoryBasePrices,
+                                [category]: e.target.value,
+                              },
+                            }));
+                          }}
+                        />
+                      </div>
+                    ))}
+                </div>
+                <p className="text-xs text-gray-500">
+                  Enter the base auction price (in points) for each category
+                </p>
+              </div>
+            )}
+
+            {/* Bid Increment Slabs */}
+            <div className="grid gap-3 p-4 border rounded-lg bg-gray-50">
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold text-base dark:text-gray-100 text-gray-900">Bid Increment Settings *</Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const lastSlab = formData.bidIncrementSlabs[formData.bidIncrementSlabs.length - 1];
+                    const newMinBid = lastSlab.maxBid ? lastSlab.maxBid + 1 : lastSlab.minBid + 500;
+                    
+                    const updatedSlabs = formData.bidIncrementSlabs.map((slab, index) => {
+                      if (index === formData.bidIncrementSlabs.length - 1) {
+                        return { ...slab, maxBid: newMinBid - 1 };
+                      }
+                      return slab;
+                    });
+                    
+                    setFormData(prev => ({
+                      ...prev,
+                      bidIncrementSlabs: [
+                        ...updatedSlabs,
+                        { minBid: newMinBid, maxBid: null, increment: 100 }
+                      ]
+                    }));
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Slab
+                </Button>
+              </div>
+              
+              <div className="grid gap-3">
+                {formData.bidIncrementSlabs.map((slab, index) => (
+                  <div key={index} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
+                    <div>
+                      <Label htmlFor={`minBid-${index}`} className="text-xs">Min Bid</Label>
+                      <Input
+                        id={`minBid-${index}`}
+                        type="number"
+                        value={slab.minBid}
+                        onChange={(e) => {
+                          const newSlabs = [...formData.bidIncrementSlabs];
+                          newSlabs[index].minBid = parseInt(e.target.value) || 0;
+                          setFormData(prev => ({ ...prev, bidIncrementSlabs: newSlabs }));
+                        }}
+                        disabled={index > 0}
+                        className="h-9"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`maxBid-${index}`} className="text-xs">Max Bid</Label>
+                      <Input
+                        id={`maxBid-${index}`}
+                        type="number"
+                        value={slab.maxBid ?? ''}
+                        onChange={(e) => {
+                          const newSlabs = [...formData.bidIncrementSlabs];
+                          newSlabs[index].maxBid = e.target.value ? parseInt(e.target.value) : null;
+                          setFormData(prev => ({ ...prev, bidIncrementSlabs: newSlabs }));
+                        }}
+                        placeholder={index === formData.bidIncrementSlabs.length - 1 ? 'No limit' : ''}
+                        disabled={index === formData.bidIncrementSlabs.length - 1}
+                        className="h-9"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`increment-${index}`} className="text-xs">Increment</Label>
+                      <Input
+                        id={`increment-${index}`}
+                        type="number"
+                        value={slab.increment}
+                        onChange={(e) => {
+                          const newSlabs = [...formData.bidIncrementSlabs];
+                          newSlabs[index].increment = parseInt(e.target.value) || 0;
+                          setFormData(prev => ({ ...prev, bidIncrementSlabs: newSlabs }));
+                        }}
+                        className="h-9"
+                      />
+                    </div>
+                    {formData.bidIncrementSlabs.length > 1 && (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="destructive"
+                        onClick={() => {
+                          const newSlabs = formData.bidIncrementSlabs.filter((_, i) => i !== index);
+                          if (newSlabs.length > 0) {
+                            newSlabs[newSlabs.length - 1].maxBid = null;
+                          }
+                          setFormData(prev => ({ ...prev, bidIncrementSlabs: newSlabs }));
+                        }}
+                        className="h-9 w-9"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              <p className="text-xs text-gray-500">
+                Configure bid increments for different price ranges during auction
               </p>
             </div>
           </div>

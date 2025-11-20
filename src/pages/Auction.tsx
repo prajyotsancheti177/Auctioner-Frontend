@@ -45,32 +45,66 @@ const Auction = () => {
   // Bid increment settings
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [bidIncrementSlabs, setBidIncrementSlabs] = useState<Array<{
-    id: number;
     minBid: number;
     maxBid: number | null;
     increment: number;
-  }>>(() => {
-    // Load from localStorage or use default
-    const saved = localStorage.getItem('auction-bid-increment-slabs');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved bid increment slabs', e);
-      }
-    }
-    return [
-      { id: 1, minBid: 0, maxBid: 499, increment: 50 },
-      { id: 2, minBid: 500, maxBid: null, increment: 100 }
-    ];
-  });
+  }>>([]);
+  const [tournamentData, setTournamentData] = useState<{
+    _id: string;
+    name: string;
+    bidIncrementSlabs?: Array<{
+      minBid: number;
+      maxBid: number | null;
+      increment: number;
+    }>;
+  } | null>(null);
 
   const navigate = useNavigate();
 
-  // Save bid increment slabs to localStorage whenever they change
+  // Fetch tournament data including bid increment slabs
   useEffect(() => {
-    localStorage.setItem('auction-bid-increment-slabs', JSON.stringify(bidIncrementSlabs));
-  }, [bidIncrementSlabs]);
+    const fetchTournamentData = async () => {
+      try {
+        const tournamentId = getSelectedTournamentId();
+        const response = await fetch(`${apiConfig.baseUrl}/api/tournament/detail`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            tournamentId: tournamentId,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch tournament data");
+        }
+
+        const data = await response.json();
+        setTournamentData(data.data);
+        
+        // Set bid increment slabs from tournament or use defaults
+        if (data.data.bidIncrementSlabs && data.data.bidIncrementSlabs.length > 0) {
+          setBidIncrementSlabs(data.data.bidIncrementSlabs);
+        } else {
+          // Default slabs if none exist
+          setBidIncrementSlabs([
+            { minBid: 0, maxBid: 499, increment: 50 },
+            { minBid: 500, maxBid: null, increment: 100 }
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching tournament data:", error);
+        // Set default slabs on error
+        setBidIncrementSlabs([
+          { minBid: 0, maxBid: 499, increment: 50 },
+          { minBid: 500, maxBid: null, increment: 100 }
+        ]);
+      }
+    };
+
+    fetchTournamentData();
+  }, []);
 
   // Calculate current bid increment based on current bid and slabs
   const getCurrentBidIncrement = useCallback((currentBidAmount: number) => {
@@ -111,7 +145,6 @@ const Auction = () => {
     
     // Add new slab
     const newSlab = {
-      id: Date.now(),
       minBid: newMinBid,
       maxBid: null,
       increment: 100
@@ -121,10 +154,10 @@ const Auction = () => {
   };
 
   // Remove a bid increment slab
-  const removeBidSlab = (id: number) => {
+  const removeBidSlab = (index: number) => {
     if (bidIncrementSlabs.length <= 1) return; // Keep at least one slab
     
-    const updatedSlabs = bidIncrementSlabs.filter(slab => slab.id !== id);
+    const updatedSlabs = bidIncrementSlabs.filter((_, i) => i !== index);
     
     // Make the last slab have no upper limit
     if (updatedSlabs.length > 0) {
@@ -135,10 +168,10 @@ const Auction = () => {
   };
 
   // Update a bid increment slab
-  const updateBidSlab = (id: number, field: 'minBid' | 'maxBid' | 'increment', value: number | null) => {
+  const updateBidSlab = (index: number, field: 'minBid' | 'maxBid' | 'increment', value: number | null) => {
     setBidIncrementSlabs(slabs => 
-      slabs.map(slab => 
-        slab.id === id ? { ...slab, [field]: value } : slab
+      slabs.map((slab, i) => 
+        i === index ? { ...slab, [field]: value } : slab
       )
     );
   };
@@ -1002,39 +1035,39 @@ const Auction = () => {
           
           <div className="space-y-4 overflow-y-auto">
             {bidIncrementSlabs.map((slab, index) => (
-              <Card key={slab.id} className="p-4">
+              <Card key={index} className="p-4">
                 <div className="flex items-center gap-4">
                   <div className="flex-1 grid grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor={`minBid-${slab.id}`}>Min Bid</Label>
+                      <Label htmlFor={`minBid-${index}`}>Min Bid</Label>
                       <Input
-                        id={`minBid-${slab.id}`}
+                        id={`minBid-${index}`}
                         type="number"
                         value={slab.minBid}
-                        onChange={(e) => updateBidSlab(slab.id, 'minBid', parseInt(e.target.value) || 0)}
+                        onChange={(e) => updateBidSlab(index, 'minBid', parseInt(e.target.value) || 0)}
                         disabled={index > 0} // Only first slab can have minBid 0
                         className="mt-1"
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`maxBid-${slab.id}`}>Max Bid</Label>
+                      <Label htmlFor={`maxBid-${index}`}>Max Bid</Label>
                       <Input
-                        id={`maxBid-${slab.id}`}
+                        id={`maxBid-${index}`}
                         type="number"
                         value={slab.maxBid ?? ''}
-                        onChange={(e) => updateBidSlab(slab.id, 'maxBid', e.target.value ? parseInt(e.target.value) : null)}
+                        onChange={(e) => updateBidSlab(index, 'maxBid', e.target.value ? parseInt(e.target.value) : null)}
                         placeholder={index === bidIncrementSlabs.length - 1 ? 'No limit' : ''}
                         disabled={index === bidIncrementSlabs.length - 1}
                         className="mt-1"
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`increment-${slab.id}`}>Increment</Label>
+                      <Label htmlFor={`increment-${index}`}>Increment</Label>
                       <Input
-                        id={`increment-${slab.id}`}
+                        id={`increment-${index}`}
                         type="number"
                         value={slab.increment}
-                        onChange={(e) => updateBidSlab(slab.id, 'increment', parseInt(e.target.value) || 0)}
+                        onChange={(e) => updateBidSlab(index, 'increment', parseInt(e.target.value) || 0)}
                         className="mt-1"
                       />
                     </div>
@@ -1044,7 +1077,7 @@ const Auction = () => {
                     <Button
                       variant="destructive"
                       size="icon"
-                      onClick={() => removeBidSlab(slab.id)}
+                      onClick={() => removeBidSlab(index)}
                       className="mt-6"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -1074,7 +1107,7 @@ const Auction = () => {
               <h4 className="font-semibold mb-2">Preview</h4>
               <div className="text-sm text-muted-foreground space-y-1">
                 {bidIncrementSlabs.sort((a, b) => a.minBid - b.minBid).map((slab, index) => (
-                  <div key={slab.id}>
+                  <div key={index}>
                     • {slab.maxBid !== null 
                       ? `₹${slab.minBid} - ₹${slab.maxBid}: +${slab.increment}`
                       : `₹${slab.minBid}+: +${slab.increment}`
@@ -1082,6 +1115,50 @@ const Auction = () => {
                   </div>
                 ))}
               </div>
+            </div>
+            
+            <div className="flex gap-2 pt-4 border-t">
+              <Button
+                onClick={() => setShowSettingsDialog(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    const tournamentId = getSelectedTournamentId();
+                    const user = JSON.parse(localStorage.getItem("user") || "{}");
+                    
+                    const response = await fetch(`${apiConfig.baseUrl}/api/tournament/update`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        tournamentId: tournamentId,
+                        bidIncrementSlabs: bidIncrementSlabs,
+                        userId: user._id,
+                        userRole: user.role,
+                      }),
+                    });
+
+                    if (!response.ok) {
+                      throw new Error("Failed to update bid settings");
+                    }
+
+                    alert("Bid increment settings saved successfully!");
+                    setShowSettingsDialog(false);
+                  } catch (error) {
+                    console.error("Error saving bid settings:", error);
+                    alert("Failed to save bid settings. Please try again.");
+                  }
+                }}
+                className="flex-1"
+              >
+                Save Settings
+              </Button>
             </div>
           </div>
         </DialogContent>

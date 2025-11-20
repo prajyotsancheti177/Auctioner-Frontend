@@ -37,13 +37,13 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,10000,15`;
 
   // Generate sample CSV for players
   const downloadPlayersSample = () => {
-    const csvContent = `Player Name,Photo URL,Base Price,Player Category
-Virat Kohli,https://drive.google.com/file/d/1234567890/view,500,Icon
-MS Dhoni,https://drive.google.com/file/d/0987654321/view,500,Icon
-Rohit Sharma,https://drive.google.com/file/d/1122334455/view,400,Icon
-Jasprit Bumrah,https://drive.google.com/file/d/2233445566/view,300,Regular
-KL Rahul,https://drive.google.com/file/d/3344556677/view,250,Regular
-Shubman Gill,https://drive.google.com/file/d/4455667788/view,150,Youth`;
+    const csvContent = `Player Name,Photo URL,Player Category
+Virat Kohli,https://drive.google.com/file/d/1234567890/view,Icon
+MS Dhoni,https://drive.google.com/file/d/0987654321/view,Icon
+Rohit Sharma,https://drive.google.com/file/d/1122334455/view,Icon
+Jasprit Bumrah,https://drive.google.com/file/d/2233445566/view,Regular
+KL Rahul,https://drive.google.com/file/d/3344556677/view,Regular
+Shubman Gill,https://drive.google.com/file/d/4455667788/view,Youth`;
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -146,7 +146,6 @@ Shubman Gill,https://drive.google.com/file/d/4455667788/view,150,Youth`;
       const players = playersData.map((player) => ({
         name: player["Player Name"],
         photo: player["Photo URL"],
-        basePrice: parseInt(player["Base Price"]) || 0,
         playerCategory: player["Player Category"],
         touranmentId: tournamentId,
         sold: false,

@@ -22,7 +22,6 @@ interface PlayerRegistrationData {
   address: string;
   skills: PlayerSkill[];
   playerCategory: string;
-  basePrice: string;
   photo?: string;
 }
 
@@ -41,7 +40,6 @@ const PlayerRegistration = () => {
     address: "",
     skills: [],
     playerCategory: "",
-    basePrice: "",
     photo: ""
   });
 
@@ -95,10 +93,6 @@ const PlayerRegistration = () => {
       setError("Please select a player category");
       return false;
     }
-    if (!formData.basePrice || parseInt(formData.basePrice) < 100) {
-      setError("Base price must be at least 100 points");
-      return false;
-    }
     return true;
   };
 
@@ -125,7 +119,6 @@ const PlayerRegistration = () => {
         address: formData.address.trim(),
         skills: formData.skills,
         playerCategory: formData.playerCategory,
-        basePrice: parseInt(formData.basePrice),
         touranmentId: tournamentId,
         photo: formData.photo || "",
         sold: false,
@@ -158,7 +151,6 @@ const PlayerRegistration = () => {
         address: "",
         skills: [],
         playerCategory: "",
-        basePrice: "",
         photo: ""
       });
 
@@ -324,35 +316,23 @@ const PlayerRegistration = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="playerCategory">Player Category *</Label>
-                    <Select value={formData.playerCategory} onValueChange={(value) => handleInputChange('playerCategory', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {playerCategories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="basePrice">Base Price (Points) *</Label>
-                    <Input
-                      id="basePrice"
-                      type="number"
-                      placeholder="Minimum 100 points"
-                      value={formData.basePrice}
-                      onChange={(e) => handleInputChange('basePrice', e.target.value)}
-                      min="100"
-                      required
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="playerCategory">Player Category *</Label>
+                  <Select value={formData.playerCategory} onValueChange={(value) => handleInputChange('playerCategory', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {playerCategories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Base price will be set according to the category defined in the tournament
+                  </p>
                 </div>
 
                 <div className="space-y-2">

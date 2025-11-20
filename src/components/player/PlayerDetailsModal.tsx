@@ -152,7 +152,6 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
       address: player.address || "",
       skills: player.skills || [],
       playerCategory: player.playerCategory || "Regular",
-      basePrice: player.basePrice,
       photo: player.photo || "",
       sold: player.sold,
       auctionStatus: player.auctionStatus,
@@ -214,7 +213,6 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
         address: editData.address?.trim() || undefined,
         skills: editData.skills && editData.skills.length > 0 ? editData.skills : undefined,
         playerCategory: editData.playerCategory || undefined,
-        basePrice: editData.basePrice ? parseInt(editData.basePrice.toString()) : undefined,
         photo: editData.photo || undefined,
         sold: editData.sold,
         auctionStatus: editData.auctionStatus,
@@ -510,15 +508,11 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                       <DollarSign className="h-4 w-4" />
                       Base Price
                     </Label>
-                    {isEditing ? (
-                      <Input
-                        type="number"
-                        value={editData.basePrice || ""}
-                        onChange={(e) => handleInputChange('basePrice', parseInt(e.target.value))}
-                        min="100"
-                      />
-                    ) : (
-                      <p className="text-lg font-semibold">{player.basePrice} Points</p>
+                    <p className="text-lg font-semibold">{player.basePrice} Points</p>
+                    {isEditing && (
+                      <p className="text-xs text-muted-foreground">
+                        Base price is set by the tournament category and cannot be edited
+                      </p>
                     )}
                   </div>
                 </div>

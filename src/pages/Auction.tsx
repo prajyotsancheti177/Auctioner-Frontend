@@ -31,9 +31,9 @@ const Auction = () => {
   const [selectedCategory, setSelectedCategory] = useState(null); // Track selected category
   const [bidError, setBidError] = useState<Record<string, string>>({});
   const [bidPrice, setBidPrice] = useState(100);
-  const [bidHistory, setBidHistory] = useState<Array<{bid: number, teamId: string | null}>>([]);
+  const [bidHistory, setBidHistory] = useState<Array<{ bid: number, teamId: string | null }>>([]);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-  
+
   // Manual search mode states
   const [auctionMode, setAuctionMode] = useState<"category" | "manual" | null>(null);
   const [showSearchDialog, setShowSearchDialog] = useState(false);
@@ -82,7 +82,7 @@ const Auction = () => {
 
         const data = await response.json();
         setTournamentData(data.data);
-        
+
         // Set bid increment slabs from tournament or use defaults
         if (data.data.bidIncrementSlabs && data.data.bidIncrementSlabs.length > 0) {
           setBidIncrementSlabs(data.data.bidIncrementSlabs);
@@ -110,7 +110,7 @@ const Auction = () => {
   const getCurrentBidIncrement = useCallback((currentBidAmount: number) => {
     // Sort slabs by minBid to ensure correct order
     const sortedSlabs = [...bidIncrementSlabs].sort((a, b) => a.minBid - b.minBid);
-    
+
     // Find the applicable slab
     for (const slab of sortedSlabs) {
       if (slab.maxBid === null) {
@@ -125,7 +125,7 @@ const Auction = () => {
         }
       }
     }
-    
+
     // Default fallback
     return 50;
   }, [bidIncrementSlabs]);
@@ -134,7 +134,7 @@ const Auction = () => {
   const addBidSlab = () => {
     const lastSlab = bidIncrementSlabs[bidIncrementSlabs.length - 1];
     const newMinBid = lastSlab.maxBid ? lastSlab.maxBid + 1 : lastSlab.minBid + 500;
-    
+
     // Update last slab to have a maxBid
     const updatedSlabs = bidIncrementSlabs.map((slab, index) => {
       if (index === bidIncrementSlabs.length - 1) {
@@ -142,41 +142,41 @@ const Auction = () => {
       }
       return slab;
     });
-    
+
     // Add new slab
     const newSlab = {
       minBid: newMinBid,
       maxBid: null,
       increment: 100
     };
-    
+
     setBidIncrementSlabs([...updatedSlabs, newSlab]);
   };
 
   // Remove a bid increment slab
   const removeBidSlab = (index: number) => {
     if (bidIncrementSlabs.length <= 1) return; // Keep at least one slab
-    
+
     const updatedSlabs = bidIncrementSlabs.filter((_, i) => i !== index);
-    
+
     // Make the last slab have no upper limit
     if (updatedSlabs.length > 0) {
       updatedSlabs[updatedSlabs.length - 1].maxBid = null;
     }
-    
+
     setBidIncrementSlabs(updatedSlabs);
   };
 
   // Update a bid increment slab
   const updateBidSlab = (index: number, field: 'minBid' | 'maxBid' | 'increment', value: number | null) => {
-    setBidIncrementSlabs(slabs => 
-      slabs.map((slab, i) => 
+    setBidIncrementSlabs(slabs =>
+      slabs.map((slab, i) =>
         i === index ? { ...slab, [field]: value } : slab
       )
     );
   };
 
-   useEffect(() => {
+  useEffect(() => {
     const password = localStorage.getItem("auction-password");
     // if (password !== "pushkar_champion") {
     //   navigate("/"); // 👈 redirect if password doesn't match
@@ -184,7 +184,7 @@ const Auction = () => {
 
   }, [navigate]);
 
- 
+
 
   // make fetchTeams callable so we can refresh after updates
   const fetchTeams = async () => {
@@ -213,6 +213,7 @@ const Auction = () => {
         remainingBudget: team.remainingBudget,
         playersCount: team.players.length,
         maxPlayersPerTeam: team.maxPlayersPerTeam,
+        maxBiddableAmount: team.maxBiddableAmount || 0,
       }));
       setTeams(extractedTeams); // Update state with extracted team data
     } catch (error) {
@@ -290,7 +291,7 @@ const Auction = () => {
 
         const data = await response.json();
         setPlayerCategories(data.data); // Update state with fetched categories
-       
+
       } catch (error) {
         console.error("Error fetching player categories:", error);
       }
@@ -341,7 +342,7 @@ const Auction = () => {
   const handleTeamBid = (teamId: string) => {
     const team = teams.find(t => t._id === teamId);
     console.log("Bidding team:", currentBid);
-  
+
 
     if (!team) {
       window.alert("Team not found");
@@ -357,7 +358,7 @@ const Auction = () => {
     // For the first bid, use currentBid as is. For subsequent bids, calculate increment first
     let newBid: number;
     let nextIncrement: number;
-    
+
     if (leadingTeam === null) {
       // First bid - use base price
       newBid = currentBid;
@@ -375,14 +376,20 @@ const Auction = () => {
       return;
     }
 
+    // Check if team has enough maxBiddableAmount (considering future minimum player requirements)
+    if ((team.maxBiddableAmount ?? 0) < newBid) {
+      window.alert(`${team.name} cannot bid this amount. They need to reserve budget for minimum roster requirements. Max biddable: ${team.maxBiddableAmount} Pts.`);
+      return;
+    }
+
     // Add current state to history before making changes
     setBidHistory(prev => [...prev, { bid: currentBid, teamId: leadingTeam }]);
-    
+
     setCurrentBid(newBid);
     setLeadingTeam(teamId);
     setLeadingTeamId(teamId);
     setTeamBids(prev => ({ ...prev, [teamId]: newBid }));
-    
+
     // Set the increment for the next bid
     setBidPrice(nextIncrement);
   };
@@ -400,19 +407,19 @@ const Auction = () => {
 
   const handleUndoBid = () => {
     if (bidHistory.length === 0) return;
-    
+
     // Get the last bid state from history
     const lastBidState = bidHistory[bidHistory.length - 1];
-    
+
     // Revert to previous state
     setCurrentBid(lastBidState.bid);
     setLeadingTeam(lastBidState.teamId);
     setLeadingTeamId(lastBidState.teamId);
-    
+
     // Recalculate increment based on the reverted bid
     const revertedIncrement = getCurrentBidIncrement(lastBidState.bid);
     setBidPrice(revertedIncrement);
-    
+
     // Update team bids - remove the current leading team's bid or revert to previous
     if (leadingTeam) {
       if (lastBidState.teamId) {
@@ -425,7 +432,7 @@ const Auction = () => {
         });
       }
     }
-    
+
     // Remove the last entry from history
     setBidHistory(prev => prev.slice(0, -1));
   };
@@ -510,64 +517,64 @@ const Auction = () => {
       setBidHistory([]); // Clear bid history for new player
       setPlayerNumber(prev => prev + 1); // Increment player number
 
-    setLeadingTeam(null);
-    setTeamBids({});
-    setPlayerNumber(prev => prev + 1); // Increment player number
+      setLeadingTeam(null);
+      setTeamBids({});
+      setPlayerNumber(prev => prev + 1); // Increment player number
 
-    try {
-      const updateResponse = await fetch(`${apiConfig.baseUrl}/api/player/update`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          playerId: currentPlayer._id,
-          sold: 0,
-          auctionStatus: 1
-        }),
-      });
-
-      if (!updateResponse.ok) {
-        throw new Error("Failed to update auction result");
-      }
-
-      // Refresh teams data after marking unsold
-      fetchTeams();
-    } catch (error) {
-      console.error("Error updating auction result:", error);
-    }
-
-    // Reset auction mode if in manual mode, otherwise fetch next player
-    if (auctionMode === "manual") {
-      setCurrentPlayer(null);
-      setCurrentBid(0);
-      setAuctionMode(null);
-    } else {
       try {
-        const tournamentId = getSelectedTournamentId();
-        const response = await fetch(`${apiConfig.baseUrl}/api/auction/next-player`, {
+        const updateResponse = await fetch(`${apiConfig.baseUrl}/api/player/update`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            touranmentId: tournamentId,
-            playerCategory: selectedCategory,
+            playerId: currentPlayer._id,
+            sold: 0,
+            auctionStatus: 1
           }),
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch next player for auction");
+        if (!updateResponse.ok) {
+          throw new Error("Failed to update auction result");
         }
 
-        const data = await response.json();
-        setCurrentPlayer(data.data);
-        setCurrentBid(data.data.basePrice);
+        // Refresh teams data after marking unsold
+        fetchTeams();
       } catch (error) {
-        console.error("Error fetching next player for auction:", error);
+        console.error("Error updating auction result:", error);
       }
-    }
-  }, 4000);
+
+      // Reset auction mode if in manual mode, otherwise fetch next player
+      if (auctionMode === "manual") {
+        setCurrentPlayer(null);
+        setCurrentBid(0);
+        setAuctionMode(null);
+      } else {
+        try {
+          const tournamentId = getSelectedTournamentId();
+          const response = await fetch(`${apiConfig.baseUrl}/api/auction/next-player`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              touranmentId: tournamentId,
+              playerCategory: selectedCategory,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch next player for auction");
+          }
+
+          const data = await response.json();
+          setCurrentPlayer(data.data);
+          setCurrentBid(data.data.basePrice);
+        } catch (error) {
+          console.error("Error fetching next player for auction:", error);
+        }
+      }
+    }, 4000);
   };
 
   // Filter players based on search and category
@@ -652,7 +659,7 @@ const Auction = () => {
       </div>
     );
   }
-  
+
   // If in manual mode without a player, show loading/search state
   if (!currentPlayer && auctionMode === "manual") {
     return (
@@ -693,7 +700,7 @@ const Auction = () => {
                 Search and select a player to start their auction
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               {/* Search and Filter Controls */}
               <div className="flex gap-4">
@@ -764,7 +771,7 @@ const Auction = () => {
       </>
     );
   }
-  
+
   if (!currentPlayer) {
     return (
       <div className="min-h-screen flex items-center justify-center ">
@@ -818,9 +825,9 @@ const Auction = () => {
           {/* Large Player Card */}
           <div className="flex justify-center animate-scale-in">
             <div className="w-full max-w-7xl h-[60vh]">
-              <AuctionPlayerCard 
-                player={currentPlayer} 
-                isAnimated 
+              <AuctionPlayerCard
+                player={currentPlayer}
+                isAnimated
                 className="w-full h-full"
                 currentBid={currentBid}
                 leadingTeamName={teams.find(t => t._id === leadingTeam)?.name}
@@ -836,15 +843,26 @@ const Auction = () => {
 
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-3">
               {teams.map((team) => {
-                const isDisabled = ((team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0) || ((team.remainingBudget ?? 0) < (currentBid + bidPrice));
+                // Calculate the next bid amount
+                const nextBidAmount = leadingTeam === null ? currentBid : currentBid + bidPrice;
+
+                // Check various disable conditions
+                const noSlots = (team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0;
+                const insufficientBudget = (team.remainingBudget ?? 0) < nextBidAmount;
+                const exceedsMaxBiddable = (team.maxBiddableAmount ?? 0) < nextBidAmount;
+
+                const isDisabled = noSlots || insufficientBudget || exceedsMaxBiddable;
+
                 return (
                   <div key={team._id} className="flex flex-col items-center">
                     <div
                       onClick={() => {
                         if (isDisabled) {
                           // show appropriate message
-                          if ((team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0) {
+                          if (noSlots) {
                             showBidError(team._id, `${team.name} has no remaining slots.`);
+                          } else if (exceedsMaxBiddable) {
+                            showBidError(team._id, `${team.name} must reserve budget for minimum roster. Max bid: ${team.maxBiddableAmount} Pts.`);
                           } else {
                             showBidError(team._id, `${team.name} does not have enough remaining budget (Pts. ${team.remainingBudget}).`);
                           }
@@ -857,13 +875,12 @@ const Auction = () => {
                       <button
                         // keep native disabled so it appears disabled
                         disabled={isDisabled}
-                        className={`w-full p-2 rounded-lg border-2 transition-all ${
-                          isDisabled
-                            ? "border-red-500 bg-red-500/20 opacity-60 cursor-not-allowed"
-                            : leadingTeam === team._id
+                        className={`w-full p-2 rounded-lg border-2 transition-all ${isDisabled
+                          ? "border-red-500 bg-red-500/20 opacity-60 cursor-not-allowed"
+                          : leadingTeam === team._id
                             ? "border-primary bg-primary/20 shadow-glow scale-105"
                             : "border-border hover:border-primary/50 hover:scale-105"
-                        }`}
+                          }`}
                       >
                         <div className="text-2xl mb-1">
                           <img src={team.logo} alt={team.name} className="h-8 w-8 object-contain mx-auto" />
@@ -954,7 +971,7 @@ const Auction = () => {
               Search and select a player to start their auction
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {/* Search and Filter Controls */}
             <div className="flex gap-4">
@@ -1032,7 +1049,7 @@ const Auction = () => {
               Configure bid increment amounts based on different bid ranges
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 overflow-y-auto">
             {bidIncrementSlabs.map((slab, index) => (
               <Card key={index} className="p-4">
@@ -1072,7 +1089,7 @@ const Auction = () => {
                       />
                     </div>
                   </div>
-                  
+
                   {bidIncrementSlabs.length > 1 && (
                     <Button
                       variant="destructive"
@@ -1084,16 +1101,16 @@ const Auction = () => {
                     </Button>
                   )}
                 </div>
-                
+
                 <div className="mt-2 text-sm text-muted-foreground">
-                  {slab.maxBid !== null 
+                  {slab.maxBid !== null
                     ? `Bids from ${slab.minBid} to ${slab.maxBid} will increment by ${slab.increment}`
                     : `Bids from ${slab.minBid} and above will increment by ${slab.increment}`
                   }
                 </div>
               </Card>
             ))}
-            
+
             <Button
               onClick={addBidSlab}
               variant="outline"
@@ -1102,13 +1119,13 @@ const Auction = () => {
               <Plus className="h-4 w-4 mr-2" />
               Add Another Slab
             </Button>
-            
+
             <div className="pt-4 border-t">
               <h4 className="font-semibold mb-2">Preview</h4>
               <div className="text-sm text-muted-foreground space-y-1">
                 {bidIncrementSlabs.sort((a, b) => a.minBid - b.minBid).map((slab, index) => (
                   <div key={index}>
-                    • {slab.maxBid !== null 
+                    • {slab.maxBid !== null
                       ? `₹${slab.minBid} - ₹${slab.maxBid}: +${slab.increment}`
                       : `₹${slab.minBid}+: +${slab.increment}`
                     }
@@ -1116,7 +1133,7 @@ const Auction = () => {
                 ))}
               </div>
             </div>
-            
+
             <div className="flex gap-2 pt-4 border-t">
               <Button
                 onClick={() => setShowSettingsDialog(false)}
@@ -1130,7 +1147,7 @@ const Auction = () => {
                   try {
                     const tournamentId = getSelectedTournamentId();
                     const user = JSON.parse(localStorage.getItem("user") || "{}");
-                    
+
                     const response = await fetch(`${apiConfig.baseUrl}/api/tournament/update`, {
                       method: "POST",
                       headers: {
@@ -1162,7 +1179,7 @@ const Auction = () => {
             </div>
           </div>
         </DialogContent>
-      </Dialog>      
+      </Dialog>
     </div>
   );
 };

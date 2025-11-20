@@ -38,6 +38,7 @@ export interface Team {
   remainingBudget?: number;
   maxPlayersPerTeam?: number;
   playersCount?: number;
+  maxBiddableAmount?: number;
 }
 
 export interface AuctionState {

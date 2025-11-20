@@ -19,10 +19,10 @@ const BulkUpload = () => {
 
   // Generate sample CSV for teams
   const downloadTeamsSample = () => {
-    const csvContent = `Team Name,Team Logo URL,Total Budget,Max Players Per Team
-Mumbai Mavericks,https://drive.google.com/file/d/1234567890/view,10000,15
-Delhi Dragons,https://drive.google.com/file/d/0987654321/view,10000,15
-Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,10000,15`;
+    const csvContent = `Team Name,Team Logo URL,Owner Name,Owner Contact Number
+Mumbai Mavericks,https://drive.google.com/file/d/1234567890/view,Rajesh Kumar,9876543210
+Delhi Dragons,https://drive.google.com/file/d/0987654321/view,Amit Sharma,9876543211
+Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876543212`;
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -37,13 +37,13 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,10000,15`;
 
   // Generate sample CSV for players
   const downloadPlayersSample = () => {
-    const csvContent = `Player Name,Photo URL,Player Category
-Virat Kohli,https://drive.google.com/file/d/1234567890/view,Icon
-MS Dhoni,https://drive.google.com/file/d/0987654321/view,Icon
-Rohit Sharma,https://drive.google.com/file/d/1122334455/view,Icon
-Jasprit Bumrah,https://drive.google.com/file/d/2233445566/view,Regular
-KL Rahul,https://drive.google.com/file/d/3344556677/view,Regular
-Shubman Gill,https://drive.google.com/file/d/4455667788/view,Youth`;
+    const csvContent = `Player Name,Age,Photo URL,Category,Phone Number
+Virat Kohli,35,https://drive.google.com/file/d/1234567890/view,Icon,9876543210
+MS Dhoni,42,https://drive.google.com/file/d/0987654321/view,Icon,9876543211
+Rohit Sharma,36,https://drive.google.com/file/d/1122334455/view,Icon,9876543212
+Jasprit Bumrah,30,https://drive.google.com/file/d/2233445566/view,Regular,9876543213
+KL Rahul,31,https://drive.google.com/file/d/3344556677/view,Regular,9876543214
+Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215`;
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -93,8 +93,10 @@ Shubman Gill,https://drive.google.com/file/d/4455667788/view,Youth`;
       const teams = teamsData.map((team) => ({
         name: team["Team Name"],
         logo: team["Team Logo URL"],
-        totalBudget: parseInt(team["Total Budget"]) || 0,
-        maxPlayersPerTeam: parseInt(team["Max Players Per Team"]) || 0,
+        owner: {
+          name: team["Owner Name"],
+          mobile: team["Owner Contact Number"]
+        },
         touranmentId: tournamentId,
       }));
 
@@ -145,8 +147,10 @@ Shubman Gill,https://drive.google.com/file/d/4455667788/view,Youth`;
       // Transform data to match API format
       const players = playersData.map((player) => ({
         name: player["Player Name"],
+        age: parseInt(player["Age"]) || 0,
         photo: player["Photo URL"],
-        playerCategory: player["Player Category"],
+        playerCategory: player["Category"],
+        mobile: parseInt(player["Phone Number"]) || 0,
         touranmentId: tournamentId,
         sold: false,
         auctionStatus: false,
@@ -192,11 +196,10 @@ Shubman Gill,https://drive.google.com/file/d/4455667788/view,Youth`;
 
       {uploadStatus.type && (
         <Alert
-          className={`mb-6 ${
-            uploadStatus.type === "success"
-              ? "border-green-500 bg-green-50 text-green-900"
-              : "border-red-500 bg-red-50 text-red-900"
-          }`}
+          className={`mb-6 ${uploadStatus.type === "success"
+            ? "border-green-500 bg-green-50 text-green-900"
+            : "border-red-500 bg-red-50 text-red-900"
+            }`}
         >
           <AlertDescription>{uploadStatus.message}</AlertDescription>
         </Alert>
@@ -258,8 +261,8 @@ Shubman Gill,https://drive.google.com/file/d/4455667788/view,Youth`;
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Team Name</li>
                 <li>• Team Logo URL (Google Drive link)</li>
-                <li>• Total Budget</li>
-                <li>• Max Players Per Team</li>
+                <li>• Owner Name</li>
+                <li>• Owner Contact Number</li>
               </ul>
             </div>
           </div>
@@ -319,9 +322,10 @@ Shubman Gill,https://drive.google.com/file/d/4455667788/view,Youth`;
               <h4 className="font-semibold text-sm mb-2">CSV Format:</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Player Name</li>
+                <li>• Age</li>
                 <li>• Photo URL (Google Drive link)</li>
-                <li>• Base Price</li>
-                <li>• Player Category</li>
+                <li>• Category</li>
+                <li>• Phone Number</li>
               </ul>
             </div>
           </div>
@@ -337,7 +341,7 @@ Shubman Gill,https://drive.google.com/file/d/4455667788/view,Youth`;
           <li>• Make sure your CSV file follows the exact format shown in the sample files</li>
           <li>• Column names must match exactly (case-sensitive)</li>
           <li>• For Google Drive URLs, use the direct file link</li>
-          <li>• All numeric fields (Budget, Price) should contain only numbers</li>
+          <li>• All numeric fields (Age, Phone Number) should contain only numbers</li>
           <li>• Player categories should match your tournament configuration</li>
           <li>• Upload teams before players for best results</li>
         </ul>

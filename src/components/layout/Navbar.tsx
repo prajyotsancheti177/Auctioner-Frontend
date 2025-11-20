@@ -13,16 +13,11 @@ const buildNavLinks = () => {
 
   try {
     isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-    
-    const password =
-      typeof window !== "undefined"
-        ? localStorage.getItem("auction-password")
-        : null;
-    if (password === "pushkar_champion") {
+
+    // Only show auction link for authenticated users
+    if (isAuthenticated) {
       showAuction = true;
     }
-
-    showAuction = true;
 
     // Check if user is boss or super_user
     const userStr = localStorage.getItem("user");
@@ -33,7 +28,7 @@ const buildNavLinks = () => {
       }
       // Show manage tournaments for authenticated users
       showManageTournaments = true;
-      
+
       // Show bulk upload for tournament_host and above
       if (user.role === 'tournament_host' || user.role === 'super_user' || user.role === 'boss') {
         showBulkUpload = true;
@@ -52,7 +47,7 @@ const buildNavLinks = () => {
   if (showManageTournaments) {
     links.push({ path: "/tournaments/manage", label: "Manage Tournaments" });
   }
-  
+
   if (showBulkUpload) {
     links.push({ path: "/bulk-upload", label: "Bulk Upload" });
   }

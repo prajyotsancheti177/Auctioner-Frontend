@@ -34,13 +34,13 @@ interface User {
 const UserManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  
+
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
@@ -125,6 +125,7 @@ const UserManagement = () => {
         body: JSON.stringify({
           ...newUser,
           createdBy: currentUser?._id,
+          userId: currentUser?._id,
         }),
       });
 
@@ -135,10 +136,10 @@ const UserManagement = () => {
           title: "User Created",
           description: `${newUser.name} has been added successfully.`,
         });
-        
+
         setIsDialogOpen(false);
         setNewUser({ name: "", email: "", password: "", role: "tournament_host", logo: "" });
-        
+
         if (currentUser) {
           fetchUsers(currentUser);
         }
@@ -169,7 +170,7 @@ const UserManagement = () => {
       const response = await fetch(`${apiConfig.baseUrl}/api/user/delete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, hardDelete: false }),
+        body: JSON.stringify({ targetUserId: userId, hardDelete: false, userId: currentUser?._id }),
       });
 
       const data = await response.json();
@@ -179,7 +180,7 @@ const UserManagement = () => {
           title: "User Deactivated",
           description: "User has been deactivated successfully.",
         });
-        
+
         if (currentUser) {
           fetchUsers(currentUser);
         }
@@ -235,12 +236,12 @@ const UserManagement = () => {
             <div>
               <CardTitle className="text-3xl font-bold">User Management</CardTitle>
               <CardDescription className="mt-2">
-                {currentUser?.role === 'boss' 
-                  ? 'Manage all users in the system' 
+                {currentUser?.role === 'boss'
+                  ? 'Manage all users in the system'
                   : 'Manage users you created and their descendants in the hierarchy'}
               </CardDescription>
             </div>
-            
+
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="gap-2">
@@ -256,7 +257,7 @@ const UserManagement = () => {
                       Add a new user to the system. They will receive their credentials.
                     </DialogDescription>
                   </DialogHeader>
-                  
+
                   <div className="grid gap-4 py-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name *</Label>
@@ -268,7 +269,7 @@ const UserManagement = () => {
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="email">Email *</Label>
                       <Input
@@ -280,7 +281,7 @@ const UserManagement = () => {
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="password">Password *</Label>
                       <Input
@@ -293,7 +294,7 @@ const UserManagement = () => {
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="role">Role *</Label>
                       <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
@@ -310,7 +311,7 @@ const UserManagement = () => {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="logo">Logo URL (Optional)</Label>
                       <Input
@@ -321,7 +322,7 @@ const UserManagement = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                       Cancel
@@ -342,7 +343,7 @@ const UserManagement = () => {
             </Dialog>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <Table>
             <TableHeader>

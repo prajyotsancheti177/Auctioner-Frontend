@@ -30,7 +30,7 @@ const PlayerRegistration = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  
+
   const [formData, setFormData] = useState<PlayerRegistrationData>({
     name: "",
     age: "",
@@ -58,7 +58,7 @@ const PlayerRegistration = () => {
   const handleSkillChange = (skill: PlayerSkill, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
-      skills: checked 
+      skills: checked
         ? [...prev.skills, skill]
         : prev.skills.filter(s => s !== skill)
     }));
@@ -98,18 +98,29 @@ const PlayerRegistration = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
     setError("");
-    
+
     try {
       // Get tournament ID from localStorage or context
       const tournamentId = getSelectedTournamentId();
-      
+
+      // Get user ID for authentication
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userId = user?._id;
+
+      if (!userId) {
+        setError("You must be logged in to register a player");
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         name: formData.name.trim(),
         age: parseInt(formData.age),
@@ -122,7 +133,8 @@ const PlayerRegistration = () => {
         touranmentId: tournamentId,
         photo: formData.photo || "",
         sold: false,
-        auctionStatus: false
+        auctionStatus: false,
+        userId
       };
 
       const response = await fetch(`${apiConfig.baseUrl}/api/player/register`, {
@@ -140,7 +152,7 @@ const PlayerRegistration = () => {
 
       const result = await response.json();
       setSuccess("Registration successful! Your player profile has been created.");
-      
+
       // Reset form
       setFormData({
         name: "",
@@ -201,7 +213,7 @@ const PlayerRegistration = () => {
                 <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
                   Basic Information
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name *</Label>
@@ -214,7 +226,7 @@ const PlayerRegistration = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="age">Age *</Label>
                     <Input
@@ -252,7 +264,7 @@ const PlayerRegistration = () => {
                 <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
                   Contact Information
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="mobile">Mobile Number *</Label>
@@ -266,7 +278,7 @@ const PlayerRegistration = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address *</Label>
                     <Input
@@ -297,7 +309,7 @@ const PlayerRegistration = () => {
                 <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
                   Cricket Details
                 </h3>
-                
+
                 <div className="space-y-2">
                   <Label>Skills * (Select all that apply)</Label>
                   <div className="grid grid-cols-2 gap-3">

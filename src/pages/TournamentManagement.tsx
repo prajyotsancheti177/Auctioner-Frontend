@@ -166,7 +166,11 @@ export default function TournamentManagement() {
 
   const fetchTournamentHosts = async () => {
     try {
-      const response = await fetch(`${apiConfig.baseUrl}/api/tournament/hosts`);
+      const response = await fetch(`${apiConfig.baseUrl}/api/tournament/hosts`, {
+        headers: {
+          "x-user-id": user._id
+        }
+      });
       const data = await response.json();
       if (response.ok) {
         setTournamentHosts(data.data || []);
@@ -236,8 +240,8 @@ export default function TournamentManagement() {
 
   const handleSubmit = async () => {
     // Validation
-    if (!formData.name || !formData.noOfTeams || !formData.maxPlayersPerTeam || 
-        !formData.minPlayersPerTeam || !formData.totalBudget) {
+    if (!formData.name || !formData.noOfTeams || !formData.maxPlayersPerTeam ||
+      !formData.minPlayersPerTeam || !formData.totalBudget) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields",
@@ -607,13 +611,13 @@ export default function TournamentManagement() {
                 onChange={(e) => {
                   const categories = e.target.value;
                   handleInputChange("playerCategories", categories);
-                  
+
                   // Auto-create base price fields for each category
                   const categoryList = categories
                     .split(",")
                     .map((cat) => cat.trim())
                     .filter((cat) => cat);
-                  
+
                   const newBasePrices: { [key: string]: string } = {};
                   categoryList.forEach((cat) => {
                     // Keep existing value if category already had a base price
@@ -680,14 +684,14 @@ export default function TournamentManagement() {
                   onClick={() => {
                     const lastSlab = formData.bidIncrementSlabs[formData.bidIncrementSlabs.length - 1];
                     const newMinBid = lastSlab.maxBid ? lastSlab.maxBid + 1 : lastSlab.minBid + 500;
-                    
+
                     const updatedSlabs = formData.bidIncrementSlabs.map((slab, index) => {
                       if (index === formData.bidIncrementSlabs.length - 1) {
                         return { ...slab, maxBid: newMinBid - 1 };
                       }
                       return slab;
                     });
-                    
+
                     setFormData(prev => ({
                       ...prev,
                       bidIncrementSlabs: [
@@ -701,7 +705,7 @@ export default function TournamentManagement() {
                   Add Slab
                 </Button>
               </div>
-              
+
               <div className="grid gap-3">
                 {formData.bidIncrementSlabs.map((slab, index) => (
                   <div key={index} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
@@ -770,7 +774,7 @@ export default function TournamentManagement() {
                   </div>
                 ))}
               </div>
-              
+
               <p className="text-xs text-gray-500">
                 Configure bid increments for different price ranges during auction
               </p>

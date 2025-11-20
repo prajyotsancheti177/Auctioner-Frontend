@@ -27,12 +27,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Trophy, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Trophy,
   Calendar,
   Edit3,
   Save,
@@ -67,11 +67,18 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [playerCategories, setPlayerCategories] = useState<string[]>([]);
-  
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const [editData, setEditData] = useState<Partial<Player>>({});
 
   const skillOptions: PlayerSkill[] = ["Batsman", "Bowler", "All-Rounder", "Wicket-Keeper"];
   const genderOptions = ["Male", "Female", "Other"];
+
+  // Check authentication status
+  useEffect(() => {
+    const authStatus = localStorage.getItem("isAuthenticated") === "true";
+    setIsAuthenticated(authStatus);
+  }, []);
 
   // Fetch teams when modal opens - using player's tournament ID
   useEffect(() => {
@@ -181,7 +188,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
   const handleSkillChange = (skill: PlayerSkill, checked: boolean) => {
     setEditData(prev => ({
       ...prev,
-      skills: checked 
+      skills: checked
         ? [...(prev.skills || []), skill]
         : (prev.skills || []).filter(s => s !== skill)
     }));
@@ -204,8 +211,20 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
     setError("");
 
     try {
+      // Get user ID from localStorage for authentication
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userId = user?._id;
+
+      if (!userId) {
+        setError("You must be logged in to update player data");
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         playerId: player._id,
+        userId, // Include userId for authentication middleware
         name: editData.name?.trim(),
         age: editData.age ? parseInt(editData.age.toString()) : undefined,
         mobile: editData.mobile ? parseInt(editData.mobile.toString()) : undefined,
@@ -241,7 +260,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
       const result = await response.json();
       setSuccess("Player updated successfully!");
       setIsEditing(false);
-      
+
       // Call onUpdate if provided to refresh parent component
       if (onUpdate && result.data) {
         onUpdate(result.data);
@@ -263,12 +282,27 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
     setError("");
 
     try {
+      // Get user ID from localStorage for authentication
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userId = user?._id;
+
+      if (!userId) {
+        setError("You must be logged in to delete player data");
+        setDeleting(false);
+        setShowDeleteDialog(false);
+        return;
+      }
+
       const response = await fetch(`${apiConfig.baseUrl}/api/player/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ playerId: player._id }),
+        body: JSON.stringify({
+          playerId: player._id,
+          userId // Include userId for authentication middleware
+        }),
       });
 
       if (!response.ok) {
@@ -277,7 +311,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
       }
 
       setSuccess("Player deleted successfully!");
-      
+
       // Call onDelete if provided to refresh parent component
       if (onDelete) {
         onDelete(player._id);
@@ -348,7 +382,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                   <User className="h-5 w-5" />
                   Basic Information
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Name</Label>
@@ -362,7 +396,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                       <p className="text-lg font-medium">{player.name}</p>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="age">Age</Label>
                     {isEditing ? (
@@ -381,8 +415,8 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                 <div className="mt-4 space-y-2">
                   <Label>Player Category</Label>
                   {isEditing ? (
-                    <Select 
-                      value={editData.playerCategory || ""} 
+                    <Select
+                      value={editData.playerCategory || ""}
                       onValueChange={(value) => handleInputChange('playerCategory', value)}
                     >
                       <SelectTrigger>
@@ -412,7 +446,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                   <Phone className="h-5 w-5" />
                   Contact Information
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
@@ -430,7 +464,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                       <p>{player.mobile || "Not provided"}</p>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
@@ -446,7 +480,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                       <p>{player.email || "Not provided"}</p>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
@@ -473,7 +507,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                   <Trophy className="h-5 w-5" />
                   Cricket Details
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label>Skills</Label>
@@ -502,7 +536,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4" />
@@ -526,7 +560,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                   <Users className="h-5 w-5" />
                   Auction Status
                 </h3>
-                
+
                 {isEditing ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -537,7 +571,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                         onCheckedChange={(checked) => handleInputChange('sold', checked)}
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <Label htmlFor="auctionStatus">Auction Status (Auctioned)</Label>
                       <Switch
@@ -546,7 +580,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                         onCheckedChange={(checked) => handleInputChange('auctionStatus', checked)}
                       />
                     </div>
-                    
+
                     {editData.sold && (
                       <>
                         <div className="space-y-2">
@@ -559,11 +593,11 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                             min="0"
                           />
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Label htmlFor="teamId">Team</Label>
-                          <Select 
-                            value={editData.teamId as string || "none"} 
+                          <Select
+                            value={editData.teamId as string || "none"}
                             onValueChange={(value) => handleInputChange('teamId', value === "none" ? null : value)}
                           >
                             <SelectTrigger>
@@ -591,7 +625,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                           {player.sold ? "SOLD" : player.auctionStatus ? "UNSOLD" : "NOT AUCTIONED"}
                         </Badge>
                       </div>
-                      
+
                       {player.sold && player.amtSold && (
                         <div className="space-y-1">
                           <Label className="text-sm text-muted-foreground">Sold Amount</Label>
@@ -599,7 +633,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                         </div>
                       )}
                     </div>
-                    
+
                     {player.sold && player.teamName && (
                       <div className="space-y-1">
                         <Label className="text-sm text-muted-foreground">Team</Label>
@@ -651,28 +685,40 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                 </>
               ) : (
                 <>
-                  <Button
-                    onClick={() => setShowDeleteDialog(true)}
-                    variant="destructive"
-                    className="flex-1"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Player
-                  </Button>
-                  <Button
-                    onClick={onClose}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Close
-                  </Button>
-                  <Button
-                    onClick={handleEdit}
-                    className="flex-1"
-                  >
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    Edit Details
-                  </Button>
+                  {isAuthenticated ? (
+                    <>
+                      <Button
+                        onClick={() => setShowDeleteDialog(true)}
+                        variant="destructive"
+                        className="flex-1"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Player
+                      </Button>
+                      <Button
+                        onClick={onClose}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        Close
+                      </Button>
+                      <Button
+                        onClick={handleEdit}
+                        className="flex-1"
+                      >
+                        <Edit3 className="h-4 w-4 mr-2" />
+                        Edit Details
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={onClose}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Close
+                    </Button>
+                  )}
                 </>
               )}
             </div>

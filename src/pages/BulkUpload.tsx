@@ -89,6 +89,17 @@ Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215
       const teamsData = parseCSV(text);
       const tournamentId = getSelectedTournamentId();
 
+      // Get user ID for authentication
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userId = user?._id;
+
+      if (!userId) {
+        setUploadStatus({ type: "error", message: "You must be logged in to upload teams" });
+        setIsUploading(false);
+        return;
+      }
+
       // Transform data to match API format
       const teams = teamsData.map((team) => ({
         name: team["Team Name"],
@@ -105,7 +116,7 @@ Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ teams, touranmentId: tournamentId }),
+        body: JSON.stringify({ teams, touranmentId: tournamentId, userId }),
       });
 
       if (!response.ok) {
@@ -144,6 +155,17 @@ Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215
       const playersData = parseCSV(text);
       const tournamentId = getSelectedTournamentId();
 
+      // Get user ID for authentication
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userId = user?._id;
+
+      if (!userId) {
+        setUploadStatus({ type: "error", message: "You must be logged in to upload players" });
+        setIsUploading(false);
+        return;
+      }
+
       // Transform data to match API format
       const players = playersData.map((player) => ({
         name: player["Player Name"],
@@ -161,7 +183,7 @@ Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ players, touranmentId: tournamentId }),
+        body: JSON.stringify({ players, touranmentId: tournamentId, userId }),
       });
 
       if (!response.ok) {

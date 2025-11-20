@@ -177,11 +177,10 @@ const Auction = () => {
   };
 
   useEffect(() => {
-    const password = localStorage.getItem("auction-password");
-    // if (password !== "pushkar_champion") {
-    //   navigate("/"); // 👈 redirect if password doesn't match
-    // }
-
+    const userStr = localStorage.getItem("user");
+    if (!userStr) {
+      navigate("/login");
+    }
   }, [navigate]);
 
 
@@ -449,6 +448,16 @@ const Auction = () => {
 
         // Update auction result in the backend
         try {
+          // Get user ID for authentication
+          const userStr = localStorage.getItem("user");
+          const user = userStr ? JSON.parse(userStr) : null;
+          const userId = user?._id;
+
+          if (!userId) {
+            console.error("User not authenticated");
+            return;
+          }
+
           const updateResponse = await fetch(`${apiConfig.baseUrl}/api/player/update`, {
             method: "POST",
             headers: {
@@ -460,6 +469,7 @@ const Auction = () => {
               sold: 1,
               auctionStatus: 1,
               amtSold: currentBid,
+              userId
             }),
           });
 
@@ -522,6 +532,16 @@ const Auction = () => {
       setPlayerNumber(prev => prev + 1); // Increment player number
 
       try {
+        // Get user ID for authentication
+        const userStr = localStorage.getItem("user");
+        const user = userStr ? JSON.parse(userStr) : null;
+        const userId = user?._id;
+
+        if (!userId) {
+          console.error("User not authenticated");
+          return;
+        }
+
         const updateResponse = await fetch(`${apiConfig.baseUrl}/api/player/update`, {
           method: "POST",
           headers: {
@@ -530,7 +550,8 @@ const Auction = () => {
           body: JSON.stringify({
             playerId: currentPlayer._id,
             sold: 0,
-            auctionStatus: 1
+            auctionStatus: 1,
+            userId
           }),
         });
 

@@ -355,6 +355,9 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                     src={logoSrc}
                     alt={player.name}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(player.name) + '&size=400&background=random';
+                    }}
                   />
                 </div>
                 {isEditing && (

@@ -879,6 +879,9 @@ const Auction = () => {
                             src={getDriveThumbnail(player.photo)}
                             alt={player.name}
                             className="w-16 h-16 rounded-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(player.name) + '&size=200&background=random';
+                            }}
                           />
                         )}
                         <div className="flex-1">
@@ -1150,6 +1153,9 @@ const Auction = () => {
                           src={getDriveThumbnail(player.photo)}
                           alt={player.name}
                           className="w-16 h-16 rounded-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(player.name) + '&size=200&background=random';
+                          }}
                         />
                       )}
                       <div className="flex-1">

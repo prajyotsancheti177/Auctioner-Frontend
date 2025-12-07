@@ -45,6 +45,9 @@ export const PlayerCard = ({ player, isAnimated, isSold, className, onClick }: P
           src={logoSrc}
           alt={player.name}
           className="h-full w-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(player.name) + '&size=400&background=random';
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
 
@@ -57,8 +60,8 @@ export const PlayerCard = ({ player, isAnimated, isSold, className, onClick }: P
                 player.playerCategory === "Regular"
                   ? "default"
                   : player.playerCategory === "Icon"
-                  ? "secondary"
-                  : "outline"
+                    ? "secondary"
+                    : "outline"
               }
               className="text-sm font-bold shadow-lg"
             >
@@ -93,8 +96,8 @@ export const PlayerCard = ({ player, isAnimated, isSold, className, onClick }: P
         </div>
       </div>
 
-  {/* Player Details */}
-  <div className="p-2 md:p-6 flex-1 w-full md:pl-4">
+      {/* Player Details */}
+      <div className="p-2 md:p-6 flex-1 w-full md:pl-4">
         {/* Mobile badges: visible on small screens (row layout) to avoid overlap */}
         <div className="flex items-center justify-between mb-2 md:hidden w-full">
           <div>
@@ -117,8 +120,8 @@ export const PlayerCard = ({ player, isAnimated, isSold, className, onClick }: P
                 player.playerCategory === "Regular"
                   ? "default"
                   : player.playerCategory === "Icon"
-                  ? "secondary"
-                  : "outline"
+                    ? "secondary"
+                    : "outline"
               }
               className="text-xs font-bold shadow-sm whitespace-nowrap"
             >

@@ -356,7 +356,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                     alt={player.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(player.name) + '&size=400&background=random';
+                      e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=40&fontWeight=600`;
                     }}
                   />
                 </div>

@@ -46,7 +46,7 @@ export const PlayerCard = ({ player, isAnimated, isSold, className, onClick }: P
           alt={player.name}
           className="h-full w-full object-cover"
           onError={(e) => {
-            e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(player.name) + '&size=400&background=random';
+            e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=40&fontWeight=600`;
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />

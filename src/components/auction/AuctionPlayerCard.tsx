@@ -53,7 +53,7 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
           alt={player.name}
           className="h-full w-full object-cover object-top"
           onError={(e) => {
-            e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(player.name) + '&size=400&background=random';
+            e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=40&fontWeight=600`;
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-card/40 to-transparent" />
@@ -136,7 +136,7 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
                           alt={leadingTeamName}
                           className="w-10 h-10 md:w-16 md:h-16 object-contain"
                           onError={(e) => {
-                            e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(leadingTeamName || 'Team') + '&size=200&background=random';
+                            e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(leadingTeamName || 'Team')}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=36&fontWeight=600`;
                           }}
                         />
                       </div>

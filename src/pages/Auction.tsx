@@ -7,14 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Gavel, Search, Shuffle, Settings, Plus, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Gavel, Search, Shuffle, Settings, Plus, Trash2, RefreshCcw } from "lucide-react";
 import stadiumBg from "@/assets/stadium-bg.jpg";
 import { useNavigate } from "react-router-dom";
 import { Player } from "@/types/auction";
 import apiConfig from "@/config/apiConfig";
 import { getDriveThumbnail } from "@/lib/imageUtils";
 import { getSelectedTournamentId } from "@/lib/tournamentUtils";
+import { useToast } from "@/hooks/use-toast";
 
 
 const Auction = () => {
@@ -59,7 +60,12 @@ const Auction = () => {
     }>;
   } | null>(null);
 
+  // Reset unsold players states
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Fetch tournament data including bid increment slabs
   useEffect(() => {
@@ -598,6 +604,64 @@ const Auction = () => {
     }, 4000);
   };
 
+  // Handle reset unsold players
+  const handleResetUnsoldPlayers = async () => {
+    setResetting(true);
+    try {
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      if (!user || !user._id) {
+        toast({
+          title: "Error",
+          description: "Please login to perform this action",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const tournamentId = getSelectedTournamentId();
+      const response = await fetch(`${apiConfig.baseUrl}/api/player/reset-unsold`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          touranmentId: tournamentId,
+          userId: user._id,
+          userRole: user.role,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to reset unsold players");
+      }
+
+      toast({
+        title: "Success",
+        description: data.message || `${data.data?.count || 0} players reset successfully`,
+      });
+
+      setShowResetDialog(false);
+
+      // Refresh players list if in manual mode
+      if (auctionMode === "manual") {
+        fetchAllUnsoldPlayers();
+      }
+    } catch (err) {
+      console.error("Error resetting unsold players:", err);
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to reset unsold players",
+        variant: "destructive",
+      });
+    } finally {
+      setResetting(false);
+    }
+  };
+
   // Filter players based on search and category
   const filteredPlayers = allPlayers.filter((player) => {
     const matchesSearch = player.name
@@ -645,7 +709,51 @@ const Auction = () => {
               </div>
             </Card>
           </div>
+
+          {/* Reset Unsold Players Button */}
+          <div className="mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowResetDialog(true)}
+              className="text-orange-500 border-orange-500 hover:bg-orange-500 hover:text-white"
+            >
+              <RefreshCcw className="h-4 w-4 mr-2" />
+              Reset Unsold Players
+            </Button>
+          </div>
         </div>
+
+        {/* Reset Confirmation Dialog */}
+        <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Reset Unsold Players?</DialogTitle>
+              <DialogDescription>
+                This action will reset all unsold players back to available status, allowing them to be re-auctioned.
+                <br />
+                <br />
+                <strong>Warning:</strong> This will affect all players marked as unsold in this tournament.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowResetDialog(false)}
+                disabled={resetting}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleResetUnsoldPlayers}
+                disabled={resetting}
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                {resetting ? "Resetting..." : "Confirm Reset"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }

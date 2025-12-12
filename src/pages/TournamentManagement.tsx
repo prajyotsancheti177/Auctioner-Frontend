@@ -720,7 +720,6 @@ export default function TournamentManagement() {
                           newSlabs[index].minBid = parseInt(e.target.value) || 0;
                           setFormData(prev => ({ ...prev, bidIncrementSlabs: newSlabs }));
                         }}
-                        disabled={index > 0}
                         className="h-9"
                       />
                     </div>
@@ -736,7 +735,6 @@ export default function TournamentManagement() {
                           setFormData(prev => ({ ...prev, bidIncrementSlabs: newSlabs }));
                         }}
                         placeholder={index === formData.bidIncrementSlabs.length - 1 ? 'No limit' : ''}
-                        disabled={index === formData.bidIncrementSlabs.length - 1}
                         className="h-9"
                       />
                     </div>

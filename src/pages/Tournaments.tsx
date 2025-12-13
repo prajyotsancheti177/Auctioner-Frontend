@@ -6,6 +6,7 @@ import { Trophy, Users, Calendar, DollarSign, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import apiConfig from "@/config/apiConfig";
 import { setSelectedTournamentId } from "@/lib/tournamentUtils";
+import { trackEvent, trackPageView } from "@/lib/eventTracker";
 
 interface Tournament {
   _id: string;
@@ -50,9 +51,13 @@ const Tournaments = () => {
     };
 
     fetchTournaments();
+    // Track page view
+    trackPageView("/tournaments");
   }, []);
 
-  const handleTournamentClick = (tournamentId: string) => {
+  const handleTournamentClick = (tournamentId: string, tournamentName: string) => {
+    // Track tournament selection
+    trackEvent("tournament_view", { tournamentId, tournamentName }, tournamentId);
     // Store the selected tournament ID in localStorage
     setSelectedTournamentId(tournamentId);
     // Navigate to tournament detail page
@@ -119,7 +124,7 @@ const Tournaments = () => {
               <Card
                 key={tournament._id}
                 className="group hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary"
-                onClick={() => handleTournamentClick(tournament._id)}
+                onClick={() => handleTournamentClick(tournament._id, tournament.name)}
               >
                 <CardHeader className="bg-gradient-to-br from-primary/10 to-purple-600/10">
                   <div className="flex items-start justify-between">

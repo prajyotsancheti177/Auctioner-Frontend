@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { AuctionPlayerCard } from "@/components/auction/AuctionPlayerCard";
 import { PlayerDetailsModal } from "@/components/player/PlayerDetailsModal";
 import { SoldCelebration } from "@/components/auction/SoldCelebration";
@@ -16,6 +16,7 @@ import apiConfig from "@/config/apiConfig";
 import { getDriveThumbnail } from "@/lib/imageUtils";
 import { getSelectedTournamentId } from "@/lib/tournamentUtils";
 import { useToast } from "@/hooks/use-toast";
+import { saveAuctionLog, AuctionBid, trackPageView } from "@/lib/eventTracker";
 
 
 const Auction = () => {
@@ -34,6 +35,10 @@ const Auction = () => {
   const [bidPrice, setBidPrice] = useState(100);
   const [bidHistory, setBidHistory] = useState<Array<{ bid: number, teamId: string | null }>>([]);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+
+  // Auction logging state
+  const [auctionBidLogs, setAuctionBidLogs] = useState<AuctionBid[]>([]);
+  const auctionStartTime = useRef<Date | null>(null);
 
   // Manual search mode states
   const [auctionMode, setAuctionMode] = useState<"category" | "manual" | null>(null);
@@ -186,6 +191,10 @@ const Auction = () => {
     const userStr = localStorage.getItem("user");
     if (!userStr) {
       navigate("/login");
+    } else {
+      // Track auction page view
+      const tournamentId = getSelectedTournamentId();
+      trackPageView("/auction", tournamentId || undefined);
     }
   }, [navigate]);
 
@@ -270,6 +279,9 @@ const Auction = () => {
     setSearchTerm("");
     setCategoryFilter("All");
     setAuctionMode("manual");
+    // Initialize auction start time for logging
+    auctionStartTime.current = new Date();
+    setAuctionBidLogs([]);
   };
 
   useEffect(() => {
@@ -334,6 +346,9 @@ const Auction = () => {
         const initialIncrement = getCurrentBidIncrement(data.data.basePrice);
         setBidPrice(initialIncrement);
         setAuctionMode("category");
+        // Initialize auction start time for logging
+        auctionStartTime.current = new Date();
+        setAuctionBidLogs([]);
       } catch (error) {
         console.error("Error fetching next player for auction:", error);
       }
@@ -389,6 +404,19 @@ const Auction = () => {
 
     // Add current state to history before making changes
     setBidHistory(prev => [...prev, { bid: currentBid, teamId: leadingTeam }]);
+
+    // Record bid for auction log
+    setAuctionBidLogs(prev => [
+      ...prev,
+      {
+        teamId: teamId,
+        teamName: team.name,
+        bidAmount: newBid,
+        bidIncrement: leadingTeam === null ? 0 : bidPrice,
+        timestamp: new Date(),
+        bidOrder: prev.length + 1
+      }
+    ]);
 
     setCurrentBid(newBid);
     setLeadingTeam(teamId);
@@ -482,6 +510,30 @@ const Auction = () => {
           if (!updateResponse.ok) {
             throw new Error("Failed to update auction result");
           }
+
+          // Save auction log with complete bid history
+          const tournamentId = getSelectedTournamentId();
+          const winningTeam = teams.find(t => t._id === leadingTeam);
+          await saveAuctionLog({
+            tournamentId: tournamentId || "",
+            playerId: currentPlayer._id || "",
+            playerName: currentPlayer.name || "",
+            playerCategory: currentPlayer.playerCategory || "",
+            basePrice: currentPlayer.basePrice || 0,
+            auctionMode: auctionMode || "category",
+            status: "sold",
+            winningTeamId: leadingTeam,
+            winningTeamName: winningTeam?.name || "",
+            finalPrice: currentBid,
+            bids: auctionBidLogs,
+            auctionStartedAt: auctionStartTime.current || new Date(),
+            auctionEndedAt: new Date()
+          });
+
+          // Reset auction log state
+          setAuctionBidLogs([]);
+          auctionStartTime.current = null;
+
           // Refresh teams data so remainingBudget and players count update
           fetchTeams();
         } catch (error) {
@@ -515,6 +567,9 @@ const Auction = () => {
             const data = await response.json();
             setCurrentPlayer(data.data);
             setCurrentBid(data.data.basePrice);
+            // Initialize auction start time for logging
+            auctionStartTime.current = new Date();
+            setAuctionBidLogs([]);
           } catch (error) {
             console.error("Error fetching next player for auction:", error);
           }
@@ -565,6 +620,25 @@ const Auction = () => {
           throw new Error("Failed to update auction result");
         }
 
+        // Save auction log with complete bid history (even for unsold)
+        const tournamentId = getSelectedTournamentId();
+        await saveAuctionLog({
+          tournamentId: tournamentId || "",
+          playerId: currentPlayer._id || "",
+          playerName: currentPlayer.name || "",
+          playerCategory: currentPlayer.playerCategory || "",
+          basePrice: currentPlayer.basePrice || 0,
+          auctionMode: auctionMode || "category",
+          status: "unsold",
+          bids: auctionBidLogs,
+          auctionStartedAt: auctionStartTime.current || new Date(),
+          auctionEndedAt: new Date()
+        });
+
+        // Reset auction log state
+        setAuctionBidLogs([]);
+        auctionStartTime.current = null;
+
         // Refresh teams data after marking unsold
         fetchTeams();
       } catch (error) {
@@ -597,6 +671,9 @@ const Auction = () => {
           const data = await response.json();
           setCurrentPlayer(data.data);
           setCurrentBid(data.data.basePrice);
+          // Initialize auction start time for logging
+          auctionStartTime.current = new Date();
+          setAuctionBidLogs([]);
         } catch (error) {
           console.error("Error fetching next player for auction:", error);
         }

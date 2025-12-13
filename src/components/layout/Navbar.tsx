@@ -3,6 +3,7 @@ import { Trophy, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { trackEvent } from "@/lib/eventTracker";
 
 const buildNavLinks = () => {
   let showAuction = false;
@@ -69,6 +70,13 @@ export const Navbar = () => {
   const { toast } = useToast();
 
   const handleLogout = () => {
+    // Track logout event before clearing user data
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      trackEvent("logout", { userId: user._id, role: user.role });
+    }
+
     localStorage.removeItem("user");
     localStorage.removeItem("isAuthenticated");
     toast({

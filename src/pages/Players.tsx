@@ -6,6 +6,7 @@ import { Users } from "lucide-react";
 import { PlayerStatus, Player } from "@/types/auction";
 import apiConfig from "@/config/apiConfig";
 import { getSelectedTournamentId } from "@/lib/tournamentUtils";
+import { trackPageView } from "@/lib/eventTracker";
 
 const Players = () => {
   const [players, setPlayers] = useState([]);
@@ -49,6 +50,9 @@ const Players = () => {
     };
 
     fetchPlayers();
+    // Track page view
+    const tournamentId = getSelectedTournamentId();
+    trackPageView("/players", tournamentId || undefined);
   }, []);
 
   // derive available categories from players
@@ -65,12 +69,12 @@ const Players = () => {
   const filteredPlayers = filter === "All"
     ? playersInCategory
     : filter === "Sold"
-    ? playersInCategory.filter(p => p.sold === true)
-    : filter === "Unsold"
-    ? playersInCategory.filter(p => p.auctionStatus === true && p.sold === false)
-    : filter === "Remaining"
-    ? playersInCategory.filter(p => p.auctionStatus === false)
-    : playersInCategory;
+      ? playersInCategory.filter(p => p.sold === true)
+      : filter === "Unsold"
+        ? playersInCategory.filter(p => p.auctionStatus === true && p.sold === false)
+        : filter === "Remaining"
+          ? playersInCategory.filter(p => p.auctionStatus === false)
+          : playersInCategory;
 
   const filteredBySearch = filteredPlayers.filter((p: any) => {
     if (!search) return true;
@@ -95,7 +99,7 @@ const Players = () => {
 
   const handlePlayerUpdate = (updatedPlayer: Player) => {
     // Update the player in the local state
-    setPlayers(prev => prev.map(p => 
+    setPlayers(prev => prev.map(p =>
       p._id === updatedPlayer._id ? updatedPlayer : p
     ));
   };

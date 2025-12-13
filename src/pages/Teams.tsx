@@ -4,6 +4,7 @@ import { Trophy } from "lucide-react";
 import { TeamCard } from "@/components/team/TeamCard";
 import apiConfig from "@/config/apiConfig";
 import { getSelectedTournamentId } from "@/lib/tournamentUtils";
+import { trackPageView } from "@/lib/eventTracker";
 
 const Teams = () => {
   const [teams, setTeams] = useState([]);
@@ -42,6 +43,9 @@ const Teams = () => {
     };
 
     fetchTeams();
+    // Track page view
+    const tournamentId = getSelectedTournamentId();
+    trackPageView("/teams", tournamentId || undefined);
   }, []);
 
   if (loading) {

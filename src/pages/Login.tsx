@@ -8,24 +8,28 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Shield } from "lucide-react";
 import apiConfig from "@/config/apiConfig";
+import { trackEvent, trackPageView } from "@/lib/eventTracker";
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Redirect if already authenticated
   useEffect(() => {
+    // Track page view
+    trackPageView("/login");
+
     const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
     const userStr = localStorage.getItem("user");
-    
+
     if (isAuthenticated && userStr) {
       try {
         const user = JSON.parse(userStr);
@@ -51,7 +55,7 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
+
     if (!formData.email || !formData.password) {
       setError("Please fill in all fields");
       return;
@@ -74,12 +78,15 @@ const Login = () => {
         // Save user data to localStorage
         localStorage.setItem("user", JSON.stringify(data.data));
         localStorage.setItem("isAuthenticated", "true");
-        
+
+        // Track successful login
+        trackEvent("login", { role: data.data.role, userId: data.data._id });
+
         toast({
           title: "Login Successful",
           description: `Welcome back, ${data.data.name}!`,
         });
-        
+
         // Redirect based on role
         if (data.data.role === 'boss' || data.data.role === 'super_user') {
           navigate("/users");
@@ -113,14 +120,14 @@ const Login = () => {
             Login to access your dashboard
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -135,7 +142,7 @@ const Login = () => {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -149,7 +156,7 @@ const Login = () => {
                 required
               />
             </div>
-            
+
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>

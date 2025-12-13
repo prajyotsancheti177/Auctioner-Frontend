@@ -6,6 +6,7 @@ import { Trophy, Users, Calendar, DollarSign, ArrowLeft, UserCircle, Shield, Use
 import { Badge } from "@/components/ui/badge";
 import apiConfig from "@/config/apiConfig";
 import { setSelectedTournamentId } from "@/lib/tournamentUtils";
+import { trackEvent, trackPageView } from "@/lib/eventTracker";
 
 interface Tournament {
   _id: string;
@@ -72,6 +73,8 @@ const TournamentDetail = () => {
     };
 
     fetchTournament();
+    // Track page view
+    trackPageView(`/tournament/${tournamentId}`, tournamentId);
   }, [tournamentId, navigate]);
 
   const formatDate = (dateString?: string) => {
@@ -89,10 +92,12 @@ const TournamentDetail = () => {
   };
 
   const handleViewPlayers = () => {
+    trackEvent("players_view", { tournamentId }, tournamentId);
     navigate("/players");
   };
 
   const handleViewTeams = () => {
+    trackEvent("teams_view", { tournamentId }, tournamentId);
     navigate("/teams");
   };
 

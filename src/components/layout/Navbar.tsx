@@ -59,6 +59,7 @@ const buildNavLinks = () => {
 
   if (showUsers) {
     links.unshift({ path: "/users", label: "Users" });
+    links.push({ path: "/analytics", label: "Analytics" });
   }
 
   return links;

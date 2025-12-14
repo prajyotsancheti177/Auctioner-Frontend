@@ -14,6 +14,7 @@ import TournamentDetail from "./pages/TournamentDetail";
 import TournamentManagement from "./pages/TournamentManagement";
 import UserManagement from "./pages/UserManagement";
 import BulkUpload from "./pages/BulkUpload";
+import Analytics from "./pages/Analytics";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -42,10 +43,10 @@ const App = () => (
             <Route path="/teams" element={<Teams />} />
             <Route path="/team/:teamId" element={<TeamDetail />} />
             <Route path="/register" element={<PlayerRegistration />} />
-            
+
             {/* Login Route */}
             <Route path="/login" element={<Login />} />
-            
+
             {/* Protected Routes - Login required */}
             <Route
               path="/tournaments/manage"
@@ -79,7 +80,15 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute>
+                  <Analytics />
+                </ProtectedRoute>
+              }
+            />
+
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>

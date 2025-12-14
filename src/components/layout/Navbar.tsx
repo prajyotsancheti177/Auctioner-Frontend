@@ -41,6 +41,7 @@ const buildNavLinks = () => {
 
   // Public links (always visible)
   const links = [
+    { path: "/", label: "Home" },
     { path: "/tournaments", label: "Tournaments" },
   ];
 

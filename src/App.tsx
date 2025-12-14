@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Navbar } from "./components/layout/Navbar";
+import Home from "./pages/Home";
 import Auction from "./pages/Auction";
 import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
@@ -36,7 +37,7 @@ const App = () => (
           <Navbar />
           <Routes>
             {/* Public Routes - No login required */}
-            <Route path="/" element={<Tournaments />} />
+            <Route path="/" element={<Home />} />
             <Route path="/tournaments" element={<Tournaments />} />
             <Route path="/tournament/:tournamentId" element={<TournamentDetail />} />
             <Route path="/players" element={<Players />} />

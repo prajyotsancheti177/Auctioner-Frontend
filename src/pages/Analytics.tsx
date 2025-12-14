@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from "@/components/ui/chart";
 import { useToast } from "@/hooks/use-toast";
-import { BarChart, LineChart, Activity, Users, Eye, TrendingUp, Loader2 } from "lucide-react";
+import { BarChart, LineChart, Activity, Users, Eye, TrendingUp, Loader2, MessageCircle, CheckCircle, XCircle } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart as RechartsBarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import apiConfig from "@/config/apiConfig";
 
@@ -35,11 +35,41 @@ interface AnalyticsSummary {
     uniquePages: number;
 }
 
+interface WhatsAppDailyData {
+    date: string;
+    total: number;
+    success: number;
+    failed: number;
+}
+
+interface WhatsAppSummary {
+    totalMessages: number;
+    successCount: number;
+    failedCount: number;
+    soldNotifications: number;
+    unsoldNotifications: number;
+    successRate: number;
+}
+
+interface WhatsAppTypeData {
+    messageType: string;
+    count: number;
+    successCount: number;
+    failedCount: number;
+}
+
+interface WhatsAppAnalytics {
+    daily: WhatsAppDailyData[];
+    summary: WhatsAppSummary;
+    messageTypes: WhatsAppTypeData[];
+}
+
 interface AnalyticsData {
     daily: DailyData[];
     monthly: MonthlyData[];
     pageTraffic: PageTrafficData[];
     summary: AnalyticsSummary;
+    whatsapp?: WhatsAppAnalytics;
     dateRange: {
         startDate: string;
         endDate: string;
@@ -72,6 +102,17 @@ const pageChartConfig = {
     pageViews: {
         label: "Page Views",
         color: "hsl(346, 77%, 49%)",
+    },
+} satisfies ChartConfig;
+
+const whatsappChartConfig = {
+    success: {
+        label: "Delivered",
+        color: "hsl(142, 76%, 36%)",
+    },
+    failed: {
+        label: "Failed",
+        color: "hsl(0, 84%, 60%)",
     },
 } satisfies ChartConfig;
 
@@ -185,6 +226,11 @@ const Analytics = () => {
     const pageData = analyticsData?.pageTraffic.map((d) => ({
         ...d,
         pageName: formatPageName(d.page),
+    })) || [];
+
+    const whatsappDailyData = analyticsData?.whatsapp?.daily.map((d) => ({
+        ...d,
+        date: formatDate(d.date),
     })) || [];
 
     return (
@@ -432,6 +478,168 @@ const Analytics = () => {
                         )}
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* WhatsApp Analytics Section */}
+            <div className="mt-12">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent mb-6">
+                    WhatsApp Notifications
+                </h2>
+
+                {/* WhatsApp Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Messages
+                            </CardTitle>
+                            <MessageCircle className="h-5 w-5 text-green-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-green-500">
+                                {analyticsData?.whatsapp?.summary.totalMessages?.toLocaleString() || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Total notifications sent
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Delivered
+                            </CardTitle>
+                            <CheckCircle className="h-5 w-5 text-emerald-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-emerald-500">
+                                {analyticsData?.whatsapp?.summary.successCount?.toLocaleString() || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Successfully delivered
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-red-500/10 to-red-600/5 border-red-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Failed
+                            </CardTitle>
+                            <XCircle className="h-5 w-5 text-red-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-red-500">
+                                {analyticsData?.whatsapp?.summary.failedCount?.toLocaleString() || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Failed to deliver
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Success Rate
+                            </CardTitle>
+                            <TrendingUp className="h-5 w-5 text-blue-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-blue-500">
+                                {analyticsData?.whatsapp?.summary.successRate?.toFixed(1) || 0}%
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Delivery success rate
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* WhatsApp Daily Chart */}
+                <Card className="mb-8">
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <MessageCircle className="h-5 w-5 text-green-500" />
+                            <CardTitle>Daily WhatsApp Messages</CardTitle>
+                        </div>
+                        <CardDescription>
+                            Sent notifications over time (delivered vs failed)
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {whatsappDailyData.length > 0 ? (
+                            <ChartContainer config={whatsappChartConfig} className="h-[300px] w-full">
+                                <RechartsBarChart data={whatsappDailyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                    <XAxis
+                                        dataKey="date"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        className="text-xs"
+                                    />
+                                    <YAxis
+                                        tickLine={false}
+                                        axisLine={false}
+                                        className="text-xs"
+                                    />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <ChartLegend content={<ChartLegendContent />} />
+                                    <Bar
+                                        dataKey="success"
+                                        stackId="a"
+                                        fill="hsl(142, 76%, 36%)"
+                                        radius={[0, 0, 0, 0]}
+                                    />
+                                    <Bar
+                                        dataKey="failed"
+                                        stackId="a"
+                                        fill="hsl(0, 84%, 60%)"
+                                        radius={[4, 4, 0, 0]}
+                                    />
+                                </RechartsBarChart>
+                            </ChartContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                                No WhatsApp data available for the selected period
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Message Type Breakdown */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Sold Notifications</CardTitle>
+                            <CardDescription>Players sold message stats</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-4xl font-bold text-green-500">
+                                {analyticsData?.whatsapp?.summary.soldNotifications?.toLocaleString() || 0}
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-2">
+                                Notifications sent when players are sold
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Unsold Notifications</CardTitle>
+                            <CardDescription>Players unsold message stats</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-4xl font-bold text-amber-500">
+                                {analyticsData?.whatsapp?.summary.unsoldNotifications?.toLocaleString() || 0}
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-2">
+                                Notifications sent when players go unsold
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     );

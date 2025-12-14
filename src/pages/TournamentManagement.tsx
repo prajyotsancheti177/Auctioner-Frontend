@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Trophy, Users, DollarSign } from "lucide-react";
+import { Plus, Pencil, Trash2, Trophy, Users, DollarSign, Download, UserMinus, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -102,6 +102,9 @@ export default function TournamentManagement() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteAllTeamsDialogOpen, setDeleteAllTeamsDialogOpen] = useState(false);
+  const [deleteAllPlayersDialogOpen, setDeleteAllPlayersDialogOpen] = useState(false);
+  const [actionTournamentId, setActionTournamentId] = useState<string | null>(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isTournamentHost = user.role === "tournament_host";
@@ -376,6 +379,178 @@ export default function TournamentManagement() {
     setDeleteDialogOpen(true);
   };
 
+  const handleDeleteAllTeams = async () => {
+    if (!actionTournamentId) return;
+
+    try {
+      const response = await fetch(`${apiConfig.baseUrl}/api/team/delete-all`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": user._id
+        },
+        body: JSON.stringify({
+          touranmentId: actionTournamentId,
+          userId: user._id,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: data.message || "All teams deleted successfully",
+        });
+        setDeleteAllTeamsDialogOpen(false);
+        setActionTournamentId(null);
+        fetchTournaments();
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to delete teams",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting teams",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAllPlayers = async () => {
+    if (!actionTournamentId) return;
+
+    try {
+      const response = await fetch(`${apiConfig.baseUrl}/api/player/delete-all`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": user._id
+        },
+        body: JSON.stringify({
+          touranmentId: actionTournamentId,
+          userId: user._id,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: data.message || "All players deleted successfully",
+        });
+        setDeleteAllPlayersDialogOpen(false);
+        setActionTournamentId(null);
+        fetchTournaments();
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to delete players",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting players",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const downloadCSV = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadData = async (tournamentId: string, tournamentName: string) => {
+    try {
+      console.log("Exporting data for tournament:", tournamentId);
+      const response = await fetch(`${apiConfig.baseUrl}/api/tournament/export`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": user._id
+        },
+        body: JSON.stringify({
+          tournamentId,
+          userId: user._id,
+        }),
+      });
+
+      const result = await response.json();
+      console.log("Export response:", result);
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: result.message || "Failed to export data",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const data = result.data;
+
+      if (!data) {
+        toast({
+          title: "Error",
+          description: "No data returned from server",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const safeName = tournamentName.replace(/[^a-zA-Z0-9]/g, '_');
+
+      // Create Teams CSV - matches import format: Team Name,Team Logo URL,Owner Name,Owner Contact Number
+      const teamsHeaders = "Team Name,Team Logo URL,Owner Name,Owner Contact Number";
+      const teamsRows = (data.teams || []).map((t: { name: string; logo: string; ownerName: string; ownerMobile: string }) =>
+        `"${t.name || ''}","${t.logo || ''}","${t.ownerName || ''}","${t.ownerMobile || ''}"`
+      ).join("\n");
+      const teamsCSV = `${teamsHeaders}\n${teamsRows}`;
+
+      // Create Players CSV - matches import format: Player Name,Age,Photo URL,Category,Phone Number
+      // Plus additional columns for auction status
+      const playersHeaders = "Player Name,Age,Photo URL,Category,Phone Number,Team (Sold To),Sold,Amount Sold";
+      const playersRows = (data.players || []).map((p: { name: string; age: string; photo: string; playerCategory: string; mobile: string; teamName: string; sold: string; amtSold: number }) =>
+        `"${p.name || ''}","${p.age || ''}","${p.photo || ''}","${p.playerCategory || ''}","${p.mobile || ''}","${p.teamName || ''}","${p.sold || ''}","${p.amtSold || 0}"`
+      ).join("\n");
+      const playersCSV = `${playersHeaders}\n${playersRows}`;
+
+      // Download teams first
+      downloadCSV(teamsCSV, `${safeName}_teams.csv`);
+
+      // Download players after a short delay
+      setTimeout(() => {
+        downloadCSV(playersCSV, `${safeName}_players.csv`);
+        toast({
+          title: "Success",
+          description: `Exported ${data.teams?.length || 0} teams and ${data.players?.length || 0} players`,
+        });
+      }, 300);
+
+    } catch (error) {
+      console.error("Export error:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while exporting data",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -474,18 +649,50 @@ export default function TournamentManagement() {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <div className="flex justify-center gap-2">
+                      <div className="flex justify-center gap-1 flex-wrap">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleOpenDialog(tournament)}
+                          title="Edit Tournament"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => handleDownloadData(tournament._id, tournament.name || 'tournament')}
+                          title="Download Data"
+                        >
+                          <Download className="h-4 w-4 text-blue-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setActionTournamentId(tournament._id);
+                            setDeleteAllTeamsDialogOpen(true);
+                          }}
+                          title="Delete All Teams"
+                        >
+                          <UsersRound className="h-4 w-4 text-orange-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setActionTournamentId(tournament._id);
+                            setDeleteAllPlayersDialogOpen(true);
+                          }}
+                          title="Delete All Players"
+                        >
+                          <UserMinus className="h-4 w-4 text-orange-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => openDeleteDialog(tournament._id)}
+                          title="Delete Tournament"
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
@@ -809,6 +1016,54 @@ export default function TournamentManagement() {
               className="bg-red-500 hover:bg-red-600"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete All Teams Confirmation Dialog */}
+      <AlertDialog open={deleteAllTeamsDialogOpen} onOpenChange={setDeleteAllTeamsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete All Teams?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete ALL teams
+              in this tournament. Players will not be affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setActionTournamentId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAllTeams}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              Delete All Teams
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete All Players Confirmation Dialog */}
+      <AlertDialog open={deleteAllPlayersDialogOpen} onOpenChange={setDeleteAllPlayersDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete All Players?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete ALL players
+              in this tournament.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setActionTournamentId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAllPlayers}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              Delete All Players
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Gavel, Search, Shuffle, Settings, Plus, Trash2, RefreshCcw } from "lucide-react";
+import { Gavel, Search, Shuffle, Settings, Plus, Trash2, RefreshCcw, Volume2, VolumeX, Sparkles } from "lucide-react";
 import stadiumBg from "@/assets/stadium-bg.jpg";
 import { useNavigate } from "react-router-dom";
 import { Player } from "@/types/auction";
@@ -68,6 +68,10 @@ const Auction = () => {
   // Reset unsold players states
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [resetting, setResetting] = useState(false);
+
+  // Sound and animation settings
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [animationEnabled, setAnimationEnabled] = useState(true);
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -1018,7 +1022,28 @@ const Auction = () => {
             <Gavel className="h-6 w-6 text-primary animate-glow-pulse" />
             <span className="text-xl font-bold text-foreground">Live Auction - Player #{playerNumber}</span>
           </div>
-          <div className="flex-1 flex justify-end">
+          <div className="flex-1 flex justify-end gap-2">
+            {/* Sound Toggle */}
+            <Button
+              variant={soundEnabled ? "default" : "outline"}
+              size="icon"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="rounded-full"
+              title={soundEnabled ? "Sound On" : "Sound Off"}
+            >
+              {soundEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+            </Button>
+            {/* Animation Toggle */}
+            <Button
+              variant={animationEnabled ? "default" : "outline"}
+              size="icon"
+              onClick={() => setAnimationEnabled(!animationEnabled)}
+              className="rounded-full"
+              title={animationEnabled ? "Animations On" : "Animations Off"}
+            >
+              <Sparkles className={`h-5 w-5 ${!animationEnabled ? 'opacity-50' : ''}`} />
+            </Button>
+            {/* Settings */}
             <Button
               variant="outline"
               size="icon"
@@ -1164,11 +1189,15 @@ const Auction = () => {
         playerName={currentPlayer.name}
         teamName={teams.find(t => t._id === leadingTeam)?.name || ""}
         amount={currentBid}
+        soundEnabled={soundEnabled}
+        animationEnabled={animationEnabled}
       />
 
       <UnsoldAnimation
         show={showUnsoldAnimation}
         playerName={currentPlayer.name}
+        soundEnabled={soundEnabled}
+        animationEnabled={animationEnabled}
       />
 
       {/* Manual Search Dialog */}

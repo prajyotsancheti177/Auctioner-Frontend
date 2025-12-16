@@ -457,11 +457,11 @@ export default function Home() {
                     {/* Contact Info */}
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
                         <a
-                            href="tel:8208214607"
+                            href="tel:8208216407"
                             className="flex items-center gap-2 px-6 py-3 rounded-full bg-accent/10 border border-accent/30 hover:bg-accent/20 transition-all"
                         >
                             <Phone className="w-5 h-5 text-accent" />
-                            <span className="font-semibold">Call: 8208214607</span>
+                            <span className="font-semibold">Call: 8208216407</span>
                         </a>
                     </div>
 

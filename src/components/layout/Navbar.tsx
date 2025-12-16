@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Trophy, LogOut, User } from "lucide-react";
+import { Trophy, LogOut, User, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -67,6 +68,7 @@ const buildNavLinks = () => {
 };
 
 export const Navbar = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -85,6 +87,7 @@ export const Navbar = () => {
       title: "Logged Out",
       description: "You have been successfully logged out.",
     });
+    setMobileMenuOpen(false);
     navigate("/tournaments"); // Redirect to public page instead of login
   };
 
@@ -102,28 +105,36 @@ export const Navbar = () => {
   };
 
   const userName = getUserName();
+  const navLinks = buildNavLinks();
+
+  const handleNavClick = (path: string) => {
+    setMobileMenuOpen(false);
+    navigate(path);
+  };
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-xl">
       <div className="container mx-auto px-3">
-        <div className="flex h-12 md:h-16 items-center justify-between">
+        <div className="flex h-14 md:h-16 items-center justify-between">
+          {/* Logo */}
           <Link to="/tournaments" className="flex items-center gap-2 group">
             <div className="rounded-lg bg-gradient-primary p-1.5 md:p-2 shadow-glow transition-all group-hover:scale-110">
               <Trophy className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />
             </div>
-            <span className="text-sm md:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <span className="text-base md:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Cricket Auction
             </span>
           </Link>
 
-          <div className="flex items-center gap-2 md:gap-4">
-            <div className="flex gap-1 overflow-x-auto no-scrollbar">
-              {buildNavLinks().map((link) => (
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-4">
+            <div className="flex gap-1">
+              {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
                   className={cn(
-                    "px-2 md:px-4 py-1 md:py-2 rounded-lg font-medium text-sm md:text-base transition-all whitespace-nowrap",
+                    "px-4 py-2 rounded-lg font-medium text-base transition-all whitespace-nowrap",
                     location.pathname === link.path
                       ? "bg-gradient-primary text-primary-foreground shadow-glow"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -135,8 +146,8 @@ export const Navbar = () => {
             </div>
 
             {userName ? (
-              <div className="flex items-center gap-2 border-l pl-2 md:pl-4">
-                <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 border-l pl-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <User className="h-4 w-4" />
                   <span>{userName}</span>
                 </div>
@@ -144,19 +155,19 @@ export const Navbar = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleLogout}
-                  className="gap-1 md:gap-2"
+                  className="gap-2"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span className="hidden md:inline">Logout</span>
+                  <span>Logout</span>
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 border-l pl-2 md:pl-4">
+              <div className="flex items-center gap-2 border-l pl-4">
                 <Button
                   variant="default"
                   size="sm"
                   onClick={() => navigate("/login")}
-                  className="gap-1 md:gap-2"
+                  className="gap-2"
                 >
                   <User className="h-4 w-4" />
                   <span>Login</span>
@@ -164,8 +175,76 @@ export const Navbar = () => {
               </div>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center gap-2">
+            {userName ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                className="h-9 w-9"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => navigate("/login")}
+                className="gap-1 h-9"
+              >
+                <User className="h-4 w-4" />
+                <span className="text-sm">Login</span>
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="h-9 w-9"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border bg-card/95 backdrop-blur-xl">
+          <div className="container mx-auto px-3 py-4">
+            <div className="flex flex-col gap-2">
+              {navLinks.map((link) => (
+                <button
+                  key={link.path}
+                  onClick={() => handleNavClick(link.path)}
+                  className={cn(
+                    "px-4 py-3 rounded-lg font-medium text-left transition-all",
+                    location.pathname === link.path
+                      ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  {link.label}
+                </button>
+              ))}
+              {userName && (
+                <div className="mt-2 pt-2 border-t border-border">
+                  <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
+                    <User className="h-4 w-4" />
+                    <span>Logged in as {userName}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

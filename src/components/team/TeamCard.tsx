@@ -12,62 +12,65 @@ interface TeamCardProps {
 
 export const TeamCard = ({ team }: TeamCardProps) => {
   const budgetUsedPercentage = (team.totalSpent / (team.remainingBudget + team.totalSpent)) * 100;
-
   const playersBoughtPercentage = (team.players.length / team.maxPlayersPerTeam) * 100;
-
   const logoSrc = getDriveThumbnail(team.logo as unknown as string);
+
+  const formatBudget = (amount: number) => {
+    return amount.toString();
+  };
 
   return (
     <Link to={`/team/${team._id}`}>
-      <Card className="group relative overflow-hidden border-2 hover:border-primary transition-all hover:shadow-glow cursor-pointer">
-        <div className="p-6 space-y-6">
-          {/* Team Header */}
-          <div className="flex items-center gap-4">
+      <Card className="group relative overflow-hidden border hover:border-primary sm:border-2 transition-all hover:shadow-glow cursor-pointer">
+        <div className="p-2 sm:p-4 md:p-6 space-y-2 sm:space-y-4 md:space-y-6">
+          {/* Team Header - Compact */}
+          <div className="flex items-center gap-2 sm:gap-4">
             <img
               src={logoSrc}
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = placeholderImg; }}
               alt={`${team.name} logo`}
-              className="h-16 w-16 rounded-full shadow-lg transition-transform group-hover:scale-110"
+              className="h-8 w-8 sm:h-12 sm:w-12 md:h-16 md:w-16 rounded-full shadow-lg transition-transform group-hover:scale-110 object-cover"
             />
-            <div className="flex-1">
-              <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs sm:text-lg md:text-2xl font-bold text-foreground group-hover:text-primary transition-colors truncate">
                 {team.name}
               </h3>
-              <p className="text-sm text-muted-foreground">Owner: {team.owner?.name || "-"}</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground truncate">{team.owner?.name || "-"}</p>
             </div>
           </div>
 
-          {/* Budget Info */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Wallet className="h-4 w-4" />
-                <span>Budget Used</span>
+          {/* Budget Info - Compact */}
+          <div className="space-y-1 sm:space-y-2">
+            <div className="flex items-center justify-between text-[10px] sm:text-sm">
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Budget</span>
               </div>
-              <span className="font-bold text-foreground">
-                {team.totalSpent} / {team.remainingBudget + team.totalSpent} Pts.
+              <span className="font-bold text-foreground text-[8px] sm:text-sm">
+                <span className="text-secondary">{formatBudget(team.totalSpent)}</span>
+                <span className="text-muted-foreground">/{formatBudget(team.remainingBudget + team.totalSpent)}</span>
               </span>
             </div>
-            <Progress value={budgetUsedPercentage} className="h-2" />
-            <p className="text-sm font-medium text-accent">
-              Remaining: {team.remainingBudget} Pts.
+            <Progress value={budgetUsedPercentage} className="h-1 sm:h-2" />
+            <p className="text-[8px] sm:text-sm font-medium text-accent">
+              {formatBudget(team.remainingBudget)} left
             </p>
           </div>
 
-          {/* Player Info */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Wallet className="h-4 w-4" />
-                <span>Squad</span>
+          {/* Player Info - Compact */}
+          <div className="space-y-1 sm:space-y-2">
+            <div className="flex items-center justify-between text-[10px] sm:text-sm">
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Squad</span>
               </div>
-              <span className="font-bold text-foreground">
-                {team.players.length} / {team.maxPlayersPerTeam}
+              <span className="font-bold text-foreground text-[8px] sm:text-sm">
+                {team.players.length}/{team.maxPlayersPerTeam}
               </span>
             </div>
-            <Progress value={playersBoughtPercentage} className="h-2" />
-            <p className="text-sm font-medium text-accent">
-              {team.maxPlayersPerTeam - team.players.length} slots remaining
+            <Progress value={playersBoughtPercentage} className="h-1 sm:h-2" />
+            <p className="text-[8px] sm:text-sm font-medium text-accent">
+              {team.maxPlayersPerTeam - team.players.length} slots
             </p>
           </div>
         </div>
@@ -78,3 +81,4 @@ export const TeamCard = ({ team }: TeamCardProps) => {
     </Link>
   );
 };
+

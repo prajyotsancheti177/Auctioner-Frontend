@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Users, Calendar, DollarSign, ArrowLeft, UserCircle, Shield, UserPlus } from "lucide-react";
+import { Trophy, Users, Calendar, DollarSign, ArrowLeft, UserCircle, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import apiConfig from "@/config/apiConfig";
 import { setSelectedTournamentId } from "@/lib/tournamentUtils";
@@ -38,7 +38,6 @@ const TournamentDetail = () => {
       return;
     }
 
-    // Store the selected tournament ID
     setSelectedTournamentId(tournamentId);
 
     const fetchTournament = async () => {
@@ -73,21 +72,21 @@ const TournamentDetail = () => {
     };
 
     fetchTournament();
-    // Track page view
     trackPageView(`/tournament/${tournamentId}`, tournamentId);
   }, [tournamentId, navigate]);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     });
   };
 
   const formatCurrency = (amount?: number) => {
     if (!amount) return "0";
+    if (amount >= 10000000) return `${(amount / 10000000).toFixed(1)}Cr`;
+    if (amount >= 100000) return `${(amount / 100000).toFixed(0)}L`;
     return new Intl.NumberFormat("en-IN").format(amount);
   };
 
@@ -101,26 +100,22 @@ const TournamentDetail = () => {
     navigate("/teams");
   };
 
-  const handleRegisterPlayer = () => {
-    navigate("/register");
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl text-muted-foreground">Loading tournament details...</p>
+        <p className="text-base sm:text-xl text-muted-foreground">Loading...</p>
       </div>
     );
   }
 
   if (error || !tournament) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-xl text-destructive mb-4">{error || "Tournament not found"}</p>
-          <Button onClick={() => navigate("/tournaments")}>
+          <p className="text-base sm:text-xl text-destructive mb-4">{error || "Tournament not found"}</p>
+          <Button onClick={() => navigate("/tournaments")} size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Tournaments
+            Back
           </Button>
         </div>
       </div>
@@ -128,77 +123,77 @@ const TournamentDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted p-2 sm:p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Back Button */}
+        {/* Back Button - Compact */}
         <Button
           variant="ghost"
           onClick={() => navigate("/tournaments")}
-          className="mb-6"
+          className="mb-2 sm:mb-4 h-8 sm:h-10 text-xs sm:text-sm px-2 sm:px-4"
+          size="sm"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Tournaments
+          <ArrowLeft className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+          Back
         </Button>
 
-        {/* Tournament Header */}
-        <Card className="mb-6 border-2 border-primary/20">
-          <CardHeader className="bg-gradient-to-br from-primary/10 to-purple-600/10">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-4xl mb-3 flex items-center gap-3">
-                  <Trophy className="h-10 w-10 text-primary" />
-                  {tournament.name || "Unnamed Tournament"}
-                </CardTitle>
-                <CardDescription className="text-lg flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  Created on {formatDate(tournament.createdAt)}
-                </CardDescription>
-              </div>
+        {/* Tournament Header - Compact */}
+        <Card className="mb-3 sm:mb-6 border border-primary/20 sm:border-2">
+          <CardContent className="p-3 sm:p-6">
+            {/* Title Row */}
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+              <Trophy className="h-5 w-5 sm:h-8 md:h-10 text-primary flex-shrink-0" />
+              <h1 className="text-lg sm:text-2xl md:text-4xl font-bold truncate">
+                {tournament.name || "Unnamed Tournament"}
+              </h1>
             </div>
 
-            {tournament.tournamentHostId && (
-              <div className="mt-4 flex items-center gap-2 text-muted-foreground">
-                <Shield className="h-5 w-5" />
-                <span className="font-medium">Host:</span>
-                <span>{tournament.tournamentHostId.name}</span>
-                <span className="text-sm">({tournament.tournamentHostId.email})</span>
+            {/* Meta info - Single line */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span>{formatDate(tournament.createdAt)}</span>
               </div>
-            )}
-          </CardHeader>
+              {tournament.tournamentHostId && (
+                <div className="flex items-center gap-1">
+                  <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>{tournament.tournamentHostId.name}</span>
+                </div>
+              )}
+            </div>
 
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Teams Info */}
-              <div className="p-4 bg-muted rounded-lg text-center">
-                <Users className="h-8 w-8 text-primary mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-1">Teams</p>
-                <p className="text-3xl font-bold">{tournament.noOfTeams || 0}</p>
+            {/* Stats Row - Horizontal on all screens */}
+            <div className="flex items-stretch gap-2 sm:gap-4 mb-3 sm:mb-4">
+              {/* Teams */}
+              <div className="flex-1 p-2 sm:p-4 bg-muted rounded-lg text-center">
+                <Users className="h-4 w-4 sm:h-6 md:h-8 text-primary mx-auto mb-0.5 sm:mb-1" />
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Teams</p>
+                <p className="text-lg sm:text-2xl md:text-3xl font-bold">{tournament.noOfTeams || 0}</p>
               </div>
 
               {/* Players per Team */}
-              <div className="p-4 bg-muted rounded-lg text-center">
-                <UserCircle className="h-8 w-8 text-primary mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-1">Players per Team</p>
-                <p className="text-3xl font-bold">
-                  {tournament.minPlayersPerTeam || 0} - {tournament.maxPlayersPerTeam || 0}
+              <div className="flex-1 p-2 sm:p-4 bg-muted rounded-lg text-center">
+                <UserCircle className="h-4 w-4 sm:h-6 md:h-8 text-primary mx-auto mb-0.5 sm:mb-1" />
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Players</p>
+                <p className="text-lg sm:text-2xl md:text-3xl font-bold">
+                  {tournament.minPlayersPerTeam || 0}-{tournament.maxPlayersPerTeam || 0}
                 </p>
               </div>
 
               {/* Budget */}
-              <div className="p-4 bg-muted rounded-lg text-center">
-                <DollarSign className="h-8 w-8 text-primary mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-1">Total Budget</p>
-                <p className="text-3xl font-bold">₹{formatCurrency(tournament.totalBudget)}</p>
+              <div className="flex-1 p-2 sm:p-4 bg-muted rounded-lg text-center">
+                <DollarSign className="h-4 w-4 sm:h-6 md:h-8 text-primary mx-auto mb-0.5 sm:mb-1" />
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Budget</p>
+                <p className="text-lg sm:text-2xl md:text-3xl font-bold">₹{formatCurrency(tournament.totalBudget)}</p>
               </div>
             </div>
 
-            {/* Player Categories */}
+            {/* Player Categories - Scrollable */}
             {tournament.playerCategories && tournament.playerCategories.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold mb-3">Player Categories</h3>
-                <div className="flex flex-wrap gap-2">
+              <div className="overflow-x-auto no-scrollbar">
+                <div className="flex gap-1.5 sm:gap-2">
+                  <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap self-center">Categories:</span>
                   {tournament.playerCategories.map((category, index) => (
-                    <Badge key={index} variant="secondary" className="text-base py-2 px-4">
+                    <Badge key={index} variant="secondary" className="text-xs sm:text-sm py-0.5 sm:py-1 px-2 sm:px-3 whitespace-nowrap">
                       {category}
                     </Badge>
                   ))}
@@ -208,79 +203,31 @@ const TournamentDetail = () => {
           </CardContent>
         </Card>
 
-        {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* View Players Card */}
-          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary">
-            <CardHeader className="bg-gradient-to-br from-blue-500/10 to-blue-600/10">
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <UserCircle className="h-8 w-8 text-blue-500" />
-                Players
-              </CardTitle>
-              <CardDescription>
-                View all players in this tournament
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground mb-4">
-                Browse through all registered players, view their details, and manage player information.
-              </p>
-              <Button
-                onClick={handleViewPlayers}
-                className="w-full bg-blue-500 hover:bg-blue-600"
-              >
-                View Players
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Action Buttons - Modern gradient style */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+          {/* View Players */}
+          <button
+            onClick={handleViewPlayers}
+            className="relative overflow-hidden h-auto py-4 sm:py-8 flex flex-col items-center gap-1.5 sm:gap-3 rounded-xl sm:rounded-2xl bg-gradient-to-br from-violet-500 via-purple-600 to-purple-800 hover:from-violet-400 hover:via-purple-500 hover:to-purple-700 shadow-[0_0_25px_hsl(263,70%,50%,0.5)] hover:shadow-[0_0_35px_hsl(263,70%,50%,0.7)] transition-all duration-300 hover:scale-[1.02] text-white border border-violet-400/40"
+          >
+            {/* Glass reflection overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/25 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent rounded-t-xl sm:rounded-t-2xl pointer-events-none" />
+            <UserCircle className="h-6 w-6 sm:h-10 sm:w-10 drop-shadow-lg relative z-10" />
+            <span className="text-xs sm:text-lg font-bold tracking-wide relative z-10">View Players</span>
+          </button>
 
-          {/* View Teams Card */}
-          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary">
-            <CardHeader className="bg-gradient-to-br from-green-500/10 to-green-600/10">
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <Users className="h-8 w-8 text-green-500" />
-                Teams
-              </CardTitle>
-              <CardDescription>
-                View all teams in this tournament
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground mb-4">
-                See all participating teams, their rosters, budgets, and performance statistics.
-              </p>
-              <Button
-                onClick={handleViewTeams}
-                className="w-full bg-green-500 hover:bg-green-600"
-              >
-                View Teams
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Register Player Card */}
-          {/* <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary">
-            <CardHeader className="bg-gradient-to-br from-purple-500/10 to-purple-600/10">
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <UserPlus className="h-8 w-8 text-purple-500" />
-                Register Player
-              </CardTitle>
-              <CardDescription>
-                Add a new player to this tournament
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground mb-4">
-                Register new players for the tournament and manage their details and categories.
-              </p>
-              <Button
-                onClick={handleRegisterPlayer}
-                className="w-full bg-purple-500 hover:bg-purple-600"
-              >
-                Register Player
-              </Button>
-            </CardContent>
-          </Card> */}
+          {/* View Teams */}
+          <button
+            onClick={handleViewTeams}
+            className="relative overflow-hidden h-auto py-4 sm:py-8 flex flex-col items-center gap-1.5 sm:gap-3 rounded-xl sm:rounded-2xl bg-gradient-to-br from-fuchsia-500 via-purple-600 to-indigo-800 hover:from-fuchsia-400 hover:via-purple-500 hover:to-indigo-700 shadow-[0_0_25px_hsl(280,70%,50%,0.5)] hover:shadow-[0_0_35px_hsl(280,70%,50%,0.7)] transition-all duration-300 hover:scale-[1.02] text-white border border-fuchsia-400/40"
+          >
+            {/* Glass reflection overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/25 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent rounded-t-xl sm:rounded-t-2xl pointer-events-none" />
+            <Users className="h-6 w-6 sm:h-10 sm:w-10 drop-shadow-lg relative z-10" />
+            <span className="text-xs sm:text-lg font-bold tracking-wide relative z-10">View Teams</span>
+          </button>
         </div>
       </div>
     </div>

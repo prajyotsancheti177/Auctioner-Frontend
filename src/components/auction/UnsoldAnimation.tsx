@@ -1,26 +1,42 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { auctionSounds } from "@/lib/auctionSounds";
 
 interface UnsoldAnimationProps {
   show: boolean;
   playerName: string;
+  soundEnabled?: boolean;
+  animationEnabled?: boolean;
 }
 
-export const UnsoldAnimation = ({ show, playerName }: UnsoldAnimationProps) => {
+export const UnsoldAnimation = ({
+  show,
+  playerName,
+  soundEnabled = true,
+  animationEnabled = true
+}: UnsoldAnimationProps) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     if (show) {
-      setIsVisible(true);
+      // Play sound if enabled (sound continues even if dismissed)
+      if (soundEnabled) {
+        auctionSounds.playUnsoldSound();
+      }
+
+      // Show animation if enabled
+      if (animationEnabled) {
+        setIsVisible(true);
+      }
     } else {
       setIsVisible(false);
     }
-  }, [show]);
+  }, [show, soundEnabled, animationEnabled]);
 
   return (
     <AnimatePresence>
-      {isVisible && (
+      {isVisible && animationEnabled && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -29,7 +45,7 @@ export const UnsoldAnimation = ({ show, playerName }: UnsoldAnimationProps) => {
         >
           <motion.div
             initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
-            animate={{ 
+            animate={{
               scale: [0.5, 1.1, 1],
               opacity: 1,
               rotate: [10, -5, 0]
@@ -39,10 +55,10 @@ export const UnsoldAnimation = ({ show, playerName }: UnsoldAnimationProps) => {
             className="text-center space-y-6 p-8"
           >
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: [0, 10, -10, 10, 0],
               }}
-              transition={{ 
+              transition={{
                 duration: 0.5,
                 repeat: 3,
                 ease: "easeInOut"
@@ -50,7 +66,7 @@ export const UnsoldAnimation = ({ show, playerName }: UnsoldAnimationProps) => {
             >
               <X className="h-40 w-40 text-destructive mx-auto stroke-[3]" />
             </motion.div>
-            
+
             <motion.h2
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -59,7 +75,7 @@ export const UnsoldAnimation = ({ show, playerName }: UnsoldAnimationProps) => {
             >
               UNSOLD
             </motion.h2>
-            
+
             <motion.p
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

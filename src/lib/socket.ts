@@ -8,7 +8,7 @@ export const getSocket = (): Socket => {
     if (!socket) {
         socket = io(`${apiConfig.baseUrl}/auction`, {
             autoConnect: false,
-            transports: ["websocket", "polling"],
+            transports: ["polling", "websocket"],
         });
 
         socket.on("connect", () => {

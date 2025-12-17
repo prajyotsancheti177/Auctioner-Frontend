@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
     ChevronDown,
     Phone,
 } from "lucide-react";
+import logo from "../assets/logo.png";
 
 // Animation variants
 const fadeInUp = {
@@ -55,53 +56,53 @@ const staggerItem = {
     transition: { duration: 0.5 },
 };
 
-// Features data
+// Features data optimized for SEO
 const features = [
     {
         icon: Trophy,
-        title: "Live Auction Engine",
+        title: "Live Cricket Auction Software",
         description:
-            "Real-time bidding with automatic increment slabs and instant updates across all devices.",
+            "Conduct seamless IPL-style player auctions with real-time bidding, automatic slab increments, and instant team purse updates.",
         color: "text-primary",
         glow: "group-hover:shadow-[0_0_30px_hsl(263,70%,50%,0.3)]",
     },
     {
         icon: Users,
-        title: "Team & Player Management",
+        title: "Player & Team Management",
         description:
-            "Complete roster management with bulk upload, categories, and detailed player profiles.",
+            "Manage your cricket tournament roster with bulk uploads, player categorization, and detailed team profiles.",
         color: "text-secondary",
         glow: "group-hover:shadow-[0_0_30px_hsl(30,100%,55%,0.3)]",
     },
     {
         icon: BarChart3,
-        title: "Real-time Analytics",
+        title: "Real-time Auction Analytics",
         description:
-            "Track page views, auction activity, and user engagement with beautiful dashboards.",
+            "Track unsold players, budget consumption, and team strength with our comprehensive live auction dashboard.",
         color: "text-accent",
         glow: "group-hover:shadow-[0_0_30px_hsl(142,76%,36%,0.3)]",
     },
     {
         icon: MessageSquare,
-        title: "WhatsApp Notifications",
+        title: "WhatsApp Status Updates",
         description:
-            "Automatic notifications to players when they're sold or go unsold in the auction.",
+            "Our auction app sends automatic WhatsApp notifications to players as soon as they are sold or remain unsold.",
         color: "text-green-400",
         glow: "group-hover:shadow-[0_0_30px_hsl(142,76%,50%,0.3)]",
     },
     {
         icon: Wallet,
-        title: "Budget Tracking",
+        title: "Automated Budget Tracking",
         description:
-            "Real-time budget updates for each team with remaining purse displayed instantly.",
+            "Prevent overspending with automatic purse calculations. The system enforces budget limits for every team in real-time.",
         color: "text-yellow-400",
         glow: "group-hover:shadow-[0_0_30px_hsl(45,100%,50%,0.3)]",
     },
     {
         icon: Target,
-        title: "Custom Categories",
+        title: "Flexible Category Slabs",
         description:
-            "Define player categories with individual base prices for organized auctions.",
+            "Set custom base prices and bid increments for different player categories (Batsman, Bowler, All-Rounder).",
         color: "text-pink-400",
         glow: "group-hover:shadow-[0_0_30px_hsl(330,80%,60%,0.3)]",
     },
@@ -111,32 +112,32 @@ const features = [
 const steps = [
     {
         number: "01",
-        title: "Create Tournament",
-        description: "Set up your tournament with teams, budget, and player categories",
+        title: "Create Your Cricket Tournament",
+        description: "Set up teams, total purse budget, and define player categories for your auction.",
     },
     {
         number: "02",
-        title: "Add Players",
-        description: "Bulk upload players via CSV or add them individually",
+        title: "Register Players",
+        description: "Use our bulk upload feature to add hundreds of players instantly from CSV.",
     },
     {
         number: "03",
-        title: "Start Auction",
-        description: "Go live with real-time bidding and instant notifications",
+        title: "Run Live Auction",
+        description: "Launch the live bidding screen. Teams bid, and system handles calculations.",
     },
     {
         number: "04",
-        title: "Track Results",
-        description: "View detailed reports and analytics after the auction",
+        title: "Instant Reports",
+        description: "Get sold/unsold lists and team squad summaries immediately after the auction.",
     },
 ];
 
 // Stats
 const stats = [
-    { value: "500+", label: "Tournaments Hosted" },
+    { value: "500+", label: "Tournaments Managed" },
     { value: "10K+", label: "Players Auctioned" },
-    { value: "99.9%", label: "Uptime" },
-    { value: "4.9★", label: "User Rating" },
+    { value: "100%", label: "Paperless Logic" },
+    { value: "4.9★", label: "Organizer Rating" },
 ];
 
 export default function Home() {
@@ -151,12 +152,66 @@ export default function Home() {
     const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.8]);
     const heroY = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
+    useEffect(() => {
+        // SEO: Set Page Title
+        document.title = "Vardhaman cricBid | #1 Online Cricket Auction Software & App";
+
+        // SEO: Set Meta Description
+        let metaDescription = document.querySelector('meta[name="description"]');
+        if (!metaDescription) {
+            metaDescription = document.createElement('meta');
+            metaDescription.setAttribute('name', 'description');
+            document.head.appendChild(metaDescription);
+        }
+        metaDescription.setAttribute('content', 'Host professional IPL-style cricket auctions online with Vardhaman cricBid. Features include live bidding, squad management, automated budget tracking, and WhatsApp integration.');
+
+    }, []);
+
+    const schemaData = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Vardhaman cricBid",
+        "applicationCategory": "SportsManagementApplication",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+        },
+        "description": "Professional cricket auction software for local tournaments, leagues, and organizers.",
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "ratingCount": "150"
+        }
+    };
+
     return (
-        <div className="overflow-hidden">
+        <div className="overflow-hidden font-sans">
+            {/* Schema.org Structured Data */}
+            <script type="application/ld+json">
+                {JSON.stringify(schemaData)}
+            </script>
+
+            {/* Landing Page Header */}
+            <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border/40">
+                <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <img src={logo} alt="Vardhaman cricBid Logo" className="h-10 w-auto rounded-md" />
+                        <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                            Vardhaman cricBid
+                        </span>
+                    </div>
+                    <div>
+                        <Button onClick={() => navigate("/tournaments")}>Start Auction</Button>
+                    </div>
+                </div>
+            </header>
+
             {/* Hero Section */}
             <motion.section
                 ref={heroRef}
-                className="relative min-h-screen flex items-center justify-center overflow-hidden"
+                className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16"
                 style={{ opacity: heroOpacity }}
             >
                 {/* Animated Background */}
@@ -188,7 +243,7 @@ export default function Home() {
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8"
                     >
                         <Zap className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium">The Future of Sports Auctions</span>
+                        <span className="text-sm font-medium">India's Leading Cricket Auction Platform</span>
                     </motion.div>
 
                     {/* Main Headline */}
@@ -196,14 +251,14 @@ export default function Home() {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4, duration: 0.8 }}
-                        className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-tight px-2"
+                        className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-tight px-2"
                     >
                         <span className="bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
-                            Run Stunning
+                            Professional
                         </span>
                         <br />
                         <span className="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
-                            Live Auctions
+                            Cricket Auction Software
                         </span>
                     </motion.h1>
 
@@ -214,8 +269,7 @@ export default function Home() {
                         transition={{ delay: 0.6, duration: 0.8 }}
                         className="text-base sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-10 px-4"
                     >
-                        The all-in-one platform to manage tournaments, teams, and real-time player auctions
-                        with instant WhatsApp notifications.
+                        Organize IPL-style player auctions for your local tournaments. Live bidding, squad management, and real-time updates—all in one app.
                     </motion.p>
 
                     {/* CTA Buttons */}
@@ -230,7 +284,7 @@ export default function Home() {
                             className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-[0_0_30px_hsl(263,70%,50%,0.4)] hover:shadow-[0_0_40px_hsl(263,70%,50%,0.6)] transition-all duration-300"
                             onClick={() => navigate("/tournaments")}
                         >
-                            Get Started
+                            Start Auction Now
                             <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
                         <Button
@@ -242,7 +296,7 @@ export default function Home() {
                             }}
                         >
                             <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                            Watch Demo
+                            See Demo
                         </Button>
                     </motion.div>
 
@@ -269,10 +323,10 @@ export default function Home() {
                 <div className="container mx-auto px-4">
                     <motion.div {...fadeInUp} className="text-center mb-8 md:mb-12">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 md:mb-4">
-                            See It In <span className="text-primary">Action</span>
+                            See the <span className="text-primary">Auction App</span> in Action
                         </h2>
                         <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-                            Watch how easy it is to run a professional auction
+                            Experience the thrill of a digital cricket player auction.
                         </p>
                     </motion.div>
 
@@ -280,7 +334,6 @@ export default function Home() {
                         <Card className="overflow-hidden bg-card/50 backdrop-blur border-primary/20 shadow-2xl">
                             <CardContent className="p-0">
                                 <div className="relative aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center group cursor-pointer">
-                                    {/* Placeholder for video - replace with actual video */}
                                     <div className="absolute inset-0 bg-[url('/stadium-bg.jpg')] bg-cover bg-center opacity-30" />
                                     <div className="relative z-10 text-center">
                                         <motion.div
@@ -290,7 +343,7 @@ export default function Home() {
                                         >
                                             <Play className="w-6 h-6 sm:w-10 sm:h-10 text-white ml-1" />
                                         </motion.div>
-                                        <p className="mt-3 sm:mt-4 text-sm sm:text-lg text-muted-foreground">Click to play demo</p>
+                                        <p className="mt-3 sm:mt-4 text-sm sm:text-lg text-muted-foreground">Watch Demo Guide</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -306,10 +359,10 @@ export default function Home() {
                 <div className="container mx-auto px-4 relative z-10">
                     <motion.div {...fadeInUp} className="text-center mb-10 md:mb-16">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 md:mb-4">
-                            Everything You <span className="text-secondary">Need</span>
+                            Why Choose <span className="text-secondary">Vardhaman cricBid</span>?
                         </h2>
                         <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-                            Powerful features designed for seamless auction management
+                            The most feature-rich online cricket auction software for organizers.
                         </p>
                     </motion.div>
 
@@ -343,10 +396,10 @@ export default function Home() {
                 <div className="container mx-auto px-4">
                     <motion.div {...fadeInUp} className="text-center mb-10 md:mb-16">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 md:mb-4">
-                            How It <span className="text-accent">Works</span>
+                            How the <span className="text-accent">Online Auction</span> Works
                         </h2>
                         <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-                            Get started in minutes with our simple 4-step process
+                            Host your cricket auction in 4 simple steps
                         </p>
                     </motion.div>
 
@@ -431,7 +484,7 @@ export default function Home() {
                         </div>
                         <div className="flex items-center gap-2">
                             <Zap className="w-6 h-6" />
-                            <span className="font-medium">Lightning Fast</span>
+                            <span className="font-medium">Real-time Sync</span>
                         </div>
                     </motion.div>
                 </div>
@@ -444,24 +497,27 @@ export default function Home() {
 
                 <motion.div {...scaleIn} className="container mx-auto px-4 relative z-10 text-center">
                     <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-4 md:mb-6 px-2">
-                        Ready to Run Your
+                        Start Your
                         <br />
                         <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                            First Auction?
+                            Cricket Auction
                         </span>
+                        {" "}Today
                     </h2>
                     <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-10 px-4">
-                        Join hundreds of tournament organizers who trust Auctioner for their player auctions.
+                        Join hundreds of tournament organizers who trust Vardhaman cricBid for their player auctions.
                     </p>
 
                     {/* Contact Info */}
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
                         <a
-                            href="tel:8208216407"
-                            className="flex items-center gap-2 px-6 py-3 rounded-full bg-accent/10 border border-accent/30 hover:bg-accent/20 transition-all"
+                            href="https://wa.me/918208216407"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-6 py-3 rounded-full bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 transition-all text-green-500"
                         >
-                            <Phone className="w-5 h-5 text-accent" />
-                            <span className="font-semibold">Call: 8208216407</span>
+                            <Phone className="w-5 h-5" />
+                            <span className="font-semibold">WhatsApp: +91 8208216407</span>
                         </a>
                     </div>
 
@@ -470,26 +526,30 @@ export default function Home() {
                         className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-[0_0_40px_hsl(263,70%,50%,0.4)] hover:shadow-[0_0_60px_hsl(263,70%,50%,0.6)] transition-all duration-300"
                         onClick={() => navigate("/tournaments")}
                     >
-                        View Tournaments
+                        Create Your Auction
                         <ArrowRight className="ml-2 h-5 w-5 sm:h-6 sm:w-6" />
                     </Button>
                 </motion.div>
             </section>
 
             {/* Footer */}
-            <footer className="py-8 md:py-12 border-t border-border/50">
+            <footer className="py-8 md:py-12 border-t border-border/50 bg-background/50 backdrop-blur-sm">
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex items-center gap-2">
-                            <Trophy className="w-6 h-6 text-primary" />
-                            <span className="text-xl font-bold">Auctioner</span>
+                            <img src={logo} alt="Vardhaman cricBid" className="w-8 h-8 rounded-md" />
+                            <span className="text-xl font-bold">Vardhaman cricBid</span>
                         </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <Phone className="w-4 h-4" />
-                            <a href="tel:8208214607" className="hover:text-primary transition-colors">8208214607</a>
+                        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-muted-foreground">
+                            <a href="#" className="hover:text-primary transition-colors">How it works</a>
+                            <a href="#" className="hover:text-primary transition-colors">Features</a>
+                            <div className="flex items-center gap-2">
+                                <Phone className="w-4 h-4" />
+                                <a href="tel:8208216407" className="hover:text-primary transition-colors">8208216407</a>
+                            </div>
                         </div>
                         <div className="text-muted-foreground text-sm">
-                            © {new Date().getFullYear()} Auctioner. All rights reserved.
+                            © {new Date().getFullYear()} Vardhaman cricBid. All rights reserved.
                         </div>
                     </div>
                 </div>

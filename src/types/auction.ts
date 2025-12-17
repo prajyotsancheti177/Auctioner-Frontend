@@ -20,6 +20,7 @@ export interface Player {
   basePrice?: number;
   amtSold?: number;
   playerCategory?: string;
+  auctionSerialNumber?: number;
   status?: PlayerStatus;
 }
 

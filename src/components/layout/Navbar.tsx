@@ -55,9 +55,8 @@ const buildNavLinks = () => {
     links.push({ path: "/bulk-upload", label: "Bulk Upload" });
   }
 
-  if (showAuction) {
-    links.unshift({ path: "/auction", label: "Live Auction" });
-  }
+  // Live Auction is now public for viewers
+  links.unshift({ path: "/auction", label: "Live Auction" });
 
   if (showUsers) {
     links.unshift({ path: "/users", label: "Users" });
@@ -118,12 +117,13 @@ export const Navbar = () => {
         <div className="flex h-14 md:h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/tournaments" className="flex items-center gap-2 group">
-            <div className="rounded-lg bg-gradient-primary p-1.5 md:p-2 shadow-glow transition-all group-hover:scale-110">
-              <Trophy className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />
+            <div className="bg-white px-2 rounded-lg shadow-glow transition-transform group-hover:scale-105 overflow-hidden flex items-center justify-center">
+              <img
+                src="/src/assets/logo.png"
+                alt="Vardhaman cricBid"
+                className="h-10 md:h-14 w-[200px] object-contain scale-[1.9]"
+              />
             </div>
-            <span className="text-base md:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Cricket Auction
-            </span>
           </Link>
 
           {/* Desktop Navigation */}

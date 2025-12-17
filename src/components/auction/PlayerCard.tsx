@@ -68,20 +68,27 @@ export const PlayerCard = ({ player, isAnimated, isSold, className, onClick }: P
           })()}
         </div>
 
-        {/* Category Badge - Top right (hidden on smallest screens) */}
-        <div className="absolute top-1 sm:top-2 md:top-4 right-1 sm:right-2 md:right-4 hidden sm:block">
-          <Badge
-            variant={
-              player.playerCategory === "Regular"
-                ? "default"
-                : player.playerCategory === "Icon"
-                  ? "secondary"
-                  : "outline"
-            }
-            className="text-[10px] sm:text-xs font-bold shadow-lg px-1.5 py-0.5 sm:px-2 sm:py-1"
-          >
-            {player.playerCategory}
-          </Badge>
+        {/* Serial Badge - Top right (below Category if visible, or top right) */}
+        <div className="absolute top-0.5 sm:top-2 md:top-4 right-0.5 sm:right-2 md:right-4 flex flex-col items-end gap-1">
+          <div className="hidden sm:block">
+            <Badge
+              variant={
+                player.playerCategory === "Regular"
+                  ? "default"
+                  : player.playerCategory === "Icon"
+                    ? "secondary"
+                    : "outline"
+              }
+              className="text-[10px] sm:text-xs font-bold shadow-lg px-1.5 py-0.5 sm:px-2 sm:py-1"
+            >
+              {player.playerCategory}
+            </Badge>
+          </div>
+          {player.auctionSerialNumber && (
+            <Badge variant="outline" className="text-[10px] sm:text-xs font-bold shadow-lg bg-background/50 backdrop-blur-md border-primary/50 text-foreground px-1.5 py-0.5 sm:px-2 sm:py-1">
+              #{player.auctionSerialNumber}
+            </Badge>
+          )}
         </div>
       </div>
 

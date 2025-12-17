@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { getDriveThumbnail } from "@/lib/imageUtils";
 
 interface PlayerCardProps {
-  player: Player;
+  player: Player | null; // Allow null
   isAnimated?: boolean;
   isSold?: boolean;
   className?: string;
@@ -17,6 +17,22 @@ interface PlayerCardProps {
 
 
 export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, currentBid, leadingTeamName, leadingTeamLogo, bidPrice, onClick }: PlayerCardProps) => {
+  if (!player) {
+    return (
+      <div className={cn(
+        "relative overflow-hidden rounded-2xl bg-card/60 border-2 border-border shadow-elevated w-full h-full flex items-center justify-center",
+        className
+      )}>
+        <div className="text-center p-8">
+          <div className="w-32 h-32 bg-muted/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <span className="text-4xl">👤</span>
+          </div>
+          <h3 className="text-2xl font-bold text-muted-foreground">No Player Selected</h3>
+        </div>
+      </div>
+    );
+  }
+
   // console.log("Rendering PlayerCard for:", player);
   const formatPrice = (price: number) => {
     return `${price} Pts.`;
@@ -76,6 +92,15 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
             </Badge>
           </div>
 
+          {/* Serial Number Badge */}
+          {player.auctionSerialNumber && (
+            <div className="absolute top-16 right-4">
+              <Badge variant="outline" className="text-sm font-bold shadow-lg bg-background/50 backdrop-blur-md border-primary/50 text-foreground">
+                #{player.auctionSerialNumber}
+              </Badge>
+            </div>
+          )}
+
           {/* Status Badge */}
           {(() => {
             const isSold = !!player.sold;
@@ -111,6 +136,11 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
           {currentBid !== undefined && (
             <div className="text-center mb-6 mt-6 md:mt-12">
               <h3 className="text-3xl md:text-6xl font-black text-foreground mb-4">
+                {player.auctionSerialNumber && (
+                  <span className="text-secondary mr-2 sm:mr-4">
+                    #{player.auctionSerialNumber}
+                  </span>
+                )}
                 {player.name}
               </h3>
               <p className="text-lg md:text-2xl text-muted-foreground font-semibold">
@@ -166,7 +196,12 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
               })()}
             </div>
 
-            <div className="max-w-[70%] text-right">
+            <div className="max-w-[70%] text-right flex gap-1 justify-end">
+              {player.auctionSerialNumber && (
+                <Badge variant="outline" className="text-xs font-bold shadow-sm whitespace-nowrap bg-background/50 border-primary/50">
+                  #{player.auctionSerialNumber}
+                </Badge>
+              )}
               <Badge
                 variant={
                   player.playerCategory === "Regular"

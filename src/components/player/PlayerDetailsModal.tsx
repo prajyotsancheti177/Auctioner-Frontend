@@ -396,7 +396,14 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                         onChange={(e) => handleInputChange('name', e.target.value)}
                       />
                     ) : (
-                      <p className="text-lg font-medium">{player.name}</p>
+                      <div className="flex flex-col">
+                        <p className="text-lg font-medium">{player.name}</p>
+                        {player.auctionSerialNumber && (
+                          <Badge variant="outline" className="w-fit mt-1 text-xs">
+                            #{player.auctionSerialNumber}
+                          </Badge>
+                        )}
+                      </div>
                     )}
                   </div>
 

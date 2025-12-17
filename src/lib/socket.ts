@@ -8,7 +8,9 @@ export const getSocket = (): Socket => {
     if (!socket) {
         socket = io(`${apiConfig.baseUrl}/auction`, {
             autoConnect: false,
-            transports: ["polling", "websocket"],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            timeout: 20000,
         });
 
         socket.on("connect", () => {

@@ -364,9 +364,9 @@ const Auction = () => {
         aria-hidden
       />
 
-      <div className="relative container mx-auto px-4 py-8">
+      <div className="relative container mx-auto px-2 py-4 md:px-4 md:py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8 animate-fade-in">
+        <div className="flex flex-wrap justify-between items-center mb-4 md:mb-8 gap-2 animate-fade-in">
           <div className="flex-1">
             {!isAuctioneer && (
               <div className="flex items-center gap-2">
@@ -386,15 +386,15 @@ const Auction = () => {
               </div>
             )}
           </div>
-          <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-card border-2 border-primary shadow-glow">
-            <div className="bg-white px-2 py-0.5 rounded-md overflow-hidden flex items-center justify-center">
-              <img src={logo} alt="Logo" className="h-12 w-auto object-contain scale-[1.35]" />
+          <div className="inline-flex items-center gap-2 md:gap-3 px-3 md:px-6 py-2 md:py-3 rounded-full bg-card border-2 border-primary shadow-glow">
+            <div className="bg-white px-1 md:px-2 py-0.5 rounded-md overflow-hidden flex items-center justify-center">
+              <img src={logo} alt="Logo" className="h-8 md:h-12 w-auto object-contain scale-[1.35]" />
             </div>
-            <span className="text-xl font-bold text-foreground">
+            <span className="text-sm md:text-xl font-bold text-foreground">
               Player #{currentPlayer?.auctionSerialNumber || playerNumber}
             </span>
           </div>
-          <div className="flex-1 flex justify-end gap-2 gap-2">
+          <div className="flex justify-end gap-1 md:gap-2">
             {/* Sound Toggle */}
             <Button
               variant={soundEnabled ? "default" : "outline"}
@@ -405,16 +405,18 @@ const Auction = () => {
             >
               {soundEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
             </Button>
-            {/* Animation Toggle */}
-            <Button
-              variant={animationEnabled ? "default" : "outline"}
-              size="icon"
-              onClick={() => setAnimationEnabled(!animationEnabled)}
-              className="rounded-full"
-              title={animationEnabled ? "Animations On" : "Animations Off"}
-            >
-              <Sparkles className={`h-5 w-5 ${!animationEnabled ? 'opacity-50' : ''}`} />
-            </Button>
+            {/* Animation Toggle - Auctioneer only */}
+            {isAuctioneer && (
+              <Button
+                variant={animationEnabled ? "default" : "outline"}
+                size="icon"
+                onClick={() => setAnimationEnabled(!animationEnabled)}
+                className="rounded-full"
+                title={animationEnabled ? "Animations On" : "Animations Off"}
+              >
+                <Sparkles className={`h-5 w-5 ${!animationEnabled ? 'opacity-50' : ''}`} />
+              </Button>
+            )}
             {/* Settings */}
             {/* Only Auctioneer can change settings? Maybe anyone for now if allowed */}
             {isAuctioneer && (
@@ -428,7 +430,7 @@ const Auction = () => {
         <div className="space-y-8 max-w-full mx-auto">
           {/* Large Player Card */}
           <div className="flex justify-center animate-scale-in">
-            <div className="w-full max-w-7xl h-[60vh]">
+            <div className="w-full max-w-7xl h-[65vh] md:h-[60vh]">
               <AuctionPlayerCard
                 player={currentPlayer}
                 isAnimated
@@ -443,12 +445,12 @@ const Auction = () => {
 
           {/* Team Bidding Grid - Only for Auctioneer */}
           {isAuctioneer && (
-            <Card className="p-3 bg-card/80 backdrop-blur-sm border-2 border-border shadow-elevated max-w-5xl mx-auto">
-              <h2 className="text-lg font-bold mb-3 text-foreground text-center">
+            <Card className="p-2 md:p-3 bg-card/80 backdrop-blur-sm border-2 border-border shadow-elevated max-w-5xl mx-auto">
+              <h2 className="text-sm md:text-lg font-bold mb-2 md:mb-3 text-foreground text-center">
                 Click on Team to Bid
               </h2>
 
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-3">
+              <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-1 md:gap-2 mb-2 md:mb-3">
                 {teams.map((team: any) => {
                   const nextBidAmount = leadingTeam === null ? currentBid : currentBid + bidPrice;
                   const noSlots = (team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0;
@@ -495,20 +497,20 @@ const Auction = () => {
                 })}
               </div>
 
-              <div className="flex gap-3 justify-center flex-wrap">
-                <Button onClick={handleNextPlayer} size="default" className="px-6 bg-primary text-primary-foreground hover:bg-primary/90">
-                  Next Player
+              <div className="flex gap-2 md:gap-3 justify-center flex-wrap">
+                <Button onClick={handleNextPlayer} size="sm" className="px-3 md:px-6 text-xs md:text-sm bg-primary text-primary-foreground hover:bg-primary/90">
+                  Next
                 </Button>
-                <Button onClick={() => { setShowSearchDialog(true); }} variant="secondary" size="default" className="px-6">
-                  <Search className="h-4 w-4 mr-2" /> Search
+                <Button onClick={() => { setShowSearchDialog(true); }} variant="secondary" size="sm" className="px-3 md:px-6 text-xs md:text-sm">
+                  <Search className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" /> Search
                 </Button>
-                <Button onClick={actions.undoBid} disabled={currentBid === 0 || !currentPlayer} variant="secondary" size="default" className="px-6">
-                  Undo Bid
+                <Button onClick={actions.undoBid} disabled={currentBid === 0 || !currentPlayer} variant="secondary" size="sm" className="px-3 md:px-6 text-xs md:text-sm">
+                  Undo
                 </Button>
-                <Button onClick={actions.markUnsold} disabled={!currentPlayer} variant="outline" size="default" className="px-8">
+                <Button onClick={actions.markUnsold} disabled={!currentPlayer} variant="outline" size="sm" className="px-4 md:px-8 text-xs md:text-sm">
                   Unsold
                 </Button>
-                <Button onClick={actions.markSold} disabled={!leadingTeam || !currentPlayer} size="default" className="px-8 bg-gradient-accent hover:opacity-90">
+                <Button onClick={actions.markSold} disabled={!leadingTeam || !currentPlayer} size="sm" className="px-4 md:px-8 text-xs md:text-sm bg-gradient-accent hover:opacity-90">
                   Sold!
                 </Button>
               </div>

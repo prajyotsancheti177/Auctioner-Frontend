@@ -51,8 +51,8 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
       onClick={handleClick}
       className={cn(
         "relative overflow-hidden rounded-2xl bg-card/60 border-2 border-border shadow-elevated transition-all w-full h-full",
-        // keep row layout (image left, details right) across breakpoints
-        "flex flex-row items-stretch",
+        // Column on mobile (image top), row on desktop (image left)
+        "flex flex-col md:flex-row items-stretch",
         // Add cursor pointer and hover effects when clickable
         onClick && "cursor-pointer hover:shadow-2xl hover:scale-[1.02] hover:border-primary/50",
         // hover lift
@@ -63,7 +63,7 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
       )}
     >
       {/* Player Image */}
-      <div className="relative flex-shrink-0 w-36 h-56 md:w-[27rem] md:h-full overflow-hidden rounded-l-2xl">
+      <div className="relative flex-shrink-0 w-full h-80 md:w-[27rem] md:h-full overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none">
         <img
           src={logoSrc}
           alt={player.name}
@@ -131,19 +131,19 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
       {/* Player Details */}
       <div className="p-3 flex-1 w-full md:pl-6 flex flex-col">
         {/* Glass panel for details */}
-        <div className="w-full h-full bg-white/6 backdrop-blur-sm p-3 md:p-6 rounded-r-2xl flex flex-col justify-between">
+        <div className="w-full h-full bg-white/6 backdrop-blur-sm p-3 md:p-6 rounded-b-2xl md:rounded-r-2xl md:rounded-bl-none flex flex-col justify-between">
           {/* Player name and base price moved down with increased spacing */}
           {currentBid !== undefined && (
             <div className="text-center mb-6 mt-6 md:mt-12">
-              <h3 className="text-3xl md:text-6xl font-black text-foreground mb-4">
+              <h3 className="text-lg sm:text-2xl md:text-6xl font-black text-foreground mb-2 md:mb-4">
                 {player.auctionSerialNumber && (
-                  <span className="text-secondary mr-2 sm:mr-4">
+                  <span className="text-secondary mr-1 sm:mr-2 md:mr-4">
                     #{player.auctionSerialNumber}
                   </span>
                 )}
                 {player.name}
               </h3>
-              <p className="text-lg md:text-2xl text-muted-foreground font-semibold">
+              <p className="text-xs sm:text-sm md:text-2xl text-muted-foreground font-semibold">
                 Base: {player.basePrice} Pts. | Increment: {bidPrice} Pts.
               </p>
             </div>
@@ -154,7 +154,7 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
                 <p className="text-lg md:text-2xl text-muted-foreground mb-3 font-semibold">Current Bid</p>
-                <div className="text-6xl md:text-9xl font-black text-secondary mb-6">
+                <div className="text-4xl sm:text-5xl md:text-9xl font-black text-secondary mb-2 md:mb-6">
                   {currentBid} Pts.
                 </div>
                 {leadingTeamName && (
@@ -171,7 +171,7 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
                         />
                       </div>
                     )}
-                    <div className="text-2xl md:text-6xl font-black text-primary">
+                    <div className="text-lg sm:text-xl md:text-6xl font-black text-primary">
                       {leadingTeamName}
                     </div>
                   </div>

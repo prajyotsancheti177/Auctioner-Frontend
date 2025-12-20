@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { trackEvent } from "@/lib/eventTracker";
+import logo from "@/assets/logo.png";
 
 const buildNavLinks = () => {
   let showAuction = false;
@@ -119,7 +120,7 @@ export const Navbar = () => {
           <Link to="/tournaments" className="flex items-center gap-2 group">
             <div className="bg-white px-2 rounded-lg shadow-glow transition-transform group-hover:scale-105 overflow-hidden flex items-center justify-center">
               <img
-                src="/src/assets/logo.png"
+                src={logo}
                 alt="Vardhaman cricBid"
                 className="h-10 md:h-14 w-[200px] object-contain scale-[1.9]"
               />

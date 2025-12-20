@@ -271,10 +271,9 @@ export default function Home() {
             <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border/40">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <img src={logo} alt="Vardhaman cricBid Logo" className="h-10 w-auto rounded-md" />
-                        <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                            Vardhaman cricBid
-                        </span>
+                        <div className="bg-white rounded-lg shadow-glow overflow-hidden flex items-center justify-center">
+                            <img src={logo} alt="Vardhaman cricBid Logo" className="h-10 w-[160px] object-contain scale-[2.1]" />
+                        </div>
                     </div>
                     <div>
                         <Button onClick={() => navigate("/tournaments")}>Take me to CricBid</Button>

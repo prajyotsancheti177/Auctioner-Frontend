@@ -154,7 +154,7 @@ export default function Home() {
 
     useEffect(() => {
         // SEO: Set Page Title with target keywords
-        document.title = "Vardhaman CricBid | FREE Cricket Auction Software | Smart Automatic Bidding App";
+        document.title = "Vardhaman CricBid | Cricket Auction Software | Smart Automatic Bidding App";
 
         // SEO: Set Meta Description with keywords
         let metaDescription = document.querySelector('meta[name="description"]');
@@ -163,7 +163,7 @@ export default function Home() {
             metaDescription.setAttribute('name', 'description');
             document.head.appendChild(metaDescription);
         }
-        metaDescription.setAttribute('content', 'India\'s #1 FREE cricket auction software with automatic smart bidding, WhatsApp notifications & live streaming. Best cheapest online auction app for IPL-style local tournaments, box cricket, gully cricket & corporate leagues.');
+        metaDescription.setAttribute('content', 'India\'s #1 cricket auction software with automatic smart bidding, WhatsApp notifications & live streaming. Best cheapest online auction app for IPL-style local tournaments, box cricket, gully cricket & corporate leagues.');
 
         // SEO: Set Keywords
         let metaKeywords = document.querySelector('meta[name="keywords"]');
@@ -277,7 +277,7 @@ export default function Home() {
                         </span>
                     </div>
                     <div>
-                        <Button onClick={() => navigate("/tournaments")}>Start Auction</Button>
+                        <Button onClick={() => navigate("/tournaments")}>Take me to CricBid</Button>
                     </div>
                 </div>
             </header>
@@ -358,7 +358,7 @@ export default function Home() {
                             className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-[0_0_30px_hsl(263,70%,50%,0.4)] hover:shadow-[0_0_40px_hsl(263,70%,50%,0.6)] transition-all duration-300"
                             onClick={() => navigate("/tournaments")}
                         >
-                            Start Auction Now
+                            Take me to CricBid
                             <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
                         <Button
@@ -516,7 +516,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Stats Section */}
+            {/* Stats Section
             <section className="py-12 md:py-24 relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-secondary/10" />
 
@@ -539,7 +539,7 @@ export default function Home() {
                         ))}
                     </motion.div>
                 </div>
-            </section>
+            </section> */}
 
             {/* Trust Badges */}
             <section className="py-16">
@@ -572,19 +572,19 @@ export default function Home() {
                             Frequently Asked <span className="text-primary">Questions</span>
                         </h2>
                         <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-                            Everything you need to know about our free cricket auction software
+                            Everything you need to know about our Vardhaman cricBid
                         </p>
                     </motion.div>
 
                     <div className="max-w-4xl mx-auto space-y-4">
-                        <motion.div {...fadeInUp}>
+                        {/* <motion.div {...fadeInUp}>
                             <Card className="bg-card/50 backdrop-blur border-border/50">
                                 <CardContent className="p-6">
                                     <h3 className="text-xl font-bold mb-2 text-foreground">Is Vardhaman CricBid really free cricket auction software?</h3>
                                     <p className="text-muted-foreground">Yes! CricBid is 100% free cricket auction software. You can host unlimited IPL-style auctions with automatic bidding, WhatsApp player notifications, and live streaming - completely free of charge. It's the best free and cheapest cricket auction app in India.</p>
                                 </CardContent>
                             </Card>
-                        </motion.div>
+                        </motion.div> */}
 
                         <motion.div {...fadeInUp}>
                             <Card className="bg-card/50 backdrop-blur border-border/50">
@@ -613,14 +613,14 @@ export default function Home() {
                             </Card>
                         </motion.div>
 
-                        <motion.div {...fadeInUp}>
+                        {/* <motion.div {...fadeInUp}>
                             <Card className="bg-card/50 backdrop-blur border-border/50">
                                 <CardContent className="p-6">
                                     <h3 className="text-xl font-bold mb-2 text-foreground">Is this the best online auction software for cricket tournaments?</h3>
                                     <p className="text-muted-foreground">Vardhaman CricBid is rated 4.9★ by tournament organizers across India. With features like live bidding, automatic budget tracking, bulk player upload, real-time team purse updates, and WhatsApp integration - it's considered the best and cheapest cricket auction platform available online.</p>
                                 </CardContent>
                             </Card>
-                        </motion.div>
+                        </motion.div> */}
                     </div>
                 </div>
             </section>
@@ -644,16 +644,37 @@ export default function Home() {
                     </p>
 
                     {/* Contact Info */}
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-                        <a
-                            href="https://wa.me/918208216407"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-6 py-3 rounded-full bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 transition-all text-green-500"
-                        >
-                            <Phone className="w-5 h-5" />
-                            <span className="font-semibold">WhatsApp: +91 8208216407</span>
-                        </a>
+                    <div className="flex flex-col items-center justify-center gap-4 mb-8">
+                        <h3 className="text-xl font-semibold text-muted-foreground mb-2">Contact Us</h3>
+                        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4">
+                            <a
+                                href="https://wa.me/918208216407"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 transition-all text-green-500"
+                            >
+                                <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span className="font-semibold text-sm sm:text-base">Pushkar Sancheti: 8208216407</span>
+                            </a>
+                            <a
+                                href="https://wa.me/919423931031"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 transition-all text-green-500"
+                            >
+                                <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span className="font-semibold text-sm sm:text-base">Kartik Bakliwal: 94239 31031</span>
+                            </a>
+                            <a
+                                href="https://wa.me/919309848331"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 transition-all text-green-500"
+                            >
+                                <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span className="font-semibold text-sm sm:text-base">Prajyot Sancheti: 9309848331</span>
+                            </a>
+                        </div>
                     </div>
 
                     <Button

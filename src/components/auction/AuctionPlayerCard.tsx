@@ -50,7 +50,7 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
     <div
       onClick={handleClick}
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-card/60 border-2 border-border shadow-elevated transition-all w-full h-full",
+        "relative rounded-2xl bg-card/60 border-2 border-border shadow-elevated transition-all w-full min-h-full",
         // Column on mobile (image top), row on desktop (image left)
         "flex flex-col md:flex-row items-stretch",
         // Add cursor pointer and hover effects when clickable
@@ -63,7 +63,7 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
       )}
     >
       {/* Player Image */}
-      <div className="relative flex-shrink-0 w-full h-80 md:w-[27rem] md:h-full overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none">
+      <div className="relative flex-shrink-0 w-full h-64 sm:h-72 md:w-[24rem] lg:w-[27rem] md:h-auto md:min-h-full overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none">
         <img
           src={logoSrc}
           alt={player.name}
@@ -151,27 +151,27 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
 
           {/* Bid Display - Center of right side */}
           {currentBid !== undefined && (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-lg md:text-2xl text-muted-foreground mb-3 font-semibold">Current Bid</p>
-                <div className="text-4xl sm:text-5xl md:text-9xl font-black text-secondary mb-2 md:mb-6">
+            <div className="flex-1 flex items-center justify-center py-2 md:py-4">
+              <div className="text-center w-full px-2">
+                <p className="text-base sm:text-lg md:text-2xl text-muted-foreground mb-2 md:mb-3 font-semibold">Current Bid</p>
+                <div className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-secondary mb-2 md:mb-4 break-words">
                   {currentBid} Pts.
                 </div>
                 {leadingTeamName && (
-                  <div className="flex items-center justify-center gap-4 mb-2">
+                  <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-2">
                     {leadingTeamLogo && (
-                      <div className="w-12 h-12 md:w-20 md:h-20 rounded-full overflow-hidden border-3 border-primary shadow-lg flex items-center justify-center bg-transparent">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-2 md:border-3 border-primary shadow-lg flex items-center justify-center bg-transparent flex-shrink-0">
                         <img
                           src={leadingTeamLogo}
                           alt={leadingTeamName}
-                          className="w-10 h-10 md:w-16 md:h-16 object-contain"
+                          className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 object-contain"
                           onError={(e) => {
                             e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(leadingTeamName || 'Team')}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=36&fontWeight=600`;
                           }}
                         />
                       </div>
                     )}
-                    <div className="text-lg sm:text-xl md:text-6xl font-black text-primary">
+                    <div className="text-base sm:text-lg md:text-3xl lg:text-4xl xl:text-5xl font-black text-primary break-words">
                       {leadingTeamName}
                     </div>
                   </div>

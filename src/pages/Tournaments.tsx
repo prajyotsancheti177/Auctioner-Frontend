@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Users, Calendar, DollarSign, ArrowRight } from "lucide-react";
+import { Trophy, Users, Calendar, DollarSign, ArrowRight, Megaphone, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import apiConfig from "@/config/apiConfig";
 import { setSelectedTournamentId } from "@/lib/tournamentUtils";
 import { trackEvent, trackPageView } from "@/lib/eventTracker";
@@ -25,7 +26,14 @@ const Tournaments = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [announcingId, setAnnouncingId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Get current user
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
+  const isAdmin = user?.role === 'boss' || user?.role === 'super_user';
 
   useEffect(() => {
     const fetchTournaments = async () => {
@@ -78,6 +86,84 @@ const Tournaments = () => {
       return `${(amount / 100000).toFixed(1)}L`;
     }
     return new Intl.NumberFormat("en-IN").format(amount);
+  };
+
+  const handleAnnounceAuction = async (e: React.MouseEvent, tournamentId: string, tournamentName: string) => {
+    e.stopPropagation(); // Prevent card click
+
+    setAnnouncingId(tournamentId);
+
+    try {
+      // First get recipient count
+      const previewResponse = await fetch(`${apiConfig.baseUrl}/api/whatsapp/preview-recipients`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tournamentId }),
+      });
+
+      const previewData = await previewResponse.json();
+
+      if (!previewData.success) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to get recipient count",
+        });
+        setAnnouncingId(null);
+        return;
+      }
+
+      const { playerCount, teamOwnerCount, estimatedTotal } = previewData.data;
+
+      // Show confirmation with counts
+      const confirmed = window.confirm(
+        `Send WhatsApp announcement for "${tournamentName}"?\n\n` +
+        `📢 Recipients:\n` +
+        `   • ${playerCount} Players\n` +
+        `   • ${teamOwnerCount} Team Owners\n` +
+        `   • Total: ~${estimatedTotal} messages\n\n` +
+        `Continue?`
+      );
+
+      if (!confirmed) {
+        setAnnouncingId(null);
+        return;
+      }
+
+      // Send the announcement
+      const response = await fetch(`${apiConfig.baseUrl}/api/whatsapp/announce-auction`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tournamentId, tournamentName }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: "Announcement Sent!",
+          description: `Sent to ${data.data.successCount} of ${data.data.totalRecipients} recipients`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Failed to send",
+          description: data.message || "Failed to broadcast announcement",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to send announcement",
+      });
+    } finally {
+      setAnnouncingId(null);
+    }
   };
 
   if (loading) {
@@ -195,16 +281,33 @@ const Tournaments = () => {
                     </div>
                   )}
 
-                  {/* Action Button */}
-                  <Button
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all text-xs sm:text-sm md:text-base py-1.5 sm:py-2"
-                    variant="outline"
-                    size="sm"
-                  >
-                    <span className="hidden sm:inline">View Details</span>
-                    <span className="sm:hidden">View</span>
-                    <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    {(isAdmin || tournament.tournamentHostId === user?._id) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-shrink-0 text-xs sm:text-sm"
+                        onClick={(e) => handleAnnounceAuction(e, tournament._id, tournament.name)}
+                        disabled={announcingId === tournament._id}
+                      >
+                        {announcingId === tournament._id ? (
+                          <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                        ) : (
+                          <Megaphone className="h-3 w-3 sm:h-4 sm:w-4" />
+                        )}
+                      </Button>
+                    )}
+                    <Button
+                      className="flex-1 group-hover:bg-primary group-hover:text-primary-foreground transition-all text-xs sm:text-sm md:text-base py-1.5 sm:py-2"
+                      variant="outline"
+                      size="sm"
+                    >
+                      <span className="hidden sm:inline">View Details</span>
+                      <span className="sm:hidden">View</span>
+                      <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}

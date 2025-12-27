@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from "@/components/ui/chart";
 import { useToast } from "@/hooks/use-toast";
-import { BarChart, LineChart, Activity, Users, Eye, TrendingUp, Loader2, MessageCircle, CheckCircle, XCircle } from "lucide-react";
+import { BarChart, LineChart, Activity, Users, Eye, TrendingUp, Loader2, MessageCircle, CheckCircle, XCircle, Radio, Clock, Gavel } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart as RechartsBarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import apiConfig from "@/config/apiConfig";
 
@@ -64,6 +64,45 @@ interface WhatsAppAnalytics {
     messageTypes: WhatsAppTypeData[];
 }
 
+// Auction Room Analytics Interfaces
+interface AuctionRoomDailyData {
+    date: string;
+    sessionsCreated: number;
+    uniqueViewers: number;
+    avgPeakViewers: number;
+}
+
+interface AuctionRoomSummary {
+    totalSessions: number;
+    totalUniqueViewers: number;
+    totalJoins: number;
+    avgSessionDuration: number;
+    avgPeakViewers: number;
+    maxPeakViewers: number;
+    totalPlayersSold: number;
+    totalPlayersUnsold: number;
+    totalBids: number;
+}
+
+interface AuctionRoomTopSession {
+    tournamentId: string;
+    tournamentName: string;
+    peakConcurrentViewers: number;
+    totalUniqueViewers: number;
+    sessionDurationMinutes: number;
+    sessionStartedAt: string;
+}
+
+interface AuctionRoomAnalytics {
+    summary: AuctionRoomSummary;
+    daily: AuctionRoomDailyData[];
+    topSessions: AuctionRoomTopSession[];
+    dateRange: {
+        startDate: string;
+        endDate: string;
+    };
+}
+
 interface AnalyticsData {
     daily: DailyData[];
     monthly: MonthlyData[];
@@ -116,6 +155,21 @@ const whatsappChartConfig = {
     },
 } satisfies ChartConfig;
 
+const auctionRoomChartConfig = {
+    sessionsCreated: {
+        label: "Rooms Created",
+        color: "hsl(280, 83%, 53%)",
+    },
+    uniqueViewers: {
+        label: "Unique Viewers",
+        color: "hsl(200, 83%, 53%)",
+    },
+    avgPeakViewers: {
+        label: "Avg Peak Viewers",
+        color: "hsl(340, 83%, 53%)",
+    },
+} satisfies ChartConfig;
+
 const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -139,6 +193,7 @@ const Analytics = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [dateRange, setDateRange] = useState("30");
     const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+    const [auctionRoomData, setAuctionRoomData] = useState<AuctionRoomAnalytics | null>(null);
 
     useEffect(() => {
         // Check if user has permission
@@ -192,6 +247,27 @@ const Analytics = () => {
                     description: data.message || "Failed to fetch analytics",
                     variant: "destructive",
                 });
+            }
+
+            // Fetch auction room analytics
+            const auctionResponse = await fetch(
+                `${apiConfig.baseUrl}/api/event/auction-room-analytics?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&userId=${user._id}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            const auctionData = await auctionResponse.json();
+            console.log("[Analytics] Auction room API response:", auctionData);
+
+            if (auctionData.success) {
+                console.log("[Analytics] Setting auction room data:", auctionData.data);
+                setAuctionRoomData(auctionData.data);
+            } else {
+                console.error("[Analytics] Auction room API failed:", auctionData.message);
             }
         } catch (error) {
             console.error("Failed to fetch analytics:", error);
@@ -637,6 +713,188 @@ const Analytics = () => {
                             <p className="text-sm text-muted-foreground mt-2">
                                 Notifications sent when players go unsold
                             </p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+
+            {/* Live Auction Analytics Section */}
+            <div className="mt-12">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-600 bg-clip-text text-transparent mb-6">
+                    Live Auction Analytics
+                </h2>
+
+                {/* Auction Room Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Auction Rooms
+                            </CardTitle>
+                            <Radio className="h-5 w-5 text-purple-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-purple-500">
+                                {auctionRoomData?.summary?.totalSessions?.toLocaleString() || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Rooms created in period
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Unique Viewers
+                            </CardTitle>
+                            <Users className="h-5 w-5 text-blue-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-blue-500">
+                                {auctionRoomData?.summary?.totalUniqueViewers?.toLocaleString() || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Unique viewers across all rooms
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Avg Session Duration
+                            </CardTitle>
+                            <Clock className="h-5 w-5 text-amber-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-amber-500">
+                                {Math.round(auctionRoomData?.summary?.avgSessionDuration || 0)} min
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Average room duration
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-pink-500/10 to-pink-600/5 border-pink-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Peak Concurrent Viewers
+                            </CardTitle>
+                            <Eye className="h-5 w-5 text-pink-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-pink-500">
+                                {auctionRoomData?.summary?.maxPeakViewers?.toLocaleString() || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Maximum viewers at once
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Daily Room Activity Chart */}
+                <Card className="mb-8">
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <Radio className="h-5 w-5 text-purple-500" />
+                            <CardTitle>Daily Auction Room Activity</CardTitle>
+                        </div>
+                        <CardDescription>
+                            Rooms created and viewer participation over time
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {(auctionRoomData?.daily?.length || 0) > 0 ? (
+                            <ChartContainer config={auctionRoomChartConfig} className="h-[300px] w-full">
+                                <AreaChart data={auctionRoomData?.daily?.map(d => ({ ...d, date: formatDate(d.date) })) || []} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="hsl(280, 83%, 53%)" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="hsl(280, 83%, 53%)" stopOpacity={0} />
+                                        </linearGradient>
+                                        <linearGradient id="colorRoomViewers" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="hsl(200, 83%, 53%)" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="hsl(200, 83%, 53%)" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                    <XAxis
+                                        dataKey="date"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        className="text-xs"
+                                    />
+                                    <YAxis
+                                        tickLine={false}
+                                        axisLine={false}
+                                        className="text-xs"
+                                    />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <ChartLegend content={<ChartLegendContent />} />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="sessionsCreated"
+                                        stroke="hsl(280, 83%, 53%)"
+                                        fillOpacity={1}
+                                        fill="url(#colorSessions)"
+                                        strokeWidth={2}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="uniqueViewers"
+                                        stroke="hsl(200, 83%, 53%)"
+                                        fillOpacity={1}
+                                        fill="url(#colorRoomViewers)"
+                                        strokeWidth={2}
+                                    />
+                                </AreaChart>
+                            </ChartContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                                No auction room data available for the selected period
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Activity Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Total Bids</CardTitle>
+                            <CardDescription>Bids placed in auction rooms</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-4xl font-bold text-purple-500">
+                                {auctionRoomData?.summary?.totalBids?.toLocaleString() || 0}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Players Sold</CardTitle>
+                            <CardDescription>Successful auction completions</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-4xl font-bold text-green-500">
+                                {auctionRoomData?.summary?.totalPlayersSold?.toLocaleString() || 0}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Players Unsold</CardTitle>
+                            <CardDescription>Players that went unsold</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-4xl font-bold text-amber-500">
+                                {auctionRoomData?.summary?.totalPlayersUnsold?.toLocaleString() || 0}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

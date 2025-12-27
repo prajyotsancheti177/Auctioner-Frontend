@@ -9,9 +9,20 @@ interface PlayerCardProps {
   isSold?: boolean;
   className?: string;
   onClick?: (player: Player) => void;
+  categories?: string[]; // Array of categories from tournament for dynamic coloring
 }
 
-export const PlayerCard = ({ player, isAnimated, isSold, className, onClick }: PlayerCardProps) => {
+// Color palette for categories - subtle, theme-consistent colors
+const CATEGORY_COLORS = [
+  "bg-rose-500/80 text-white border border-rose-400",       // 1st - Subtle rose
+  "bg-emerald-500/80 text-white border border-emerald-400", // 2nd - Subtle emerald  
+  "bg-amber-500/80 text-white border border-amber-400",     // 3rd - Subtle amber
+  "bg-sky-500/80 text-white border border-sky-400",         // 4th - Subtle sky
+  "bg-violet-500/80 text-white border border-violet-400",   // 5th - Subtle violet
+  "bg-fuchsia-500/80 text-white border border-fuchsia-400", // 6th - Subtle fuchsia
+];
+
+export const PlayerCard = ({ player, isAnimated, isSold, className, onClick, categories = [] }: PlayerCardProps) => {
   const formatPrice = (price: number) => {
     if (price >= 100) {
       return `${price} Pts`;
@@ -41,20 +52,26 @@ export const PlayerCard = ({ player, isAnimated, isSold, className, onClick }: P
         className
       )}
     >
-      {/* Player Image - Much smaller on mobile */}
-      <div className="relative flex-shrink-0 w-full h-20 sm:h-32 md:h-48 lg:h-64 overflow-hidden">
+      {/* Player Image - Instagram style: full image with blurred background */}
+      <div className="relative flex-shrink-0 w-full h-36 sm:h-32 md:h-48 lg:h-64 overflow-hidden">
+        {/* Blurred background image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center blur-xl scale-110 opacity-80"
+          style={{ backgroundImage: `url(${logoSrc})` }}
+        />
+        {/* Main image - fits entirely without cropping */}
         <img
           src={logoSrc}
           alt={player.name}
-          className="h-full w-full object-cover"
+          className="relative h-full w-full object-contain z-10"
           onError={(e) => {
             e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=40&fontWeight=600`;
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent z-20" />
 
         {/* Status Badge - Top left */}
-        <div className="absolute top-0.5 sm:top-2 md:top-4 left-0.5 sm:left-2 md:left-4">
+        <div className="absolute top-0.5 sm:top-2 md:top-4 left-0.5 sm:left-2 md:left-4 z-30">
           {(() => {
             const isSold = !!player.sold;
             const isAuctioned = !!player.auctionStatus;
@@ -68,21 +85,22 @@ export const PlayerCard = ({ player, isAnimated, isSold, className, onClick }: P
           })()}
         </div>
 
-        {/* Serial Badge - Top right (below Category if visible, or top right) */}
-        <div className="absolute top-0.5 sm:top-2 md:top-4 right-0.5 sm:right-2 md:right-4 flex flex-col items-end gap-1">
+        {/* Category Badge - Top right */}
+        <div className="absolute top-0.5 sm:top-2 md:top-4 right-0.5 sm:right-2 md:right-4 flex flex-col items-end gap-1 z-30">
           <div className="hidden sm:block">
-            <Badge
-              variant={
-                player.playerCategory === "Regular"
-                  ? "default"
-                  : player.playerCategory === "Icon"
-                    ? "secondary"
-                    : "outline"
-              }
-              className="text-[10px] sm:text-xs font-bold shadow-lg px-1.5 py-0.5 sm:px-2 sm:py-1"
-            >
-              {player.playerCategory}
-            </Badge>
+            {(() => {
+              const categoryIndex = categories.indexOf(player.playerCategory || "");
+              const colorClass = categoryIndex >= 0
+                ? CATEGORY_COLORS[categoryIndex % CATEGORY_COLORS.length]
+                : "bg-gray-500 text-white"; // Fallback for unknown categories
+              return (
+                <Badge
+                  className={`${colorClass} text-[10px] sm:text-xs font-bold shadow-lg px-1.5 py-0.5 sm:px-2 sm:py-1`}
+                >
+                  {player.playerCategory}
+                </Badge>
+              );
+            })()}
           </div>
           {player.auctionSerialNumber && (
             <Badge variant="outline" className="text-[10px] sm:text-xs font-bold shadow-lg bg-background/50 backdrop-blur-md border-primary/50 text-foreground px-1.5 py-0.5 sm:px-2 sm:py-1">

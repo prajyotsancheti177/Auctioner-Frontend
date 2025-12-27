@@ -119,11 +119,14 @@ Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215
         body: JSON.stringify({ teams, touranmentId: tournamentId, userId }),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to upload teams");
+        // Extract error message from response
+        const errorMessage = result.message || result.error || "Failed to upload teams";
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
       setUploadStatus({
         type: "success",
         message: `Successfully uploaded ${teams.length} teams!`,
@@ -186,11 +189,14 @@ Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215
         body: JSON.stringify({ players, touranmentId: tournamentId, userId }),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to upload players");
+        // Extract error message from response
+        const errorMessage = result.message || result.error || "Failed to upload players";
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
       setUploadStatus({
         type: "success",
         message: `Successfully uploaded ${players.length} players!`,

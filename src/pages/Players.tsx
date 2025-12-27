@@ -217,7 +217,7 @@ const Players = () => {
               className="animate-scale-in"
               style={{ animationDelay: `${Math.min(index * 0.03, 0.5)}s` }}
             >
-              <PlayerCard player={player} onClick={handlePlayerClick} />
+              <PlayerCard player={player} onClick={handlePlayerClick} categories={categories as string[]} />
             </div>
           ))}
         </div>

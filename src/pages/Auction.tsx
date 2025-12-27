@@ -59,6 +59,10 @@ const Auction = () => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [showUnsoldAnimation, setShowUnsoldAnimation] = useState(false);
 
+  // Captured values for animations to prevent desync when state updates
+  const [soldInfo, setSoldInfo] = useState<{ playerName: string; teamName: string; amount: number } | null>(null);
+  const [unsoldPlayerName, setUnsoldPlayerName] = useState<string>("");
+
   const [showSearchDialog, setShowSearchDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -102,15 +106,29 @@ const Auction = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const onSold = () => {
+    const onSold = (data: { player: { name: string }; team: { name: string }; amount: number }) => {
+      // Capture the sold info at the moment of the event
+      setSoldInfo({
+        playerName: data.player?.name || currentPlayer?.name || "",
+        teamName: data.team?.name || teams.find(t => t._id === leadingTeam)?.name || "",
+        amount: data.amount || currentBid
+      });
       setShowCelebration(true);
       // Auto-hide handled by component or timeout
-      setTimeout(() => setShowCelebration(false), 4000);
+      setTimeout(() => {
+        setShowCelebration(false);
+        setSoldInfo(null);
+      }, 4000);
     };
 
     const onUnsold = () => {
+      // Capture the player name at the moment of the event
+      setUnsoldPlayerName(currentPlayer?.name || "");
       setShowUnsoldAnimation(true);
-      setTimeout(() => setShowUnsoldAnimation(false), 4000);
+      setTimeout(() => {
+        setShowUnsoldAnimation(false);
+        setUnsoldPlayerName("");
+      }, 4000);
     };
 
     socket.on("auction:sold", onSold);
@@ -120,7 +138,7 @@ const Auction = () => {
       socket.off("auction:sold", onSold);
       socket.off("auction:unsold", onUnsold);
     };
-  }, [socket]);
+  }, [socket, currentPlayer, currentBid, leadingTeam, teams]);
 
   // Fetch initial data for manual search and settings
   useEffect(() => {
@@ -522,16 +540,16 @@ const Auction = () => {
       {/* Celebration & Animation */}
       <SoldCelebration
         show={showCelebration}
-        playerName={currentPlayer?.name || ""}
-        teamName={teams.find(t => t._id === leadingTeam)?.name || ""}
-        amount={currentBid}
+        playerName={soldInfo?.playerName || ""}
+        teamName={soldInfo?.teamName || ""}
+        amount={soldInfo?.amount || 0}
         soundEnabled={soundEnabled}
         animationEnabled={animationEnabled}
       />
 
       <UnsoldAnimation
         show={showUnsoldAnimation}
-        playerName={currentPlayer?.name || ""}
+        playerName={unsoldPlayerName}
         soundEnabled={soundEnabled}
         animationEnabled={animationEnabled}
       />

@@ -160,16 +160,14 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
                 {leadingTeamName && (
                   <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-2">
                     {leadingTeamLogo && (
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-2 md:border-3 border-primary shadow-lg flex items-center justify-center bg-transparent flex-shrink-0">
-                        <img
-                          src={leadingTeamLogo}
-                          alt={leadingTeamName}
-                          className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 object-contain"
-                          onError={(e) => {
-                            e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(leadingTeamName || 'Team')}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=36&fontWeight=600`;
-                          }}
-                        />
-                      </div>
+                      <img
+                        src={leadingTeamLogo}
+                        alt={leadingTeamName}
+                        className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full shadow-lg object-cover flex-shrink-0"
+                        onError={(e) => {
+                          e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(leadingTeamName || 'Team')}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=36&fontWeight=600`;
+                        }}
+                      />
                     )}
                     <div className="text-base sm:text-lg md:text-3xl lg:text-4xl xl:text-5xl font-black text-primary break-words">
                       {leadingTeamName}

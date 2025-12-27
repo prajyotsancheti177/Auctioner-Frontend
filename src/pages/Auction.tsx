@@ -64,6 +64,7 @@ const Auction = () => {
   const [unsoldPlayerName, setUnsoldPlayerName] = useState<string>("");
 
   const [showSearchDialog, setShowSearchDialog] = useState(false);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
@@ -213,13 +214,22 @@ const Auction = () => {
   };
 
   const handleNextPlayer = () => {
-    // If we have a current category filter selected in state (though local state is tricky here if we rely on global)
-    // We should probably have a UI to select category before picking next player.
-    // For now, allow picking from "All" or randomly if no category set in UI?
-    // Let's assume we want to pick from "All" unless defined.
-    // Ideally, we should add a category selector for the auctioneer.
-    // For simplicity, let's just pick 'All' or a default.
-    actions.selectPlayer(undefined, "All");
+    // If we're already in an auction with a category selected, use that category
+    if (auctionState?.selectedCategory) {
+      actions.selectPlayer(undefined, auctionState.selectedCategory);
+    } else {
+      // Show category selection dialog for initial selection
+      setShowCategoryDialog(true);
+    }
+  };
+
+  const handleCategorySelect = (category: string) => {
+    setShowCategoryDialog(false);
+    actions.selectPlayer(undefined, category);
+  };
+
+  const handleChangeMode = () => {
+    actions.resetMode();
   };
 
   const handleManualSelect = (player: Player) => {
@@ -315,13 +325,42 @@ const Auction = () => {
           {isAuctioneer && (
             <div className="space-y-4">
               <Button onClick={handleNextPlayer} size="lg" className="w-full">
-                Start with Next Player
+                Start with Next Player (Category Mode)
               </Button>
               <Button onClick={() => setShowSearchDialog(true)} variant="outline" className="w-full">
                 Select Player Manually
               </Button>
             </div>
           )}
+
+          {/* Category Selection Dialog */}
+          <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Select Category</DialogTitle>
+                <DialogDescription>Choose which category to auction next</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2 py-4">
+                <Button
+                  onClick={() => handleCategorySelect("All")}
+                  variant="outline"
+                  className="w-full justify-start text-left h-12"
+                >
+                  All Categories
+                </Button>
+                {playerCategories.map((category) => (
+                  <Button
+                    key={category}
+                    onClick={() => handleCategorySelect(category)}
+                    variant="outline"
+                    className="w-full justify-start text-left h-12"
+                  >
+                    {category}
+                  </Button>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {!user && (
             <div className="text-sm text-yellow-600 bg-yellow-100 p-3 rounded">
@@ -411,6 +450,11 @@ const Auction = () => {
             <span className="text-sm md:text-xl font-bold text-foreground">
               Player #{currentPlayer?.auctionSerialNumber || playerNumber}
             </span>
+            {auctionState?.selectedCategory && auctionState.selectedCategory !== "All" && (
+              <span className="text-xs md:text-sm px-2 py-0.5 rounded-full bg-secondary/20 text-secondary border border-secondary/30">
+                {auctionState.selectedCategory}
+              </span>
+            )}
           </div>
           <div className="flex justify-end gap-1 md:gap-2">
             {/* Sound Toggle */}
@@ -446,16 +490,16 @@ const Auction = () => {
         </div>
 
         <div className="space-y-4 md:space-y-8 max-w-full mx-auto">
-          {/* Large Player Card */}
+          {/* Large Player Card - Fixed height container */}
           <div className="flex justify-center animate-scale-in">
-            <div className="w-full max-w-7xl min-h-[50vh] md:min-h-[55vh]">
+            <div className="w-full max-w-7xl h-[50vh] md:h-[55vh]">
               <AuctionPlayerCard
                 player={currentPlayer}
                 isAnimated
                 className="w-full h-full"
                 currentBid={currentBid}
                 leadingTeamName={teams.find(t => t._id === leadingTeam)?.name}
-                leadingTeamLogo={teams.find(t => t._id === leadingTeam)?.logo}
+                leadingTeamLogo={getDriveThumbnail(teams.find(t => t._id === leadingTeam)?.logo || "")}
                 bidPrice={bidPrice}
               />
             </div>
@@ -497,8 +541,15 @@ const Auction = () => {
                               "border-border hover:border-primary/50 hover:scale-105"
                             }`}
                         >
-                          <div className="text-2xl mb-1">
-                            <img src={team.logo || 'placeholder.png'} alt={team.name} className="h-8 w-8 object-contain mx-auto" />
+                          <div className="mb-1">
+                            <img
+                              src={getDriveThumbnail(team.logo) || 'placeholder.png'}
+                              alt={team.name}
+                              className="h-10 w-10 rounded-full shadow-md object-cover mx-auto"
+                              onError={(e) => {
+                                e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(team.name)}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=36&fontWeight=600`;
+                              }}
+                            />
                           </div>
                           <p className="font-bold text-[10px] text-foreground mb-0.5 text-center truncate">{team.name}</p>
                           <div className="text-[10px] text-muted-foreground text-center">
@@ -516,6 +567,9 @@ const Auction = () => {
               </div>
 
               <div className="flex gap-2 md:gap-3 justify-center flex-wrap">
+                <Button onClick={handleChangeMode} variant="ghost" size="sm" className="px-3 md:px-4 text-xs md:text-sm text-muted-foreground hover:text-foreground">
+                  ← Change Mode
+                </Button>
                 <Button onClick={handleNextPlayer} size="sm" className="px-3 md:px-6 text-xs md:text-sm bg-primary text-primary-foreground hover:bg-primary/90">
                   Next
                 </Button>

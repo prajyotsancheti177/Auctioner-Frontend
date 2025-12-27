@@ -140,6 +140,11 @@ export const useAuctionSocket = (tournamentId: string | undefined, userId: strin
         socketRef.current.emit("auction:unsold", { tournamentId, userId });
     }, [tournamentId, userId]);
 
+    const resetMode = useCallback(() => {
+        if (!tournamentId) return;
+        socketRef.current.emit("auction:resetMode", { tournamentId });
+    }, [tournamentId]);
+
     return {
         socket: socketRef.current,
         isConnected,
@@ -151,7 +156,8 @@ export const useAuctionSocket = (tournamentId: string | undefined, userId: strin
             placeBid,
             undoBid,
             markSold,
-            markUnsold
+            markUnsold,
+            resetMode
         }
     };
 };

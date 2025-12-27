@@ -56,6 +56,7 @@ export default function LiveAuctionLobby() {
 
         const onError = (msg: string) => {
             console.error(msg);
+            toast({ variant: "destructive", title: "Auction Error", description: msg });
         };
 
         if (socket.connected) {

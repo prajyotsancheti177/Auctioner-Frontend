@@ -490,9 +490,9 @@ const Auction = () => {
         </div>
 
         <div className="space-y-4 md:space-y-8 max-w-full mx-auto">
-          {/* Large Player Card - Fixed height container */}
-          <div className="flex justify-center animate-scale-in">
-            <div className="w-full max-w-7xl h-[50vh] md:h-[55vh]">
+          {/* Large Player Card - Fixed height container with mobile margins */}
+          <div className="flex justify-center animate-scale-in mx-2 md:mx-0">
+            <div className="w-full max-w-7xl h-[55vh] md:h-[55vh]">
               <AuctionPlayerCard
                 player={currentPlayer}
                 isAnimated

@@ -381,7 +381,11 @@ const Auction = () => {
                 <div className="flex-1">
                   <Input placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
-                <select className="border rounded px-3" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+                <select
+                  className="border border-border rounded px-3 py-2 bg-background text-foreground"
+                  value={categoryFilter}
+                  onChange={e => setCategoryFilter(e.target.value)}
+                >
                   <option value="All">All Categories</option>
                   {playerCategories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>

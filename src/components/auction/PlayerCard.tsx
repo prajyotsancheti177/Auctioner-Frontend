@@ -118,9 +118,9 @@ export const PlayerCard = ({ player, isAnimated, isSold, className, onClick, cat
         </h3>
 
         {/* Team name when player is sold */}
-        {player.teamName && (
-          <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-            → <span className="font-medium text-foreground">{player.teamName}</span>
+        {player.sold && player.teamName && (
+          <p className="text-[10px] sm:text-xs text-secondary truncate mt-0.5 text-center">
+            Sold to "<span className="font-semibold">{player.teamName}</span>"
           </p>
         )}
 

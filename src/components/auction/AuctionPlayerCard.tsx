@@ -40,6 +40,9 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
 
   const logoSrc = getDriveThumbnail(player.photo as unknown as string);
 
+  // Debug: log image URL to help diagnose viewer mode issue
+  console.log('[AuctionPlayerCard] Player photo:', player.photo, '-> Converted to:', logoSrc);
+
   const handleClick = () => {
     if (onClick) {
       onClick(player);

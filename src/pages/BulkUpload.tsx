@@ -37,13 +37,13 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
 
   // Generate sample CSV for players
   const downloadPlayersSample = () => {
-    const csvContent = `Player Name,Age,Photo URL,Category,Phone Number
-Virat Kohli,35,https://drive.google.com/file/d/1234567890/view,Icon,9876543210
-MS Dhoni,42,https://drive.google.com/file/d/0987654321/view,Icon,9876543211
-Rohit Sharma,36,https://drive.google.com/file/d/1122334455/view,Icon,9876543212
-Jasprit Bumrah,30,https://drive.google.com/file/d/2233445566/view,Regular,9876543213
-KL Rahul,31,https://drive.google.com/file/d/3344556677/view,Regular,9876543214
-Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215`;
+    const csvContent = `Serial Number,Player Name,Age,Photo URL,Category,Phone Number
+1,Virat Kohli,35,https://drive.google.com/file/d/1234567890/view,Icon,9876543210
+2,MS Dhoni,42,https://drive.google.com/file/d/0987654321/view,Icon,9876543211
+3,Rohit Sharma,36,https://drive.google.com/file/d/1122334455/view,Icon,9876543212
+1,Jasprit Bumrah,30,https://drive.google.com/file/d/2233445566/view,Regular,9876543213
+2,KL Rahul,31,https://drive.google.com/file/d/3344556677/view,Regular,9876543214
+1,Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215`;
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -176,6 +176,7 @@ Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215
         photo: player["Photo URL"],
         playerCategory: player["Category"],
         mobile: parseInt(player["Phone Number"]) || 0,
+        auctionSerialNumber: player["Serial Number"] || undefined,
         touranmentId: tournamentId,
         sold: false,
         auctionStatus: false,
@@ -349,6 +350,7 @@ Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215
             <div className="border-t pt-4">
               <h4 className="font-semibold text-sm mb-2">CSV Format:</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• Serial Number (optional - can have duplicates across categories)</li>
                 <li>• Player Name</li>
                 <li>• Age</li>
                 <li>• Photo URL (Google Drive link)</li>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Trophy, Users, DollarSign, Download, UserMinus, UsersRound } from "lucide-react";
+import { Plus, Pencil, Trash2, Trophy, Users, DollarSign, Download, UserMinus, UsersRound, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -104,7 +104,9 @@ export default function TournamentManagement() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteAllTeamsDialogOpen, setDeleteAllTeamsDialogOpen] = useState(false);
   const [deleteAllPlayersDialogOpen, setDeleteAllPlayersDialogOpen] = useState(false);
+  const [resetUnsoldDialogOpen, setResetUnsoldDialogOpen] = useState(false);
   const [actionTournamentId, setActionTournamentId] = useState<string | null>(null);
+  const [isResettingUnsold, setIsResettingUnsold] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isTournamentHost = user.role === "tournament_host";
@@ -461,6 +463,53 @@ export default function TournamentManagement() {
     }
   };
 
+  const handleResetUnsold = async () => {
+    if (!actionTournamentId) return;
+
+    try {
+      setIsResettingUnsold(true);
+
+      const response = await fetch(`${apiConfig.baseUrl}/api/player/reset-unsold`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": user._id,
+          "x-user-role": user.role
+        },
+        body: JSON.stringify({
+          touranmentId: actionTournamentId,
+          userId: user._id,
+          userRole: user.role,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: data.message || `${data.data?.count || 0} unsold player(s) reset to pending.`,
+        });
+        setResetUnsoldDialogOpen(false);
+        setActionTournamentId(null);
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to reset unsold players",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while resetting unsold players",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResettingUnsold(false);
+    }
+  };
+
   const downloadCSV = (content: string, filename: string) => {
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -687,6 +736,17 @@ export default function TournamentManagement() {
                           title="Delete All Players"
                         >
                           <UserMinus className="h-4 w-4 text-orange-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setActionTournamentId(tournament._id);
+                            setResetUnsoldDialogOpen(true);
+                          }}
+                          title="Reset Unsold Players to Pending"
+                        >
+                          <RotateCcw className="h-4 w-4 text-amber-500" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -1064,6 +1124,32 @@ export default function TournamentManagement() {
               className="bg-orange-500 hover:bg-orange-600"
             >
               Delete All Players
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reset Unsold Players Confirmation Dialog */}
+      <AlertDialog open={resetUnsoldDialogOpen} onOpenChange={setResetUnsoldDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Unsold Players?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will move all unsold players back to "Pending" status so they can be
+              auctioned again. This is useful for conducting another round of auction
+              for players who went unsold.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setActionTournamentId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetUnsold}
+              disabled={isResettingUnsold}
+              className="bg-amber-500 hover:bg-amber-600"
+            >
+              {isResettingUnsold ? "Resetting..." : "Reset Unsold Players"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -172,7 +172,7 @@ export default function Home() {
             metaKeywords.setAttribute('name', 'keywords');
             document.head.appendChild(metaKeywords);
         }
-        metaKeywords.setAttribute('content', 'cricket auction, auction software, smart auction software, automatic auction, automatic cricket auction, whatsapp cricket auction, free cricket auction, cheapest cricket auction, online cricket auction, cricket auction app, IPL auction software, player bidding software, cricket tournament software');
+        metaKeywords.setAttribute('content', 'cricket auction, auction software, smart auction software, automatic auction, automatic cricket auction, whatsapp cricket auction, cricket auction, cheapest cricket auction, online cricket auction, cricket auction app, IPL auction software, player bidding software, cricket tournament software');
 
     }, []);
 
@@ -192,7 +192,7 @@ export default function Home() {
                 "priceCurrency": "INR",
                 "availability": "https://schema.org/InStock"
             },
-            "description": "Free cricket auction software with automatic smart bidding, WhatsApp integration, and real-time live streaming. Best platform for IPL-style local tournaments, box cricket, gully cricket, and corporate leagues.",
+            "description": " cricket auction software with automatic smart bidding, WhatsApp integration, and real-time live streaming. Best platform for IPL-style local tournaments, box cricket, gully cricket, and corporate leagues.",
             "aggregateRating": {
                 "@type": "AggregateRating",
                 "ratingValue": "4.9",
@@ -201,7 +201,7 @@ export default function Home() {
                 "worstRating": "1"
             },
             "featureList": [
-                "Free Cricket Auction Software",
+                "Cricket Auction Software",
                 "Automatic Smart Bidding System",
                 "WhatsApp Player Notifications",
                 "Real-time Live Streaming",
@@ -217,10 +217,10 @@ export default function Home() {
             "mainEntity": [
                 {
                     "@type": "Question",
-                    "name": "Is Vardhaman CricBid free to use?",
+                    "name": "Is Vardhaman CricBid to use?",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "Yes! Vardhaman CricBid is completely free cricket auction software. You can host unlimited IPL-style auctions with automatic bidding, WhatsApp notifications, and live streaming at no cost."
+                        "text": "Yes! Vardhaman CricBid is completely cricket auction software. You can host unlimited IPL-style auctions with automatic bidding, WhatsApp notifications, and live streaming at no cost."
                     }
                 },
                 {
@@ -615,14 +615,6 @@ export default function Home() {
                     </motion.div>
 
                     <div className="max-w-4xl mx-auto space-y-4">
-                        {/* <motion.div {...fadeInUp}>
-                            <Card className="bg-card/50 backdrop-blur border-border/50">
-                                <CardContent className="p-6">
-                                    <h3 className="text-xl font-bold mb-2 text-foreground">Is Vardhaman CricBid really free cricket auction software?</h3>
-                                    <p className="text-muted-foreground">Yes! CricBid is 100% free cricket auction software. You can host unlimited IPL-style auctions with automatic bidding, WhatsApp player notifications, and live streaming - completely free of charge. It's the best free and cheapest cricket auction app in India.</p>
-                                </CardContent>
-                            </Card>
-                        </motion.div> */}
 
                         <motion.div {...fadeInUp}>
                             <Card className="bg-card/50 backdrop-blur border-border/50">

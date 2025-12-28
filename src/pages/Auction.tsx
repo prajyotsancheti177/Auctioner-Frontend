@@ -39,6 +39,7 @@ const Auction = () => {
     isConnected,
     auctionState,
     isAuctioneer,
+    infoMessage,
     actions
   } = useAuctionSocket(tournamentId || undefined, user?._id);
 
@@ -497,15 +498,25 @@ const Auction = () => {
           {/* Large Player Card - Fixed height container with mobile margins */}
           <div className="flex justify-center animate-scale-in mx-2 md:mx-0">
             <div className="w-full max-w-7xl h-[55vh] md:h-[55vh]">
-              <AuctionPlayerCard
-                player={currentPlayer}
-                isAnimated
-                className="w-full h-full"
-                currentBid={currentBid}
-                leadingTeamName={teams.find(t => t._id === leadingTeam)?.name}
-                leadingTeamLogo={getDriveThumbnail(teams.find(t => t._id === leadingTeam)?.logo || "")}
-                bidPrice={bidPrice}
-              />
+              {infoMessage && !currentPlayer ? (
+                <Card className="w-full h-full flex items-center justify-center bg-card/80 backdrop-blur-sm border-2 border-yellow-500">
+                  <div className="text-center p-8">
+                    <Gavel className="w-16 h-16 mx-auto text-yellow-500 mb-4" />
+                    <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{infoMessage}</h2>
+                    <p className="text-muted-foreground">Select a different category or search for a player manually.</p>
+                  </div>
+                </Card>
+              ) : (
+                <AuctionPlayerCard
+                  player={currentPlayer}
+                  isAnimated
+                  className="w-full h-full"
+                  currentBid={currentBid}
+                  leadingTeamName={teams.find(t => t._id === leadingTeam)?.name}
+                  leadingTeamLogo={getDriveThumbnail(teams.find(t => t._id === leadingTeam)?.logo || "")}
+                  bidPrice={bidPrice}
+                />
+              )}
             </div>
           </div>
 

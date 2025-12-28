@@ -23,6 +23,7 @@ export const useAuctionSocket = (tournamentId: string | undefined, userId: strin
     const [isConnected, setIsConnected] = useState(false);
     const [auctionState, setAuctionState] = useState<AuctionState | null>(null);
     const [isAuctioneer, setIsAuctioneer] = useState(false);
+    const [infoMessage, setInfoMessage] = useState<string | null>(null);
     const socketRef = useRef(getSocket());
     const { toast } = useToast();
 
@@ -80,7 +81,15 @@ export const useAuctionSocket = (tournamentId: string | undefined, userId: strin
 
         const onSold = (data: { player: Player, team: Team, amount: number }) => {
             // Handled by state update mostly, but can trigger animation independently if needed
-            // For now, we rely on parent to watch state changes or we expose an event callback
+            // Note: Don't clear infoMessage here as auction:info may come after this event
+        };
+
+        const onInfo = (message: string) => {
+            setInfoMessage(message);
+        };
+
+        const onPlayerSelectedClear = (player: Player) => {
+            setInfoMessage(null); // Clear info message when a new player is selected
         };
 
         socket.on("connect", onConnect);
@@ -89,9 +98,10 @@ export const useAuctionSocket = (tournamentId: string | undefined, userId: strin
         socket.on("auction:viewerCount", onViewerCount);
         socket.on("auction:error", onError);
         socket.on("auction:role", onRole);
-        socket.on("auction:playerSelected", onPlayerSelected);
+        socket.on("auction:playerSelected", onPlayerSelectedClear);
         socket.on("auction:bidPlaced", onBidPlaced);
         socket.on("auction:sold", onSold);
+        socket.on("auction:info", onInfo);
 
         return () => {
             socket.off("connect", onConnect);
@@ -100,9 +110,10 @@ export const useAuctionSocket = (tournamentId: string | undefined, userId: strin
             socket.off("auction:viewerCount", onViewerCount);
             socket.off("auction:error", onError);
             socket.off("auction:role", onRole);
-            socket.off("auction:playerSelected", onPlayerSelected);
+            socket.off("auction:playerSelected", onPlayerSelectedClear);
             socket.off("auction:bidPlaced", onBidPlaced);
             socket.off("auction:sold", onSold);
+            socket.off("auction:info", onInfo);
 
             // Don't disconnect here because moving between pages might need connection
             // But for now, let's keep it alive
@@ -150,6 +161,7 @@ export const useAuctionSocket = (tournamentId: string | undefined, userId: strin
         isConnected,
         auctionState,
         isAuctioneer,
+        infoMessage,
         actions: {
             startAuction,
             selectPlayer,

@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useParams } from "react-router-dom";
 import { Navbar } from "./components/layout/Navbar";
 import Home from "./pages/Home";
 import Auction from "./pages/Auction";
@@ -21,6 +21,12 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+// Redirect component for malformed WhatsApp URLs
+const TournamentRedirect = () => {
+  const { tournamentId } = useParams();
+  return <Navigate to={`/tournament/${tournamentId}`} replace />;
+};
 
 // Protected Route Component - for admin features
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -95,6 +101,9 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+
+              {/* Redirect for malformed WhatsApp URLs */}
+              <Route path="/tournament/:placeholder/:tournamentId" element={<TournamentRedirect />} />
 
               {/* 404 Route */}
               <Route path="*" element={<NotFound />} />

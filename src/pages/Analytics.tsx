@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from "@/components/ui/chart";
 import { useToast } from "@/hooks/use-toast";
-import { BarChart, LineChart, Activity, Users, Eye, TrendingUp, Loader2, MessageCircle, CheckCircle, XCircle, Radio, Clock, Gavel } from "lucide-react";
+import { BarChart, LineChart, Activity, Users, Eye, TrendingUp, Loader2, MessageCircle, CheckCircle, XCircle, Radio, Clock, Gavel, MapPin, Globe } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart as RechartsBarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import apiConfig from "@/config/apiConfig";
+import IndiaMap from "@/components/IndiaMap";
 
 interface DailyData {
     date: string;
@@ -115,6 +116,27 @@ interface AnalyticsData {
     };
 }
 
+// Geo Analytics Interfaces
+interface GeoCityData {
+    city: string;
+    region: string;
+    country: string;
+    lat: number;
+    lon: number;
+    count: number;
+}
+
+interface GeoAnalyticsData {
+    cityData: GeoCityData[];
+    allCityData: GeoCityData[];
+    totalUniqueIPs: number;
+    indiaUniqueIPs: number;
+    dateRange: {
+        startDate: string;
+        endDate: string;
+    };
+}
+
 const dailyChartConfig = {
     pageViews: {
         label: "Page Views",
@@ -194,6 +216,8 @@ const Analytics = () => {
     const [dateRange, setDateRange] = useState("30");
     const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
     const [auctionRoomData, setAuctionRoomData] = useState<AuctionRoomAnalytics | null>(null);
+    const [geoData, setGeoData] = useState<GeoAnalyticsData | null>(null);
+    const [geoLoading, setGeoLoading] = useState(false);
 
     useEffect(() => {
         // Check if user has permission
@@ -268,6 +292,29 @@ const Analytics = () => {
                 setAuctionRoomData(auctionData.data);
             } else {
                 console.error("[Analytics] Auction room API failed:", auctionData.message);
+            }
+
+            // Fetch geo analytics
+            setGeoLoading(true);
+            try {
+                const geoResponse = await fetch(
+                    `${apiConfig.baseUrl}/api/event/geo-analytics?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&userId=${user._id}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                const geoDataResult = await geoResponse.json();
+                if (geoDataResult.success) {
+                    setGeoData(geoDataResult.data);
+                }
+            } catch (geoError) {
+                console.error("Failed to fetch geo analytics:", geoError);
+            } finally {
+                setGeoLoading(false);
             }
         } catch (error) {
             console.error("Failed to fetch analytics:", error);
@@ -899,8 +946,156 @@ const Analytics = () => {
                     </Card>
                 </div>
             </div>
+
+            {/* Visitor Geography Section */}
+            <div className="mt-12">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent mb-6">
+                    Visitor Geography
+                </h2>
+
+                {/* Geo Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <Card className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border-cyan-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Unique IPs
+                            </CardTitle>
+                            <Globe className="h-5 w-5 text-cyan-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-cyan-500">
+                                {geoData?.totalUniqueIPs?.toLocaleString() || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Unique visitors worldwide
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-orange-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                India Visitors
+                            </CardTitle>
+                            <MapPin className="h-5 w-5 text-orange-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-orange-500">
+                                {geoData?.indiaUniqueIPs?.toLocaleString() || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Visitors from India
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-teal-500/10 to-teal-600/5 border-teal-500/20">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Cities Reached
+                            </CardTitle>
+                            <Activity className="h-5 w-5 text-teal-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-teal-500">
+                                {geoData?.cityData?.length || 0}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Unique cities in India
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* India Map and City Table */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* India Map */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <MapPin className="h-5 w-5 text-cyan-500" />
+                                <CardTitle>Visitor Locations - India</CardTitle>
+                            </div>
+                            <CardDescription>
+                                Geographic distribution of visitors
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {geoLoading ? (
+                                <div className="flex items-center justify-center h-[500px]">
+                                    <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+                                </div>
+                            ) : geoData && geoData.cityData.length > 0 ? (
+                                <IndiaMap
+                                    cityData={geoData.cityData}
+                                    maxCount={Math.max(...geoData.cityData.map(c => c.count), 1)}
+                                />
+                            ) : (
+                                <div className="flex items-center justify-center h-[500px] text-muted-foreground">
+                                    No location data available for the selected period
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* City Table */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <BarChart className="h-5 w-5 text-orange-500" />
+                                <CardTitle>Top Cities</CardTitle>
+                            </div>
+                            <CardDescription>
+                                Visitors by city (India)
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {geoLoading ? (
+                                <div className="flex items-center justify-center h-[500px]">
+                                    <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+                                </div>
+                            ) : geoData && geoData.cityData.length > 0 ? (
+                                <div className="h-[500px] overflow-y-auto">
+                                    <table className="w-full">
+                                        <thead className="sticky top-0 bg-background border-b">
+                                            <tr>
+                                                <th className="text-left py-3 px-2 font-medium text-muted-foreground">#</th>
+                                                <th className="text-left py-3 px-2 font-medium text-muted-foreground">City</th>
+                                                <th className="text-left py-3 px-2 font-medium text-muted-foreground">State</th>
+                                                <th className="text-right py-3 px-2 font-medium text-muted-foreground">Visitors</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {geoData.cityData.map((city, index) => (
+                                                <tr
+                                                    key={`${city.city}-${index}`}
+                                                    className="border-b border-border/50 hover:bg-muted/30 transition-colors"
+                                                >
+                                                    <td className="py-3 px-2 text-muted-foreground">{index + 1}</td>
+                                                    <td className="py-3 px-2 font-medium">{city.city}</td>
+                                                    <td className="py-3 px-2 text-muted-foreground">{city.region}</td>
+                                                    <td className="py-3 px-2 text-right">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-sm font-medium">
+                                                            {city.count}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center h-[500px] text-muted-foreground">
+                                    No city data available for the selected period
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
         </div>
     );
 };
 
 export default Analytics;
+

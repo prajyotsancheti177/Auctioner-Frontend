@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Trophy, Users, DollarSign, Download, UserMinus, UsersRound, RotateCcw } from "lucide-react";
+import { Pencil, Trash2, Trophy, Users, DollarSign, Download, UserMinus, UsersRound, RotateCcw, Plus } from "lucide-react";
+import { BidSlabEditor, BidSlab } from "@/components/auction/BidSlabEditor";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -220,7 +221,9 @@ export default function TournamentManagement() {
       }
       setFormData({
         name: tournament.name || "",
-        tournamentHostId: tournament.tournamentHostId?._id || "",
+        tournamentHostId: typeof tournament.tournamentHostId === 'object'
+          ? tournament.tournamentHostId?._id || ""
+          : (tournament.tournamentHostId as unknown as string) || "",
         noOfTeams: tournament.noOfTeams || "",
         maxPlayersPerTeam: tournament.maxPlayersPerTeam || "",
         minPlayersPerTeam: tournament.minPlayersPerTeam || "",
@@ -942,104 +945,11 @@ export default function TournamentManagement() {
 
             {/* Bid Increment Slabs */}
             <div className="grid gap-3 p-4 border rounded-lg bg-gray-50">
-              <div className="flex items-center justify-between">
-                <Label className="font-semibold text-base dark:text-gray-100 text-gray-900">Bid Increment Settings *</Label>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    const lastSlab = formData.bidIncrementSlabs[formData.bidIncrementSlabs.length - 1];
-                    const newMinBid = lastSlab.maxBid ? lastSlab.maxBid + 1 : lastSlab.minBid + 500;
-
-                    const updatedSlabs = formData.bidIncrementSlabs.map((slab, index) => {
-                      if (index === formData.bidIncrementSlabs.length - 1) {
-                        return { ...slab, maxBid: newMinBid - 1 };
-                      }
-                      return slab;
-                    });
-
-                    setFormData(prev => ({
-                      ...prev,
-                      bidIncrementSlabs: [
-                        ...updatedSlabs,
-                        { minBid: newMinBid, maxBid: null, increment: 100 }
-                      ]
-                    }));
-                  }}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Slab
-                </Button>
-              </div>
-
-              <div className="grid gap-3">
-                {formData.bidIncrementSlabs.map((slab, index) => (
-                  <div key={index} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-end">
-                    <div>
-                      <Label htmlFor={`minBid-${index}`} className="text-xs">Min Bid</Label>
-                      <Input
-                        id={`minBid-${index}`}
-                        type="number"
-                        value={slab.minBid}
-                        onChange={(e) => {
-                          const newSlabs = [...formData.bidIncrementSlabs];
-                          newSlabs[index].minBid = parseInt(e.target.value) || 0;
-                          setFormData(prev => ({ ...prev, bidIncrementSlabs: newSlabs }));
-                        }}
-                        className="h-9"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`maxBid-${index}`} className="text-xs">Max Bid</Label>
-                      <Input
-                        id={`maxBid-${index}`}
-                        type="number"
-                        value={slab.maxBid ?? ''}
-                        onChange={(e) => {
-                          const newSlabs = [...formData.bidIncrementSlabs];
-                          newSlabs[index].maxBid = e.target.value ? parseInt(e.target.value) : null;
-                          setFormData(prev => ({ ...prev, bidIncrementSlabs: newSlabs }));
-                        }}
-                        placeholder={index === formData.bidIncrementSlabs.length - 1 ? 'No limit' : ''}
-                        className="h-9"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`increment-${index}`} className="text-xs">Increment</Label>
-                      <Input
-                        id={`increment-${index}`}
-                        type="number"
-                        value={slab.increment}
-                        onChange={(e) => {
-                          const newSlabs = [...formData.bidIncrementSlabs];
-                          newSlabs[index].increment = parseInt(e.target.value) || 0;
-                          setFormData(prev => ({ ...prev, bidIncrementSlabs: newSlabs }));
-                        }}
-                        className="h-9"
-                      />
-                    </div>
-                    {formData.bidIncrementSlabs.length > 1 && (
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="destructive"
-                        onClick={() => {
-                          const newSlabs = formData.bidIncrementSlabs.filter((_, i) => i !== index);
-                          if (newSlabs.length > 0) {
-                            newSlabs[newSlabs.length - 1].maxBid = null;
-                          }
-                          setFormData(prev => ({ ...prev, bidIncrementSlabs: newSlabs }));
-                        }}
-                        className="h-9 w-9"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-
+              <Label className="font-semibold text-base dark:text-gray-100 text-gray-900">Bid Increment Settings *</Label>
+              <BidSlabEditor
+                slabs={formData.bidIncrementSlabs}
+                onChange={(slabs) => setFormData(prev => ({ ...prev, bidIncrementSlabs: slabs }))}
+              />
               <p className="text-xs text-gray-500">
                 Configure bid increments for different price ranges during auction
               </p>

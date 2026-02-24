@@ -2,12 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import { AuctionPlayerCard } from "@/components/auction/AuctionPlayerCard";
 import { SoldCelebration } from "@/components/auction/SoldCelebration";
 import { UnsoldAnimation } from "@/components/auction/UnsoldAnimation";
+import { BidSlabEditor, BidSlab } from "@/components/auction/BidSlabEditor";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Gavel, Search, Settings, Plus, Trash2, Volume2, VolumeX, Sparkles } from "lucide-react";
+import { Gavel, Search, Settings, Volume2, VolumeX, Sparkles } from "lucide-react";
 import stadiumBg from "@/assets/stadium-bg.jpg";
 import logo from "@/assets/logo.png";
 import { useNavigate, useParams } from "react-router-dom";
@@ -249,44 +250,10 @@ const Auction = () => {
   };
 
   // Settings Logic
-  const updateBidSlab = (index: number, field: any, value: any) => {
-    setBidIncrementSlabs(slabs => slabs.map((s, i) => i === index ? { ...s, [field]: value } : s));
-  };
-  const addBidSlab = () => {
-    const last = bidIncrementSlabs[bidIncrementSlabs.length - 1];
-    const newMin = last.maxBid ? last.maxBid + 1 : last.minBid + 500;
-    setBidIncrementSlabs(prev => {
-      const updated = [...prev];
-      updated[updated.length - 1] = { ...updated[updated.length - 1], maxBid: newMin - 1 };
-      return [...updated, { minBid: newMin, maxBid: null, increment: 100 }];
-    });
-  };
-  const removeBidSlab = (index: number) => {
-    if (bidIncrementSlabs.length <= 1) return;
-    const filtered = bidIncrementSlabs.filter((_, i) => i !== index);
-    if (filtered.length > 0) filtered[filtered.length - 1].maxBid = null;
-    setBidIncrementSlabs(filtered);
-  };
-  const saveSettings = async () => {
-    try {
-      if (!user || !tournamentId) return;
-      const response = await fetch(`${apiConfig.baseUrl}/api/tournament/update`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tournamentId,
-          bidIncrementSlabs,
-          userId: user._id,
-          userRole: user.role
-        })
-      });
-      if (response.ok) {
-        alert("Settings saved. You may need to restart the auction for changes to take effect.");
-        setShowSettingsDialog(false);
-      }
-    } catch (err) {
-      console.error(err);
-    }
+  const saveSettings = () => {
+    if (!tournamentId) return;
+    actions.updateSlabs(bidIncrementSlabs);
+    setShowSettingsDialog(false);
   };
 
   // Loading / Connection States
@@ -533,49 +500,35 @@ const Auction = () => {
                   const noSlots = (team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0;
                   const insufficientBudget = (team.remainingBudget ?? 0) < nextBidAmount;
                   const exceedsMaxBiddable = (team.maxBiddableAmount ?? 0) < nextBidAmount;
-                  const isDisabled = (noSlots || insufficientBudget || exceedsMaxBiddable);
+                  const isWarning = noSlots || insufficientBudget || exceedsMaxBiddable;
 
                   return (
                     <div key={team._id} className="flex flex-col items-center">
-                      <div
-                        onClick={() => {
-                          if (isDisabled) {
-                            if (noSlots) showBidError(team._id, "No remaining slots");
-                            else if (exceedsMaxBiddable) showBidError(team._id, "Exceeds max biddable");
-                            else showBidError(team._id, "Insufficient budget");
-                            return;
-                          }
-                          actions.placeBid(team._id);
-                        }}
-                        className="w-full"
+                      <button
+                        onClick={() => actions.placeBid(team._id)}
+                        className={`w-full p-2 rounded-lg border-2 transition-all ${isWarning ? "border-red-500 bg-red-500/20" :
+                          leadingTeam === team._id ? "border-primary bg-primary/20 shadow-glow scale-105" :
+                            "border-border hover:border-primary/50 hover:scale-105"
+                          }`}
                       >
-                        <button
-                          disabled={isDisabled}
-                          className={`w-full p-2 rounded-lg border-2 transition-all ${isDisabled ? "border-red-500 bg-red-500/20 opacity-60 cursor-not-allowed" :
-                            leadingTeam === team._id ? "border-primary bg-primary/20 shadow-glow scale-105" :
-                              "border-border hover:border-primary/50 hover:scale-105"
-                            }`}
-                        >
-                          <div className="mb-1">
-                            <img
-                              src={getDriveThumbnail(team.logo) || 'placeholder.png'}
-                              alt={team.name}
-                              className="h-10 w-10 rounded-full shadow-md object-cover mx-auto"
-                              onError={(e) => {
-                                e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(team.name)}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=36&fontWeight=600`;
-                              }}
-                            />
-                          </div>
-                          <p className="font-bold text-[10px] text-foreground mb-0.5 text-center truncate">{team.name}</p>
-                          <div className="text-[10px] text-muted-foreground text-center">
-                            {team.remainingBudget} Pts • {(team.maxPlayersPerTeam || 0) - (team.playersCount || 0)} slots
-                          </div>
-                          {teamBids[team._id] && (
-                            <p className="text-[9px] text-primary font-bold mt-1 text-center">{teamBids[team._id]} Pts.</p>
-                          )}
-                        </button>
-                      </div>
-                      {bidError[team._id] && <p className="text-red-500 text-xs mt-1 text-center">{bidError[team._id]}</p>}
+                        <div className="mb-1">
+                          <img
+                            src={getDriveThumbnail(team.logo) || 'placeholder.png'}
+                            alt={team.name}
+                            className="h-10 w-10 rounded-full shadow-md object-cover mx-auto"
+                            onError={(e) => {
+                              e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(team.name)}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=36&fontWeight=600`;
+                            }}
+                          />
+                        </div>
+                        <p className="font-bold text-[10px] text-foreground mb-0.5 text-center truncate">{team.name}</p>
+                        <div className="text-[10px] text-muted-foreground text-center">
+                          {team.remainingBudget} Pts • {(team.maxPlayersPerTeam || 0) - (team.playersCount || 0)} slots
+                        </div>
+                        {teamBids[team._id] && (
+                          <p className="text-[9px] text-primary font-bold mt-1 text-center">{teamBids[team._id]} Pts.</p>
+                        )}
+                      </button>
                     </div>
                   );
                 })}
@@ -670,25 +623,20 @@ const Auction = () => {
 
       {/* Settings Dialog */}
       <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
-          <DialogHeader><DialogTitle>Settings</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Bid Increment Settings</DialogTitle>
+            <DialogDescription>Changes apply immediately — no restart needed.</DialogDescription>
+          </DialogHeader>
           <div className="space-y-4 overflow-y-auto">
-            {bidIncrementSlabs.map((slab, index) => (
-              <Card key={index} className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 grid grid-cols-3 gap-4">
-                    <div><Label>Min Bid</Label><Input type="number" value={slab.minBid} onChange={e => updateBidSlab(index, 'minBid', +e.target.value)} disabled={index > 0} /></div>
-                    <div><Label>Max Bid</Label><Input type="number" value={slab.maxBid ?? ''} onChange={e => updateBidSlab(index, 'maxBid', e.target.value ? +e.target.value : null)} disabled={index === bidIncrementSlabs.length - 1} /></div>
-                    <div><Label>Increment</Label><Input type="number" value={slab.increment} onChange={e => updateBidSlab(index, 'increment', +e.target.value)} /></div>
-                  </div>
-                  {bidIncrementSlabs.length > 1 && <Button variant="destructive" size="icon" onClick={() => removeBidSlab(index)}><Trash2 className="h-4 w-4" /></Button>}
-                </div>
-              </Card>
-            ))}
-            <Button onClick={addBidSlab} variant="outline" className="w-full"><Plus className="mr-2 h-4 w-4" /> Add Slab</Button>
-            <div className="flex gap-2">
+            <BidSlabEditor
+              slabs={bidIncrementSlabs}
+              onChange={setBidIncrementSlabs}
+              compact
+            />
+            <div className="flex gap-2 pt-2">
               <Button onClick={() => setShowSettingsDialog(false)} variant="outline" className="flex-1">Cancel</Button>
-              <Button onClick={saveSettings} className="flex-1">Save</Button>
+              <Button onClick={saveSettings} className="flex-1">Save & Apply</Button>
             </div>
           </div>
         </DialogContent>

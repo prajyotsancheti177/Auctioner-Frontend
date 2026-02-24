@@ -156,6 +156,11 @@ export const useAuctionSocket = (tournamentId: string | undefined, userId: strin
         socketRef.current.emit("auction:resetMode", { tournamentId });
     }, [tournamentId]);
 
+    const updateSlabs = useCallback((bidIncrementSlabs: Array<{ minBid: number; maxBid: number | null; increment: number }>) => {
+        if (!tournamentId) return;
+        socketRef.current.emit("auction:updateSlabs", { tournamentId, bidIncrementSlabs });
+    }, [tournamentId]);
+
     return {
         socket: socketRef.current,
         isConnected,
@@ -169,7 +174,8 @@ export const useAuctionSocket = (tournamentId: string | undefined, userId: strin
             undoBid,
             markSold,
             markUnsold,
-            resetMode
+            resetMode,
+            updateSlabs
         }
     };
 };

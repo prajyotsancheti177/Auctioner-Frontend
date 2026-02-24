@@ -3,6 +3,7 @@ import { Player } from "@/types/auction";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,7 +116,9 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
       sold: player.sold,
       auctionStatus: player.auctionStatus,
       amtSold: player.amtSold || 0,
-      teamId: player.teamId || "none"
+      teamId: (typeof player.teamId === 'object' && player.teamId !== null
+        ? (player.teamId as any)._id
+        : player.teamId) || "none"
     });
     setIsEditing(true);
     setError("");
@@ -236,6 +239,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-md p-0 overflow-hidden bg-card border-2 border-border rounded-2xl">
+          <DialogTitle className="sr-only">{player.name} Details</DialogTitle>
           {/* Hero Image Section with blurred background */}
           <div className="relative h-48 sm:h-64 overflow-hidden">
             <div

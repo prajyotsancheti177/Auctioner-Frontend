@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Trophy, LogOut, User, Menu, X, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { trackEvent } from "@/lib/eventTracker";
+import { getSocket } from "@/lib/socket";
 import logo from "@/assets/logo.png";
 
 const buildNavLinks = () => {
@@ -58,9 +59,43 @@ const buildNavLinks = () => {
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hasLiveAuction, setHasLiveAuction] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Listen for active auctions via socket
+  useEffect(() => {
+    const socket = getSocket();
+
+    const onListUpdate = (list: any[]) => {
+      setHasLiveAuction(list.length > 0);
+    };
+
+    const onConnect = () => {
+      socket.emit("auction:list");
+    };
+
+    if (socket.connected) {
+      socket.emit("auction:list");
+    } else {
+      socket.connect();
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("auction:list", onListUpdate);
+
+    // Poll periodically
+    const interval = setInterval(() => {
+      if (socket.connected) socket.emit("auction:list");
+    }, 10000);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("auction:list", onListUpdate);
+      clearInterval(interval);
+    };
+  }, []);
 
   const handleLogout = () => {
     // Track logout event before clearing user data
@@ -124,12 +159,20 @@ export const Navbar = () => {
                   key={link.path}
                   to={link.path}
                   className={cn(
-                    "px-4 py-2 rounded-lg font-medium text-base transition-all whitespace-nowrap",
+                    "px-4 py-2 rounded-lg font-medium text-base transition-all whitespace-nowrap relative",
                     location.pathname === link.path
                       ? "bg-gradient-primary text-primary-foreground shadow-glow"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                    link.path === "/auction" && hasLiveAuction && location.pathname !== "/auction"
+                    && "bg-red-500/10 text-red-500 hover:bg-red-500/20 ring-1 ring-red-500/30 animate-pulse"
                   )}
                 >
+                  {link.path === "/auction" && hasLiveAuction && (
+                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
+                    </span>
+                  )}
                   {link.label}
                 </Link>
               ))}
@@ -183,12 +226,20 @@ export const Navbar = () => {
             <Link
               to="/auction"
               className={cn(
-                "px-2 py-1.5 rounded-md font-medium text-xs transition-all whitespace-nowrap",
+                "px-2 py-1.5 rounded-md font-medium text-xs transition-all whitespace-nowrap relative",
                 location.pathname === "/auction"
                   ? "bg-gradient-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+                hasLiveAuction && location.pathname !== "/auction"
+                && "bg-red-500/10 text-red-500 ring-1 ring-red-500/30 animate-pulse"
               )}
             >
+              {hasLiveAuction && (
+                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                </span>
+              )}
               Live Auction
             </Link>
 
@@ -219,12 +270,20 @@ export const Navbar = () => {
                   key={link.path}
                   onClick={() => handleNavClick(link.path)}
                   className={cn(
-                    "px-4 py-3 rounded-lg font-medium text-left transition-all",
+                    "px-4 py-3 rounded-lg font-medium text-left transition-all relative",
                     location.pathname === link.path
                       ? "bg-gradient-primary text-primary-foreground shadow-glow"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                    link.path === "/auction" && hasLiveAuction && location.pathname !== "/auction"
+                    && "bg-red-500/10 text-red-500 hover:bg-red-500/20 ring-1 ring-red-500/30"
                   )}
                 >
+                  {link.path === "/auction" && hasLiveAuction && (
+                    <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                    </span>
+                  )}
                   {link.label}
                 </button>
               ))}

@@ -113,9 +113,26 @@ export const BidSlabEditor = ({ slabs, onChange, compact = false }: BidSlabEdito
                                 {/* Price Range */}
                                 <div className="flex items-center gap-1.5">
                                     <div className="flex items-center gap-1 flex-1">
-                                        <span className="text-xs text-muted-foreground font-medium min-w-[10px]">
-                                            {slab.minBid}
-                                        </span>
+                                        {index === 0 ? (
+                                            <Input
+                                                type="number"
+                                                value={slab.minBid}
+                                                onChange={(e) =>
+                                                    updateSlab(
+                                                        index,
+                                                        "minBid",
+                                                        e.target.value ? parseInt(e.target.value) : 0
+                                                    )
+                                                }
+                                                className="h-8 w-20 text-sm"
+                                                min={0}
+                                                placeholder="0"
+                                            />
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground font-medium min-w-[10px]">
+                                                {slab.minBid}
+                                            </span>
+                                        )}
                                         <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                                         {isLast ? (
                                             <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">

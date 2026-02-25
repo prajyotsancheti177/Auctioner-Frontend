@@ -573,11 +573,11 @@ export default function TournamentManagement() {
       ).join("\n");
       const teamsCSV = `${teamsHeaders}\n${teamsRows}`;
 
-      // Create Players CSV - matches import format: Player Name,Age,Photo URL,Category,Phone Number
+      // Create Players CSV - matches import format: Serial Number,Player Name,Age,Photo URL,Category,Phone Number
       // Plus additional columns for auction status
-      const playersHeaders = "Player Name,Age,Photo URL,Category,Phone Number,Team (Sold To),Sold,Amount Sold";
-      const playersRows = (data.players || []).map((p: { name: string; age: string; photo: string; playerCategory: string; mobile: string; teamName: string; sold: string; amtSold: number }) =>
-        `"${p.name || ''}","${p.age || ''}","${p.photo || ''}","${p.playerCategory || ''}","${p.mobile || ''}","${p.teamName || ''}","${p.sold || ''}","${p.amtSold || 0}"`
+      const playersHeaders = "Serial Number,Player Name,Age,Photo URL,Category,Phone Number,Team (Sold To),Sold,Amount Sold";
+      const playersRows = (data.players || []).map((p: { auctionSerialNumber: number | string; name: string; age: string; photo: string; playerCategory: string; mobile: string; teamName: string; sold: string; amtSold: number }) =>
+        `"${p.auctionSerialNumber || ''}","${p.name || ''}","${p.age || ''}","${p.photo || ''}","${p.playerCategory || ''}","${p.mobile || ''}","${p.teamName || ''}","${p.sold || ''}","${p.amtSold || 0}"`
       ).join("\n");
       const playersCSV = `${playersHeaders}\n${playersRows}`;
 

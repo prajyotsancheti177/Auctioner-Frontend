@@ -489,12 +489,12 @@ const Auction = () => {
 
           {/* Team Bidding Grid - Only for Auctioneer */}
           {isAuctioneer && (
-            <Card className="p-2 md:p-3 bg-card/80 backdrop-blur-sm border-2 border-border shadow-elevated max-w-5xl mx-auto">
-              <h2 className="text-sm md:text-lg font-bold mb-2 md:mb-3 text-foreground text-center">
+            <Card className="p-3 md:p-5 bg-card/80 backdrop-blur-sm border-2 border-border shadow-elevated max-w-7xl mx-auto">
+              <h2 className="text-base md:text-xl font-bold mb-3 md:mb-4 text-foreground text-center">
                 Click on Team to Bid
               </h2>
 
-              <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-6 gap-1 md:gap-2 mb-2 md:mb-3">
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3 mb-3 md:mb-4">
                 {teams.map((team: any) => {
                   const nextBidAmount = leadingTeam === null ? currentBid : currentBid + bidPrice;
                   const noSlots = (team.maxPlayersPerTeam ?? 0) - (team.playersCount ?? 0) <= 0;
@@ -506,27 +506,27 @@ const Auction = () => {
                     <div key={team._id} className="flex flex-col items-center">
                       <button
                         onClick={() => actions.placeBid(team._id)}
-                        className={`w-full p-2 rounded-lg border-2 transition-all ${isWarning ? "border-red-500 bg-red-500/20" :
+                        className={`w-full p-3 md:p-4 rounded-xl border-2 transition-all ${isWarning ? "border-red-500 bg-red-500/20" :
                           leadingTeam === team._id ? "border-primary bg-primary/20 shadow-glow scale-105" :
                             "border-border hover:border-primary/50 hover:scale-105"
                           }`}
                       >
-                        <div className="mb-1">
+                        <div className="mb-2">
                           <img
                             src={getDriveThumbnail(team.logo) || 'placeholder.png'}
                             alt={team.name}
-                            className="h-10 w-10 rounded-full shadow-md object-cover mx-auto"
+                            className="h-14 w-14 md:h-16 md:w-16 rounded-full shadow-md object-cover mx-auto"
                             onError={(e) => {
                               e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(team.name)}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=36&fontWeight=600`;
                             }}
                           />
                         </div>
-                        <p className="font-bold text-[10px] text-foreground mb-0.5 text-center truncate">{team.name}</p>
-                        <div className="text-[10px] text-muted-foreground text-center">
+                        <p className="font-bold text-xs md:text-sm text-foreground mb-1 text-center truncate">{team.name}</p>
+                        <div className="text-[11px] md:text-xs text-muted-foreground text-center">
                           {team.remainingBudget} Pts • {(team.maxPlayersPerTeam || 0) - (team.playersCount || 0)} slots
                         </div>
                         {teamBids[team._id] && (
-                          <p className="text-[9px] text-primary font-bold mt-1 text-center">{teamBids[team._id]} Pts.</p>
+                          <p className="text-[11px] md:text-xs text-primary font-bold mt-1 text-center">{teamBids[team._id]} Pts.</p>
                         )}
                       </button>
                     </div>

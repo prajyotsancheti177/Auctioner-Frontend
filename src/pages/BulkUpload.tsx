@@ -37,13 +37,13 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
 
   // Generate sample CSV for players
   const downloadPlayersSample = () => {
-    const csvContent = `Serial Number,Player Name,Age,Photo URL,Category,Phone Number
-1,Virat Kohli,35,https://drive.google.com/file/d/1234567890/view,Icon,9876543210
-2,MS Dhoni,42,https://drive.google.com/file/d/0987654321/view,Icon,9876543211
-3,Rohit Sharma,36,https://drive.google.com/file/d/1122334455/view,Icon,9876543212
-1,Jasprit Bumrah,30,https://drive.google.com/file/d/2233445566/view,Regular,9876543213
-2,KL Rahul,31,https://drive.google.com/file/d/3344556677/view,Regular,9876543214
-1,Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215`;
+    const csvContent = `Serial Number,Player Name,Age,Photo URL,Category,Phone Number,Team (Sold To),Sold,Amount Sold
+1,Virat Kohli,35,https://drive.google.com/file/d/1234567890/view,Icon,9876543210,Mumbai Mavericks,Yes,5000
+2,MS Dhoni,42,https://drive.google.com/file/d/0987654321/view,Icon,9876543211,Delhi Dragons,Yes,4500
+3,Rohit Sharma,36,https://drive.google.com/file/d/1122334455/view,Icon,9876543212,,No,0
+1,Jasprit Bumrah,30,https://drive.google.com/file/d/2233445566/view,Regular,9876543213,,,
+2,KL Rahul,31,https://drive.google.com/file/d/3344556677/view,Regular,9876543214,,,
+1,Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215,,,`;
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -56,17 +56,44 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
     document.body.removeChild(link);
   };
 
-  // Parse CSV file
+  // Parse a single CSV line handling quoted fields (commas inside quotes)
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+          // Escaped quote inside quoted field
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
+  // Parse CSV file — handles quoted fields with commas inside them
   const parseCSV = (text: string): Record<string, string>[] => {
     const lines = text.split("\n").filter(line => line.trim());
-    const headers = lines[0].split(",").map(h => h.trim());
+    const headers = parseCSVLine(lines[0]);
     const data: Record<string, string>[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(",").map(v => v.trim());
+      const values = parseCSVLine(lines[i]);
       const row: Record<string, string> = {};
       headers.forEach((header, index) => {
-        row[header] = values[index];
+        row[header] = values[index] || '';
       });
       data.push(row);
     }
@@ -143,7 +170,7 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
     }
   };
 
-  // Upload players CSV
+  // Upload players CSV — creates new players and updates existing ones
   const handlePlayersUpload = async () => {
     if (!playersFile) {
       setUploadStatus({ type: "error", message: "Please select a players CSV file" });
@@ -169,7 +196,7 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
         return;
       }
 
-      // Transform data to match API format
+      // Transform data to match API format — includes all fields
       const players = playersData.map((player) => ({
         name: player["Player Name"],
         age: parseInt(player["Age"]) || 0,
@@ -177,15 +204,17 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
         playerCategory: player["Category"],
         mobile: parseInt(player["Phone Number"]) || 0,
         auctionSerialNumber: player["Serial Number"] || undefined,
+        teamName: player["Team (Sold To)"] || '',
+        sold: player["Sold"] || '',
+        amtSold: player["Amount Sold"] || '',
         touranmentId: tournamentId,
-        sold: false,
-        auctionStatus: false,
       }));
 
       const response = await fetch(`${apiConfig.baseUrl}/api/player/bulk-create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-user-id": userId,
         },
         body: JSON.stringify({ players, touranmentId: tournamentId, userId }),
       });
@@ -198,9 +227,12 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
         throw new Error(errorMessage);
       }
 
+      const data = result.data;
+      const message = data?.message || `Successfully processed ${players.length} players!`;
+
       setUploadStatus({
         type: "success",
-        message: `Successfully uploaded ${players.length} players!`,
+        message,
       });
       setPlayersFile(null);
     } catch (error) {
@@ -350,12 +382,15 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
             <div className="border-t pt-4">
               <h4 className="font-semibold text-sm mb-2">CSV Format:</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Serial Number (optional - can have duplicates across categories)</li>
+                <li>• Serial Number (optional)</li>
                 <li>• Player Name</li>
                 <li>• Age</li>
                 <li>• Photo URL (Google Drive link)</li>
                 <li>• Category</li>
                 <li>• Phone Number</li>
+                <li>• Team (Sold To) — optional, must match an existing team name</li>
+                <li>• Sold — optional, Yes/No</li>
+                <li>• Amount Sold — optional</li>
               </ul>
             </div>
           </div>
@@ -374,6 +409,8 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
           <li>• All numeric fields (Age, Phone Number) should contain only numbers</li>
           <li>• Player categories should match your tournament configuration</li>
           <li>• Upload teams before players for best results</li>
+          <li>• <strong>New players</strong> will be created, <strong>existing players</strong> (matched by name) will be updated</li>
+          <li>• Team (Sold To), Sold, and Amount Sold columns are optional — leave blank for new unsold players</li>
         </ul>
       </Card>
     </div>

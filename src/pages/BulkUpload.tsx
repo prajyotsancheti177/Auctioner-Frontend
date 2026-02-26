@@ -197,18 +197,24 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
       }
 
       // Transform data to match API format — includes all fields
-      const players = playersData.map((player) => ({
-        name: player["Player Name"],
-        age: parseInt(player["Age"]) || 0,
-        photo: player["Photo URL"],
-        playerCategory: player["Category"],
-        mobile: parseInt(player["Phone Number"]) || 0,
-        auctionSerialNumber: player["Serial Number"] || undefined,
-        teamName: player["Team (Sold To)"] || '',
-        sold: player["Sold"] || '',
-        amtSold: player["Amount Sold"] || '',
-        touranmentId: tournamentId,
-      }));
+      const players = playersData.map((player) => {
+        const soldStr = (player["Sold"] || '').toLowerCase().trim();
+        const soldBool = soldStr === 'yes' || soldStr === 'true';
+        const amtSoldNum = parseInt(player["Amount Sold"]) || 0;
+
+        return {
+          name: player["Player Name"],
+          age: parseInt(player["Age"]) || 0,
+          photo: player["Photo URL"],
+          playerCategory: player["Category"],
+          mobile: parseInt(player["Phone Number"]) || 0,
+          auctionSerialNumber: player["Serial Number"] ? parseInt(player["Serial Number"]) : undefined,
+          teamName: player["Team (Sold To)"] || '',
+          sold: soldBool,
+          amtSold: amtSoldNum,
+          touranmentId: tournamentId,
+        };
+      });
 
       const response = await fetch(`${apiConfig.baseUrl}/api/player/bulk-create`, {
         method: "POST",

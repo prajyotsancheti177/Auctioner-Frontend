@@ -5,11 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserPlus, Users, Trophy } from "lucide-react";
-import { PlayerSkill } from "@/types/auction";
 import apiConfig from "@/config/apiConfig";
 import { getSelectedTournamentId } from "@/lib/tournamentUtils";
 
@@ -20,7 +18,7 @@ interface PlayerRegistrationData {
   mobile: string;
   email: string;
   address: string;
-  skills: PlayerSkill[];
+  skill: string;
   playerCategory: string;
   photo?: string;
 }
@@ -38,12 +36,11 @@ const PlayerRegistration = () => {
     mobile: "",
     email: "",
     address: "",
-    skills: [],
+    skill: "",
     playerCategory: "",
     photo: ""
   });
 
-  const skillOptions: PlayerSkill[] = ["Batsman", "Bowler", "All-Rounder", "Wicket-Keeper"];
   const playerCategories = ["Regular", "Icon", "Youth"];
   const genderOptions = ["Male", "Female", "Other"];
 
@@ -53,15 +50,6 @@ const PlayerRegistration = () => {
       [field]: value
     }));
     setError("");
-  };
-
-  const handleSkillChange = (skill: PlayerSkill, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      skills: checked
-        ? [...prev.skills, skill]
-        : prev.skills.filter(s => s !== skill)
-    }));
   };
 
   const validateForm = (): boolean => {
@@ -85,8 +73,8 @@ const PlayerRegistration = () => {
       setError("Please enter a valid email address");
       return false;
     }
-    if (formData.skills.length === 0) {
-      setError("Please select at least one skill");
+    if (!formData.skill.trim()) {
+      setError("Please enter a skill");
       return false;
     }
     if (!formData.playerCategory) {
@@ -128,7 +116,7 @@ const PlayerRegistration = () => {
         mobile: parseInt(formData.mobile),
         email: formData.email.trim(),
         address: formData.address.trim(),
-        skills: formData.skills,
+        skill: formData.skill.trim(),
         playerCategory: formData.playerCategory,
         touranmentId: tournamentId,
         photo: formData.photo || "",
@@ -161,7 +149,7 @@ const PlayerRegistration = () => {
         mobile: "",
         email: "",
         address: "",
-        skills: [],
+        skill: "",
         playerCategory: "",
         photo: ""
       });
@@ -311,21 +299,18 @@ const PlayerRegistration = () => {
                 </h3>
 
                 <div className="space-y-2">
-                  <Label>Skills * (Select all that apply)</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {skillOptions.map((skill) => (
-                      <div key={skill} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={skill}
-                          checked={formData.skills.includes(skill)}
-                          onCheckedChange={(checked) => handleSkillChange(skill, checked as boolean)}
-                        />
-                        <Label htmlFor={skill} className="text-sm font-normal">
-                          {skill}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
+                  <Label htmlFor="skill">Skill *</Label>
+                  <Input
+                    id="skill"
+                    type="text"
+                    placeholder="e.g., Batsman, Bowler, All-Rounder, Wicket-Keeper"
+                    value={formData.skill}
+                    onChange={(e) => handleInputChange('skill', e.target.value)}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter the player's primary skill (free text, not restricted)
+                  </p>
                 </div>
 
                 <div className="space-y-2">

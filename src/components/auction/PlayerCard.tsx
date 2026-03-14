@@ -143,6 +143,15 @@ export const PlayerCard = ({ player, isAnimated, isSold, className, onClick, cat
           )}
         </div>
       </div>
+
+      {/* Skill subsection - accent bottom strip */}
+      {player.skill && (
+        <div className="w-full px-2 py-1 sm:px-3 sm:py-1.5 bg-orange-500/10 border-t border-orange-500/20">
+          <p className="text-[10px] sm:text-xs font-semibold text-orange-400 truncate text-center">
+            {player.skill}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

@@ -37,13 +37,13 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
 
   // Generate sample CSV for players
   const downloadPlayersSample = () => {
-    const csvContent = `Serial Number,Player Name,Age,Photo URL,Category,Phone Number,Team (Sold To),Sold,Amount Sold
-1,Virat Kohli,35,https://drive.google.com/file/d/1234567890/view,Icon,9876543210,Mumbai Mavericks,Yes,5000
-2,MS Dhoni,42,https://drive.google.com/file/d/0987654321/view,Icon,9876543211,Delhi Dragons,Yes,4500
-3,Rohit Sharma,36,https://drive.google.com/file/d/1122334455/view,Icon,9876543212,,No,0
-1,Jasprit Bumrah,30,https://drive.google.com/file/d/2233445566/view,Regular,9876543213,,,
-2,KL Rahul,31,https://drive.google.com/file/d/3344556677/view,Regular,9876543214,,,
-1,Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,9876543215,,,`;
+    const csvContent = `Serial Number,Player Name,Age,Photo URL,Category,Skill,Phone Number,Team (Sold To),Sold,Amount Sold
+1,Virat Kohli,35,https://drive.google.com/file/d/1234567890/view,Icon,Batsman,9876543210,Mumbai Mavericks,Yes,5000
+2,MS Dhoni,42,https://drive.google.com/file/d/0987654321/view,Icon,All-Rounder,9876543211,Delhi Dragons,Yes,4500
+3,Rohit Sharma,36,https://drive.google.com/file/d/1122334455/view,Icon,Batsman,9876543212,,No,0
+1,Jasprit Bumrah,30,https://drive.google.com/file/d/2233445566/view,Regular,Bowler,9876543213,,,
+2,KL Rahul,31,https://drive.google.com/file/d/3344556677/view,Regular,Batsman,9876543214,,,
+1,Shubman Gill,24,https://drive.google.com/file/d/4455667788/view,Youth,Batsman,9876543215,,,`;
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -207,6 +207,7 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
           age: parseInt(player["Age"]) || 0,
           photo: player["Photo URL"],
           playerCategory: player["Category"],
+          skill: player["Skill"] || '',
           mobile: parseInt(player["Phone Number"]) || 0,
           auctionSerialNumber: player["Serial Number"] ? parseInt(player["Serial Number"]) : undefined,
           teamName: player["Team (Sold To)"] || '',
@@ -393,6 +394,7 @@ Bangalore Bulls,https://drive.google.com/file/d/1122334455/view,Priya Patel,9876
                 <li>• Age</li>
                 <li>• Photo URL (Google Drive link)</li>
                 <li>• Category</li>
+                <li>• Skill (e.g., Batsman, Bowler, All-Rounder)</li>
                 <li>• Phone Number</li>
                 <li>• Team (Sold To) — optional, must match an existing team name</li>
                 <li>• Sold — optional, Yes/No</li>

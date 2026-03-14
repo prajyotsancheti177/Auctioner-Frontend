@@ -1,5 +1,3 @@
-export type PlayerSkill = "Batsman" | "Bowler" | "All-Rounder" | "Wicket-Keeper";
-
 export type PlayerStatus = "Unsold" | "Sold";
 
 export interface Player {
@@ -8,7 +6,7 @@ export interface Player {
   name: string;
   age?: number;
   photo?: string;
-  skills?: PlayerSkill[];
+  skill?: string;
   mobile?: number | string;
   email?: string | null;
   address?: string | null;

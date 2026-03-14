@@ -149,6 +149,11 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
               <p className="text-xs sm:text-sm md:text-2xl text-muted-foreground font-semibold">
                 Base: {player.basePrice} Pts. | Increment: {bidPrice} Pts.
               </p>
+              {player.skill && (
+                <span className="inline-block mt-1 md:mt-3 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-orange-500/15 text-orange-400 text-xs sm:text-sm md:text-lg font-bold">
+                  {player.skill}
+                </span>
+              )}
             </div>
           )}
 
@@ -263,6 +268,15 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
                   </div>
                 )}
               </div>
+
+              {/* Skill subsection */}
+              {player.skill && (
+                <div className="mt-3 w-full px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-lg text-center">
+                  <p className="text-xs md:text-sm font-semibold text-orange-400">
+                    {player.skill}
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>

@@ -43,6 +43,7 @@ const buildNavLinks = () => {
   // Protected links (only for authenticated users)
   if (showManageTournaments) {
     links.push({ path: "/tournaments/manage", label: "Manage Tournaments" });
+    links.push({ path: "/add-player", label: "Add Player" });
   }
 
   if (showBulkUpload) {

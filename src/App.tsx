@@ -11,6 +11,7 @@ import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
 import Players from "./pages/Players";
 import PlayerRegistration from "./pages/PlayerRegistration";
+import PublicPlayerRegistration from "./pages/PublicPlayerRegistration";
 import AddPlayer from "./pages/AddPlayer";
 import Tournaments from "./pages/Tournaments";
 import TournamentDetail from "./pages/TournamentDetail";
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/teams" element={<Teams />} />
               <Route path="/team/:teamId" element={<TeamDetail />} />
               <Route path="/register" element={<PlayerRegistration />} />
+              <Route path="/register/public/:tournamentId" element={<PublicPlayerRegistration />} />
               <Route path="/add-player" element={<AddPlayer />} />
 
               {/* Login Route */}

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { Pencil, Trash2, Trophy, Users, DollarSign, Download, UserMinus, UsersRound, RotateCcw, Plus } from "lucide-react";
+import { Pencil, Trash2, Trophy, Users, DollarSign, Download, UserMinus, UsersRound, RotateCcw, Plus, Link } from "lucide-react";
+import { RegistrationConfigDialog } from "@/components/auction/RegistrationConfigDialog";
+import { SyncPreviewDialog } from "@/components/auction/SyncPreviewDialog";
 import { BidSlabEditor, BidSlab } from "@/components/auction/BidSlabEditor";
 import { Button } from "@/components/ui/button";
 import {
@@ -107,7 +109,11 @@ export default function TournamentManagement() {
   const [deleteAllPlayersDialogOpen, setDeleteAllPlayersDialogOpen] = useState(false);
   const [resetUnsoldDialogOpen, setResetUnsoldDialogOpen] = useState(false);
   const [actionTournamentId, setActionTournamentId] = useState<string | null>(null);
+  const [actionTournamentName, setActionTournamentName] = useState("");
   const [isResettingUnsold, setIsResettingUnsold] = useState(false);
+  const [configDialogOpen, setConfigDialogOpen] = useState(false);
+  const [syncDialogOpen, setSyncDialogOpen] = useState(false);
+  const [isSyncingToSheet, setIsSyncingToSheet] = useState<string | null>(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isTournamentHost = user.role === "tournament_host";
@@ -603,6 +609,43 @@ export default function TournamentManagement() {
     }
   };
 
+  const handleSyncToSheet = async (tournamentId: string) => {
+    try {
+      setIsSyncingToSheet(tournamentId);
+      const response = await fetch(`${apiConfig.baseUrl}/api/player/sync-to-sheet`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": user._id,
+          "Authorization": `Bearer ${localStorage.getItem("token") || ""}`
+        },
+        body: JSON.stringify({ touranmentId: tournamentId }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast({
+          title: "Sync Complete",
+          description: "Database successfully exported to Google Sheet.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to sync to Google Sheet",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while pushing data to Google Sheet",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncingToSheet(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -713,6 +756,38 @@ export default function TournamentManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => {
+                            setActionTournamentId(tournament._id);
+                            setActionTournamentName(tournament.name || "");
+                            setConfigDialogOpen(true);
+                          }}
+                          title="Customize Registration Form"
+                        >
+                          <Link className="h-4 w-4 text-purple-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setActionTournamentId(tournament._id);
+                            setSyncDialogOpen(true);
+                          }}
+                          title="Sync Sheet Data to DB"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-emerald-600"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleSyncToSheet(tournament._id)}
+                          disabled={isSyncingToSheet === tournament._id}
+                          title="Sync DB Data back to Sheet"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-emerald-600 ${isSyncingToSheet === tournament._id ? 'animate-bounce' : ''}`}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleDownloadData(tournament._id, tournament.name || 'tournament')}
                           title="Download Data"
                         >
@@ -770,6 +845,21 @@ export default function TournamentManagement() {
       </Card>
 
       {/* Create/Edit Tournament Dialog */}
+      {configDialogOpen && actionTournamentId && (
+        <RegistrationConfigDialog
+          isOpen={configDialogOpen}
+          onClose={() => setConfigDialogOpen(false)}
+          tournamentId={actionTournamentId}
+          tournamentName={actionTournamentName}
+        />
+      )}
+      {syncDialogOpen && actionTournamentId && (
+        <SyncPreviewDialog
+          isOpen={syncDialogOpen}
+          onClose={() => { setSyncDialogOpen(false); fetchTournaments(); }}
+          tournamentId={actionTournamentId}
+        />
+      )}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>

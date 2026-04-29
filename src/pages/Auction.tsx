@@ -3,6 +3,7 @@ import { AuctionPlayerCard } from "@/components/auction/AuctionPlayerCard";
 import { SoldCelebration } from "@/components/auction/SoldCelebration";
 import { UnsoldAnimation } from "@/components/auction/UnsoldAnimation";
 import { BidSlabEditor, BidSlab } from "@/components/auction/BidSlabEditor";
+import { TeamBudgetPanel } from "@/components/auction/TeamBudgetPanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -462,9 +463,10 @@ const Auction = () => {
         </div>
 
         <div className="space-y-4 md:space-y-8 max-w-full mx-auto">
-          {/* Large Player Card - Fixed height container with mobile margins */}
-          <div className="flex justify-center animate-scale-in mx-2 md:mx-0">
-            <div className="w-full max-w-7xl h-[55vh] md:h-[55vh]">
+          {/* Player Card + Team Budget Panel */}
+          <div className="flex flex-col md:flex-row gap-3 md:gap-4 animate-scale-in mx-2 md:mx-0 max-w-7xl md:mx-auto">
+            {/* Large Player Card */}
+            <div className="flex-1 h-[45vh] md:h-[55vh]">
               {infoMessage && !currentPlayer ? (
                 <Card className="w-full h-full flex items-center justify-center bg-card/80 backdrop-blur-sm border-2 border-yellow-500">
                   <div className="text-center p-8">
@@ -485,6 +487,14 @@ const Auction = () => {
                 />
               )}
             </div>
+
+            {/* Team Budget Panel - Desktop sidebar / Mobile bottom strip */}
+            <TeamBudgetPanel
+              teams={teams}
+              currentBid={currentBid}
+              bidPrice={bidPrice}
+              leadingTeam={leadingTeam}
+            />
           </div>
 
           {/* Team Bidding Grid - Only for Auctioneer */}

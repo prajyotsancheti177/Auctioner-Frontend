@@ -238,8 +238,10 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md p-0 overflow-hidden bg-card border-2 border-border rounded-2xl">
+        <DialogContent className="max-w-md p-0 overflow-hidden bg-card border-2 border-border rounded-2xl max-h-[90vh] flex flex-col">
           <DialogTitle className="sr-only">{player.name} Details</DialogTitle>
+          {/* Scrollable wrapper for everything */}
+          <div className="overflow-y-auto flex-1">
           {/* Hero Image Section with blurred background */}
           <div className="relative h-48 sm:h-64 overflow-hidden">
             <div
@@ -428,6 +430,7 @@ export const PlayerDetailsModal = ({ player, isOpen, onClose, onUpdate, onDelete
                 </>
               ) : null}
             </div>
+          </div>
           </div>
         </DialogContent>
       </Dialog>

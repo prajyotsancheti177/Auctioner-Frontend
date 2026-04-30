@@ -64,7 +64,7 @@ export const TeamBudgetPanel = ({
                     }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-foreground truncate mb-0.5">
+                    <p className="text-xs font-bold text-foreground mb-0.5 line-clamp-2 leading-tight">
                       {team.name}
                     </p>
                     <p

@@ -65,8 +65,8 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
         className
       )}
     >
-      {/* Player Image - Fills available space on mobile */}
-      <div className="relative flex-1 md:flex-initial w-full md:w-[24rem] lg:w-[27rem] md:h-auto md:min-h-full overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none">
+      {/* Player Image - Limited height on mobile, fixed width on desktop */}
+      <div className="relative h-[35%] md:h-auto md:flex-initial w-full md:w-[24rem] lg:w-[27rem] md:min-h-full overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none flex-shrink-0">
         <img
           src={logoSrc}
           alt={player.name}
@@ -131,53 +131,53 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
         </div>
       </div>
 
-      {/* Player Details - Compact on mobile */}
-      <div className="p-2 md:p-3 flex-shrink-0 md:flex-1 w-full md:pl-6 flex flex-col">
+      {/* Player Details - Takes remaining space, never overflows */}
+      <div className="flex-1 min-h-0 w-full md:pl-4 flex flex-col overflow-hidden">
         {/* Glass panel for details */}
-        <div className="w-full h-full bg-white/6 backdrop-blur-sm p-2 md:p-6 rounded-b-2xl md:rounded-r-2xl md:rounded-bl-none flex flex-col justify-center md:justify-between">
-          {/* Player name and base price - Compact on mobile */}
+        <div className="w-full h-full bg-white/6 backdrop-blur-sm px-2 py-1 md:px-6 md:py-4 rounded-b-2xl md:rounded-r-2xl md:rounded-bl-none flex flex-col justify-center gap-1 md:gap-2">
+          {/* Player name and base price */}
           {currentBid !== undefined && (
-            <div className="text-center mb-1 mt-1 md:mb-6 md:mt-12">
-              <h3 className="text-lg sm:text-2xl md:text-6xl font-black text-foreground mb-2 md:mb-4">
+            <div className="text-center flex-shrink-0">
+              <h3 className="text-base sm:text-xl md:text-4xl font-black text-foreground mb-0.5 md:mb-2 truncate">
                 {player.auctionSerialNumber && (
-                  <span className="text-secondary mr-1 sm:mr-2 md:mr-4">
+                  <span className="text-secondary mr-1 sm:mr-2 md:mr-3">
                     #{player.auctionSerialNumber}
                   </span>
                 )}
                 {player.name}
               </h3>
               {player.skill && (
-                <span className="inline-block mt-2 md:mt-3 px-4 py-1 sm:px-6 sm:py-2 rounded-full bg-orange-500/15 text-orange-400 text-lg sm:text-2xl md:text-4xl font-bold">
+                <span className="inline-block px-3 py-0.5 sm:px-4 sm:py-1 rounded-full bg-orange-500/15 text-orange-400 text-sm sm:text-lg md:text-xl font-bold">
                   {player.skill}
                 </span>
               )}
-              <p className="text-xs sm:text-sm md:text-2xl text-muted-foreground font-semibold mt-2 md:mt-3">
+              <p className="text-[10px] sm:text-xs md:text-lg text-muted-foreground font-semibold mt-0.5 md:mt-2">
                 Base: {player.basePrice} Pts. | Increment: {bidPrice} Pts.
               </p>
             </div>
           )}
 
-          {/* Bid Display - Center of right side */}
+          {/* Bid Display - Center of right side, takes available space */}
           {currentBid !== undefined && (
-            <div className="flex-1 flex items-center justify-center py-1 md:py-4">
+            <div className="flex-1 min-h-0 flex items-center justify-center">
               <div className="text-center w-full px-2">
-                <p className="text-sm sm:text-lg md:text-2xl text-muted-foreground mb-0.5 md:mb-3 font-semibold">Current Bid</p>
-                <div className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-secondary mb-1 md:mb-4 break-words">
+                <p className="text-xs sm:text-base md:text-xl text-muted-foreground mb-0.5 md:mb-2 font-semibold">Current Bid</p>
+                <div className="text-xl sm:text-3xl md:text-6xl lg:text-7xl font-black text-secondary mb-0.5 md:mb-3 break-words leading-none">
                   {currentBid} Pts.
                 </div>
                 {leadingTeamName && (
-                  <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-2">
+                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 md:gap-3">
                     {leadingTeamLogo && (
                       <img
                         src={leadingTeamLogo}
                         alt={leadingTeamName}
-                        className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full shadow-lg object-cover flex-shrink-0"
+                        className="w-7 h-7 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-full shadow-lg object-cover flex-shrink-0"
                         onError={(e) => {
                           e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(leadingTeamName || 'Team')}&backgroundColor=6366f1,8b5cf6,ec4899&backgroundType=gradientLinear&fontSize=36&fontWeight=600`;
                         }}
                       />
                     )}
-                    <div className="text-base sm:text-lg md:text-3xl lg:text-4xl xl:text-5xl font-black text-primary break-words">
+                    <div className="text-sm sm:text-lg md:text-2xl lg:text-3xl font-black text-primary truncate">
                       {leadingTeamName}
                     </div>
                   </div>
@@ -187,7 +187,7 @@ export const AuctionPlayerCard = ({ player, isAnimated, isSold, className, curre
           )}
 
           {/* Mobile badges: visible on small screens (row layout) to avoid overlap */}
-          <div className="flex items-center justify-between mb-2 md:hidden w-full">
+          <div className="flex items-center justify-between py-0.5 md:hidden w-full flex-shrink-0">
             <div>
               {(() => {
                 const isSold = !!player.sold;

@@ -464,9 +464,9 @@ const Auction = () => {
 
         <div className="space-y-4 md:space-y-8 max-w-full mx-auto">
           {/* Player Card + Team Budget Panel */}
-          <div className="flex flex-col md:flex-row gap-3 md:gap-4 animate-scale-in mx-2 md:mx-0 max-w-7xl md:mx-auto">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-4 animate-scale-in mx-2 md:mx-0 max-w-7xl md:mx-auto md:h-[55vh]">
             {/* Large Player Card */}
-            <div className="flex-1 h-[45vh] md:h-[55vh]">
+            <div className="flex-1 h-[45vh] md:h-full">
               {infoMessage && !currentPlayer ? (
                 <Card className="w-full h-full flex items-center justify-center bg-card/80 backdrop-blur-sm border-2 border-yellow-500">
                   <div className="text-center p-8">

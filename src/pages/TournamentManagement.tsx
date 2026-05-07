@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Pencil, Trash2, Trophy, Users, DollarSign, Download, UserMinus, UsersRound, RotateCcw, Plus, Link } from "lucide-react";
+import { Pencil, Trash2, Trophy, Users, DollarSign, Download, UserMinus, UsersRound, RotateCcw, Plus, Link, FileDown, Loader2 } from "lucide-react";
+import { exportTeamsPdf } from "@/lib/exportTeamsPdf";
 import { RegistrationConfigDialog } from "@/components/auction/RegistrationConfigDialog";
 import { SyncPreviewDialog } from "@/components/auction/SyncPreviewDialog";
 import { BidSlabEditor, BidSlab } from "@/components/auction/BidSlabEditor";
@@ -114,6 +115,7 @@ export default function TournamentManagement() {
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [syncDialogOpen, setSyncDialogOpen] = useState(false);
   const [isSyncingToSheet, setIsSyncingToSheet] = useState<string | null>(null);
+  const [exportingPdfId, setExportingPdfId] = useState<string | null>(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isTournamentHost = user.role === "tournament_host";
@@ -646,6 +648,26 @@ export default function TournamentManagement() {
     }
   };
 
+  const handleExportPdf = async (tournamentId: string, tournamentName: string) => {
+    try {
+      setExportingPdfId(tournamentId);
+      await exportTeamsPdf(tournamentName, tournamentId);
+      toast({
+        title: "Success",
+        description: "PDF downloaded successfully!",
+      });
+    } catch (err) {
+      console.error("PDF export failed:", err);
+      toast({
+        title: "Error",
+        description: "Failed to export PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setExportingPdfId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -792,6 +814,19 @@ export default function TournamentManagement() {
                           title="Download Data"
                         >
                           <Download className="h-4 w-4 text-blue-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleExportPdf(tournament._id, tournament.name || 'Tournament')}
+                          disabled={exportingPdfId === tournament._id}
+                          title="Export Teams PDF"
+                        >
+                          {exportingPdfId === tournament._id ? (
+                            <Loader2 className="h-4 w-4 text-teal-500 animate-spin" />
+                          ) : (
+                            <FileDown className="h-4 w-4 text-teal-500" />
+                          )}
                         </Button>
                         <Button
                           variant="ghost"

@@ -35,7 +35,7 @@ export const TeamBudgetPanel = ({
       <div className="hidden md:flex flex-col shrink-0 w-[420px] lg:w-[460px] bg-card/80 backdrop-blur-sm border-2 border-border rounded-2xl shadow-elevated overflow-hidden">
         <div className="px-3 py-2 border-b border-border bg-muted/30">
           <h3 className="text-sm font-bold text-foreground text-center tracking-wide uppercase">
-            Team Purse
+            Max Bid Amount
           </h3>
         </div>
         <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
@@ -100,7 +100,7 @@ export const TeamBudgetPanel = ({
       <div className="md:hidden w-full bg-card/80 backdrop-blur-sm border-2 border-border rounded-xl shadow-elevated overflow-hidden mx-2">
         <div className="px-3 py-1.5 border-b border-border bg-muted/30">
           <h3 className="text-xs font-bold text-foreground text-center tracking-wide uppercase">
-            Team Purse
+            Max Bid Amount
           </h3>
         </div>
         <div className="grid grid-cols-3 gap-1.5 p-2">

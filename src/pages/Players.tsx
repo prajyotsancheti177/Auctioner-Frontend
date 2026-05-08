@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { PlayerCard } from "@/components/auction/PlayerCard";
 import { PlayerDetailsModal } from "@/components/player/PlayerDetailsModal";
 import { Button } from "@/components/ui/button";
@@ -9,14 +10,28 @@ import { getSelectedTournamentId } from "@/lib/tournamentUtils";
 import { trackPageView } from "@/lib/eventTracker";
 
 const Players = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [players, setPlayers] = useState([]);
-  const [filter, setFilter] = useState<PlayerStatus | "All" | "Remaining">("All");
-  const [selectedCategory, setSelectedCategory] = useState<string | "All">("All");
-  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<PlayerStatus | "All" | "Remaining">(
+    () => (searchParams.get("status") as PlayerStatus | "All" | "Remaining") || "All"
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string | "All">(
+    () => searchParams.get("category") || "All"
+  );
+  const [search, setSearch] = useState(() => searchParams.get("q") || "");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Sync filter state to URL search params
+  useEffect(() => {
+    const params: Record<string, string> = {};
+    if (filter !== "All") params.status = filter;
+    if (selectedCategory !== "All") params.category = selectedCategory;
+    if (search) params.q = search;
+    setSearchParams(params, { replace: true });
+  }, [filter, selectedCategory, search, setSearchParams]);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -200,7 +215,8 @@ const Players = () => {
               <Button
                 variant={filter === "Remaining" ? "default" : "outline"}
                 onClick={() => setFilter("Remaining")}
-                className={`${filter === "Remaining" ? "bg-gradient-warning" : ""} px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-base whitespace-nowrap flex-shrink-0`}
+                className={`px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-base whitespace-nowrap flex-shrink-0`}
+                style={filter === "Remaining" ? { background: "linear-gradient(135deg, hsl(45 100% 50%), hsl(45 90% 60%))" } : {}}
                 size="sm"
               >
                 Pending ({remainingCount})

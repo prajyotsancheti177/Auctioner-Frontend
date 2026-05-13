@@ -89,7 +89,9 @@ export function RegistrationConfigDialog({ isOpen, onClose, tournamentId, tourna
         setConfig({
           isActive: data.data.registrationFormConfig.isActive || false,
           fields: { ...defaultFields, ...data.data.registrationFormConfig.fields },
-          customFields: data.data.registrationFormConfig.customFields || []
+          customFields: data.data.registrationFormConfig.customFields || [],
+          googleSheetUrl: data.data.registrationFormConfig.googleSheetUrl || '',
+          googleSheetId: data.data.registrationFormConfig.googleSheetId || '',
         });
       } else {
         setConfig({ isActive: false, fields: defaultFields, customFields: [] });

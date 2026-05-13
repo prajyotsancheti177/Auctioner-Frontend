@@ -300,17 +300,18 @@ const PlayerRegistration = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="skill">Skill *</Label>
-                  <Input
-                    id="skill"
-                    type="text"
-                    placeholder="e.g., Batsman, Bowler, All-Rounder, Wicket-Keeper"
-                    value={formData.skill}
-                    onChange={(e) => handleInputChange('skill', e.target.value)}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Enter the player's primary skill (free text, not restricted)
-                  </p>
+                  <Select value={formData.skill} onValueChange={(value) => handleInputChange('skill', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select skill" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {["Batsman", "Bowler", "All-rounder", "Wicket-Keeper"].map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

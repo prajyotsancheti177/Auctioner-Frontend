@@ -382,7 +382,14 @@ const PublicPlayerRegistration = () => {
               {isFieldEnabled('skill') && (
                 <div className="space-y-2">
                   <Label htmlFor="skill">{fieldLabel('skill', 'Skill')} {isFieldRequired('skill') && '*'}</Label>
-                  <Input id="skill" placeholder="e.g., Batsman, Bowler" value={formData.skill} onChange={(e) => handleInputChange('skill', e.target.value)} required={isFieldRequired('skill')} />
+                  <Select value={formData.skill} onValueChange={(v) => handleInputChange('skill', v)} required={isFieldRequired('skill')}>
+                    <SelectTrigger><SelectValue placeholder={`Select ${fieldLabel('skill', 'Skill')}`} /></SelectTrigger>
+                    <SelectContent>
+                      {(config?.fields?.skill?.options || ["Batsman", "Bowler", "All-rounder"]).map((opt: string) => (
+                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 

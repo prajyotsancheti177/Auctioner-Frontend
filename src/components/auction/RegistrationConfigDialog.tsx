@@ -15,6 +15,7 @@ interface fieldConfig {
   showToPublic: boolean;
   defaultValue: any;
   label: string;
+  options?: string[];
 }
 
 interface CustomFieldConfig {
@@ -48,7 +49,7 @@ const defaultFields = {
   age: { required: true, enabled: true, showToPublic: true, defaultValue: '', label: "Age" },
   gender: { required: true, enabled: true, showToPublic: true, defaultValue: '', label: "Gender" },
   photo: { required: false, enabled: true, showToPublic: true, defaultValue: '', label: "Photo" },
-  skill: { required: true, enabled: true, showToPublic: true, defaultValue: '', label: "Skill" },
+  skill: { required: true, enabled: true, showToPublic: true, defaultValue: '', label: "Skill", options: ["Batsman", "Bowler", "All-rounder"] },
   mobile: { required: true, enabled: true, showToPublic: true, defaultValue: '', label: "Mobile Number" },
   email: { required: true, enabled: true, showToPublic: true, defaultValue: '', label: "Email Address" },
   address: { required: false, enabled: true, showToPublic: true, defaultValue: '', label: "Address" },
@@ -84,11 +85,15 @@ export function RegistrationConfigDialog({ isOpen, onClose, tournamentId, tourna
       setLoading(true);
       const response = await fetch(`${apiConfig.baseUrl}/api/tournament/${tournamentId}/registration-config`);
       const data = await response.json();
-      
       if (response.ok && data.data && data.data.registrationFormConfig) {
+        const serverFields = data.data.registrationFormConfig.fields || {};
+        const mergedFields: any = {};
+        for (const key of Object.keys(defaultFields)) {
+          mergedFields[key] = { ...defaultFields[key as keyof typeof defaultFields], ...(serverFields[key] || {}) };
+        }
         setConfig({
           isActive: data.data.registrationFormConfig.isActive || false,
-          fields: { ...defaultFields, ...data.data.registrationFormConfig.fields },
+          fields: mergedFields,
           customFields: data.data.registrationFormConfig.customFields || [],
           googleSheetUrl: data.data.registrationFormConfig.googleSheetUrl || '',
           googleSheetId: data.data.registrationFormConfig.googleSheetId || '',
@@ -336,6 +341,71 @@ export function RegistrationConfigDialog({ isOpen, onClose, tournamentId, tourna
                            />
                          </div>
                       )}
+
+                      {/* Skill dropdown options editor */}
+                      {key === 'skill' && field.enabled && visibilityMode === 'public' && (
+                         <div className="pl-4 mt-2 border-l-2 border-primary/20 space-y-2">
+                           <Label className="text-xs text-muted-foreground block">Skill Dropdown Options</Label>
+                           {field.options && field.options.length > 0 && (
+                             <div className="flex flex-wrap gap-1.5">
+                               {field.options.map((opt, optIdx) => (
+                                 <span
+                                   key={optIdx}
+                                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20"
+                                 >
+                                   {opt}
+                                   <button
+                                     type="button"
+                                     onClick={() => {
+                                       const updated = [...(field.options || [])];
+                                       updated.splice(optIdx, 1);
+                                       updateField(key, 'options', updated);
+                                     }}
+                                     className="ml-0.5 hover:text-destructive transition-colors"
+                                   >
+                                     ×
+                                   </button>
+                                 </span>
+                               ))}
+                             </div>
+                           )}
+                           <div className="flex gap-2">
+                             <Input
+                               id="new-skill-opt"
+                               placeholder="Type a skill option..."
+                               className="h-8 bg-muted/30 flex-1 max-w-sm"
+                               onKeyDown={(e) => {
+                                 if (e.key === 'Enter') {
+                                   e.preventDefault();
+                                   const input = e.currentTarget;
+                                   const val = input.value.trim();
+                                   if (val && !(field.options || []).includes(val)) {
+                                     updateField(key, 'options', [...(field.options || []), val]);
+                                     input.value = '';
+                                   }
+                                 }
+                               }}
+                             />
+                             <Button
+                               type="button"
+                               variant="outline"
+                               size="sm"
+                               className="h-8 px-3 text-xs"
+                               onClick={() => {
+                                 const input = document.getElementById('new-skill-opt') as HTMLInputElement;
+                                 if (!input) return;
+                                 const val = input.value.trim();
+                                 if (val && !(field.options || []).includes(val)) {
+                                   updateField(key, 'options', [...(field.options || []), val]);
+                                   input.value = '';
+                                 }
+                               }}
+                             >
+                               <Plus className="h-3 w-3 mr-1" /> Add
+                             </Button>
+                           </div>
+                         </div>
+                      )}
                     </div>
                   );
                 })}
@@ -439,17 +509,68 @@ export function RegistrationConfigDialog({ isOpen, onClose, tournamentId, tourna
                         )}
 
                         {field.type === 'dropdown' && visibilityMode === 'public' && (
-                          <div className="pl-4 border-l-2 border-primary/20 pt-1">
-                            <Label className="text-xs text-muted-foreground mb-1 block">Options (Comma separated)</Label>
-                            <Input 
-                              value={field.options?.join(', ') || ""} 
-                              onChange={(e) => {
-                                const arr = e.target.value.split(',').map(s => s.trim()).filter(s => s);
-                                updateCustomField(index, 'options', arr);
-                              }} 
-                              placeholder="Small, Medium, Large"
-                              className="h-8 bg-muted/30"
-                            />
+                          <div className="pl-4 border-l-2 border-primary/20 pt-1 space-y-2">
+                            <Label className="text-xs text-muted-foreground block">Dropdown Options</Label>
+                            {/* Existing options as removable pills */}
+                            {field.options && field.options.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5">
+                                {field.options.map((opt, optIdx) => (
+                                  <span
+                                    key={optIdx}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20"
+                                  >
+                                    {opt}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = [...field.options];
+                                        updated.splice(optIdx, 1);
+                                        updateCustomField(index, 'options', updated);
+                                      }}
+                                      className="ml-0.5 hover:text-destructive transition-colors"
+                                    >
+                                      ×
+                                    </button>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {/* Add new option */}
+                            <div className="flex gap-2">
+                              <Input
+                                id={`new-opt-${field.id}`}
+                                placeholder="Type an option..."
+                                className="h-8 bg-muted/30 flex-1"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    const input = e.currentTarget;
+                                    const val = input.value.trim();
+                                    if (val && !(field.options || []).includes(val)) {
+                                      updateCustomField(index, 'options', [...(field.options || []), val]);
+                                      input.value = '';
+                                    }
+                                  }
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-8 px-3 text-xs"
+                                onClick={() => {
+                                  const input = document.getElementById(`new-opt-${field.id}`) as HTMLInputElement;
+                                  if (!input) return;
+                                  const val = input.value.trim();
+                                  if (val && !(field.options || []).includes(val)) {
+                                    updateCustomField(index, 'options', [...(field.options || []), val]);
+                                    input.value = '';
+                                  }
+                                }}
+                              >
+                                <Plus className="h-3 w-3 mr-1" /> Add
+                              </Button>
+                            </div>
                           </div>
                         )}
                       </div>

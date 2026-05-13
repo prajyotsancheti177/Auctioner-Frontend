@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { UserPlus, Trophy, Loader2 } from "lucide-react";
 import apiConfig from "@/config/apiConfig";
+import { compressImage } from "@/lib/imageCompressor";
 
 const PublicPlayerRegistration = () => {
   const { tournamentId } = useParams();
@@ -74,9 +75,25 @@ const PublicPlayerRegistration = () => {
     setError("");
   };
 
-  const handleFileChange = (field: string, file: File | undefined) => {
-    setFormData((prev: any) => ({ ...prev, [field]: file || null }));
+  const handleFileChange = async (field: string, file: File | undefined) => {
+    if (!file) {
+      setFormData((prev: any) => ({ ...prev, [field]: null }));
+      return;
+    }
     setError("");
+
+    // Auto-compress images before storing
+    if (file.type.startsWith("image/")) {
+      try {
+        const compressed = await compressImage(file);
+        setFormData((prev: any) => ({ ...prev, [field]: compressed }));
+      } catch {
+        // If compression fails, use the original file
+        setFormData((prev: any) => ({ ...prev, [field]: file }));
+      }
+    } else {
+      setFormData((prev: any) => ({ ...prev, [field]: file }));
+    }
   };
 
   const handleCustomInputChange = (id: string, value: any) => {
@@ -221,14 +238,37 @@ const PublicPlayerRegistration = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Registration failed');
+        let errorMessage = 'Registration failed. Please try again.';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // Could not parse JSON error body
+        }
+
+        // Map common server errors to user-friendly messages
+        const lowerMsg = errorMessage.toLowerCase();
+        if (response.status === 413 || lowerMsg.includes('too large') || lowerMsg.includes('payload')) {
+          throw new Error('The uploaded file is too large. Please use a smaller image (max 10 MB).');
+        } else if (lowerMsg.includes('duplicate') || lowerMsg.includes('already exists') || lowerMsg.includes('already registered')) {
+          throw new Error('A player with this name or mobile number is already registered.');
+        } else if (lowerMsg.includes('tournament') && lowerMsg.includes('not found')) {
+          throw new Error('This tournament could not be found. The registration link may be invalid.');
+        } else {
+          throw new Error(errorMessage);
+        }
       }
 
       setSuccess("Registration successful! Your player profile has been submitted.");
       setFormData({ name: "", age: "", gender: "", mobile: "", email: "", address: "", skill: "", playerCategory: "", photo: null, customFields: {} });
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      // Map network-level errors to user-friendly messages
+      const msg = err.message || '';
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')) {
+        setError('Unable to connect to the server. Please check your internet connection and try again.');
+      } else {
+        setError(msg || 'Something went wrong. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -405,7 +445,20 @@ const PublicPlayerRegistration = () => {
                         )}
 
                         {cf.type === 'file' && (
-                          <Input id={cf.id} type="file" onChange={(e) => handleCustomInputChange(cf.id, e.target.files?.[0])} required={cf.required} />
+                          <Input id={cf.id} type="file" accept="image/*" onChange={async (e) => {
+                            const f = e.target.files?.[0];
+                            if (!f) return;
+                            if (f.type.startsWith("image/")) {
+                              try {
+                                const compressed = await compressImage(f);
+                                handleCustomInputChange(cf.id, compressed);
+                              } catch {
+                                handleCustomInputChange(cf.id, f);
+                              }
+                            } else {
+                              handleCustomInputChange(cf.id, f);
+                            }
+                          }} required={cf.required} />
                         )}
                       </div>
                     )})}

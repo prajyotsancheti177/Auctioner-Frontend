@@ -62,6 +62,15 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 
+  /* Force transparent background for OBS overlays */
+  body.overlay-mode {
+    background: transparent !important;
+  }
+  body.overlay-mode #root,
+  body.overlay-mode #root > div {
+    background: transparent !important;
+  }
+
   /* Mobile-first base font sizes - smaller on mobile */
   html {
     font-size: 14px;

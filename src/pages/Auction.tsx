@@ -4,6 +4,7 @@ import { SoldCelebration } from "@/components/auction/SoldCelebration";
 import { UnsoldAnimation } from "@/components/auction/UnsoldAnimation";
 import { BidSlabEditor, BidSlab } from "@/components/auction/BidSlabEditor";
 import { TeamBudgetPanel } from "@/components/auction/TeamBudgetPanel";
+import { OverlayControlBar } from "@/components/auction/OverlayControlBar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -461,6 +462,13 @@ const Auction = () => {
             )}
           </div>
         </div>
+
+        {/* Overlay Control Bar — Auctioneer only */}
+        {isAuctioneer && tournamentId && (
+          <div className="mb-4 md:mb-6 animate-fade-in">
+            <OverlayControlBar tournamentId={tournamentId} />
+          </div>
+        )}
 
         <div className="space-y-4 md:space-y-8 max-w-full mx-auto">
           {/* Player Card + Team Budget Panel */}

@@ -1,0 +1,404 @@
+/* ============================================
+   OVERLAY SHARED STYLES
+   Base styles for all OBS Browser Source overlays.
+   Designed for 1920×1080 resolution.
+   ============================================ */
+
+/* --- Reset & Base --- */
+.overlay-root {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.overlay-transparent {
+  background: transparent !important;
+}
+
+.overlay-opaque {
+  background: linear-gradient(145deg, #0f0a1e 0%, #1a1035 50%, #0d1b2a 100%);
+}
+
+/* --- Typography --- */
+.overlay-player-name {
+  font-size: 64px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+}
+
+.overlay-bid-amount {
+  font-size: 96px;
+  font-weight: 900;
+  letter-spacing: -2px;
+  line-height: 1;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 4px 20px rgba(251, 191, 36, 0.4));
+}
+
+.overlay-bid-amount-sm {
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 10px rgba(251, 191, 36, 0.4));
+}
+
+.overlay-label {
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.overlay-team-name {
+  font-size: 36px;
+  font-weight: 800;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.overlay-category-badge {
+  display: inline-block;
+  padding: 6px 20px;
+  border-radius: 30px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  color: #c4b5fd;
+}
+
+.overlay-skill-badge {
+  display: inline-block;
+  padding: 6px 20px;
+  border-radius: 30px;
+  font-size: 18px;
+  font-weight: 700;
+  background: rgba(249, 115, 22, 0.2);
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  color: #fdba74;
+}
+
+/* --- Glass Panel --- */
+.overlay-glass {
+  background: rgba(15, 10, 30, 0.85);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+}
+
+.overlay-glass-light {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+/* --- Player Photo --- */
+.overlay-player-photo {
+  width: 320px;
+  height: 320px;
+  border-radius: 24px;
+  object-fit: cover;
+  object-position: top center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(139, 92, 246, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.15);
+}
+
+.overlay-player-photo-lg {
+  width: 400px;
+  height: 480px;
+  border-radius: 24px;
+  object-fit: cover;
+  object-position: top center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(139, 92, 246, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.15);
+}
+
+/* --- Team Logo --- */
+.overlay-team-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.overlay-team-logo-sm {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+/* --- Divider / Separator --- */
+.overlay-divider {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  margin: 16px 0;
+}
+
+.overlay-divider-vertical {
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.5), rgba(249, 115, 22, 0.5), transparent);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+/* --- Animations --- */
+
+/* Slide up from bottom */
+@keyframes overlay-slide-up {
+  from {
+    transform: translateY(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Slide in from right */
+@keyframes overlay-slide-right {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Fade in */
+@keyframes overlay-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Fade out */
+@keyframes overlay-fade-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+/* Pulse effect for bid update */
+@keyframes overlay-bid-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Gold flash for SOLD */
+@keyframes overlay-sold-flash {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Shake for UNSOLD */
+@keyframes overlay-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+/* Stamp slam in */
+@keyframes overlay-stamp {
+  0% { transform: scale(3) rotate(-15deg); opacity: 0; }
+  60% { transform: scale(1) rotate(-5deg); opacity: 1; }
+  80% { transform: scale(1.1) rotate(-5deg); }
+  100% { transform: scale(1) rotate(-5deg); opacity: 1; }
+}
+
+/* Pulse glow */
+@keyframes overlay-glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); }
+  50% { box-shadow: 0 0 50px rgba(251, 191, 36, 0.6); }
+}
+
+/* Team color gradient transition */
+@keyframes overlay-gradient-shift {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Bid feed item enter */
+@keyframes overlay-bid-enter {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* --- Animation Classes --- */
+.anim-slide-up {
+  animation: overlay-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-slide-right {
+  animation: overlay-slide-right 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-fade-in {
+  animation: overlay-fade-in 0.4s ease-out forwards;
+}
+
+.anim-fade-out {
+  animation: overlay-fade-out 0.4s ease-out forwards;
+}
+
+.anim-bid-pulse {
+  animation: overlay-bid-pulse 0.35s ease-in-out;
+}
+
+.anim-sold-flash {
+  animation: overlay-sold-flash 2.5s ease-in-out forwards;
+}
+
+.anim-shake {
+  animation: overlay-shake 0.6s ease-in-out;
+}
+
+.anim-stamp {
+  animation: overlay-stamp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anim-glow-pulse {
+  animation: overlay-glow-pulse 1.5s ease-in-out infinite;
+}
+
+.anim-bid-enter {
+  animation: overlay-bid-enter 0.3s ease-out forwards;
+}
+
+/* --- Standby Screen --- */
+.overlay-standby {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 24px;
+}
+
+.overlay-standby-logo {
+  font-size: 48px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.overlay-standby-text {
+  font-size: 24px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 2px;
+}
+
+/* Pulsing dot for "live" indicator */
+.overlay-live-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+  animation: overlay-glow-pulse 1.5s ease-in-out infinite;
+}
+
+/* --- SOLD Overlay --- */
+.overlay-sold-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.overlay-sold-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(251, 191, 36, 0.25), transparent 70%);
+}
+
+.overlay-sold-stamp {
+  font-size: 120px;
+  font-weight: 900;
+  color: #22c55e;
+  text-shadow: 0 0 40px rgba(34, 197, 94, 0.5), 0 4px 20px rgba(0, 0, 0, 0.5);
+  border: 8px solid #22c55e;
+  padding: 20px 60px;
+  border-radius: 20px;
+  transform: rotate(-5deg);
+}
+
+/* --- UNSOLD Overlay --- */
+.overlay-unsold-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.overlay-unsold-stamp {
+  font-size: 100px;
+  font-weight: 900;
+  color: #ef4444;
+  text-shadow: 0 0 40px rgba(239, 68, 68, 0.5), 0 4px 20px rgba(0, 0, 0, 0.5);
+  border: 8px solid #ef4444;
+  padding: 20px 60px;
+  border-radius: 20px;
+  transform: rotate(-5deg);
+}
+
+/* --- Bid History Feed Item --- */
+.overlay-bid-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 8px;
+}
+
+.overlay-bid-item-active {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}

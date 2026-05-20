@@ -21,6 +21,9 @@ import BulkUpload from "./pages/BulkUpload";
 import Analytics from "./pages/Analytics";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import CameraHudOverlay from "./pages/overlays/CameraHudOverlay";
+import FullscreenOverlay from "./pages/overlays/FullscreenOverlay";
+import SplitScreenOverlay from "./pages/overlays/SplitScreenOverlay";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +57,11 @@ const App = () => (
           <Routes>
             {/* Landing Page - Standalone (No Navbar) */}
             <Route path="/" element={<Home />} />
+
+            {/* Overlay Routes — No Navbar, standalone for OBS Browser Source */}
+            <Route path="/overlay/:tournamentId/camera-hud" element={<CameraHudOverlay />} />
+            <Route path="/overlay/:tournamentId/fullscreen" element={<FullscreenOverlay />} />
+            <Route path="/overlay/:tournamentId/split-screen" element={<SplitScreenOverlay />} />
 
             {/* App Routes - With Navbar */}
             <Route element={<AppLayout />}>

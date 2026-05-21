@@ -791,6 +791,17 @@ export default function TournamentManagement() {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/team-register/${tournament._id}`);
+                            toast({ title: "Copied!", description: "Team Registration link copied to clipboard" });
+                          }}
+                          title="Copy Team Registration Link"
+                        >
+                          <Users className="h-4 w-4 text-indigo-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
                             setActionTournamentId(tournament._id);
                             setSyncDialogOpen(true);
                           }}

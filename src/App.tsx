@@ -12,6 +12,7 @@ import TeamDetail from "./pages/TeamDetail";
 import Players from "./pages/Players";
 import PlayerRegistration from "./pages/PlayerRegistration";
 import PublicPlayerRegistration from "./pages/PublicPlayerRegistration";
+import PublicTeamRegistration from "./pages/PublicTeamRegistration";
 import AddPlayer from "./pages/AddPlayer";
 import Tournaments from "./pages/Tournaments";
 import TournamentDetail from "./pages/TournamentDetail";
@@ -57,6 +58,10 @@ const App = () => (
           <Routes>
             {/* Landing Page - Standalone (No Navbar) */}
             <Route path="/" element={<Home />} />
+            <Route path="/register/:tournamentId" element={<PublicPlayerRegistration />} />
+            
+            {/* Public Team Registration Page - Standalone */}
+            <Route path="/team-register/:tournamentId" element={<PublicTeamRegistration />} />
 
             {/* Overlay Routes — No Navbar, standalone for OBS Browser Source */}
             <Route path="/overlay/:tournamentId/camera-hud" element={<CameraHudOverlay />} />

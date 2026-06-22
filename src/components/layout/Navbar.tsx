@@ -98,6 +98,18 @@ export const Navbar = () => {
     };
   }, []);
 
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [mobileMenuOpen]);
+
   const handleLogout = () => {
     // Track logout event before clearing user data
     const userStr = localStorage.getItem("user");
@@ -263,8 +275,8 @@ export const Navbar = () => {
 
       {/* Mobile Menu - Contains all navigation and Login/Logout */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-card/95 backdrop-blur-xl">
-          <div className="container mx-auto px-3 py-4">
+        <div className="md:hidden border-t border-border bg-background/80 backdrop-blur-2xl h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <div className="container mx-auto px-3 py-4 pb-20">
             <div className="flex flex-col gap-2">
               {navLinks.map((link) => (
                 <button

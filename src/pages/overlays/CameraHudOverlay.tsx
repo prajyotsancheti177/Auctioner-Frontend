@@ -40,7 +40,7 @@ const CameraHudOverlay = () => {
   const [showUnsold, setShowUnsold] = useState(false);
   const [bidPulse, setBidPulse] = useState(false);
   const [playerKey, setPlayerKey] = useState(0);
-  
+
   const [showTeamsPanel, setShowTeamsPanel] = useState(false);
   const [showTopPlayersPanel, setShowTopPlayersPanel] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
@@ -88,7 +88,7 @@ const CameraHudOverlay = () => {
   useEffect(() => {
     if (!tournamentId) return;
     fetchOverlayStats(); // Initial fetch
-    
+
     // 60-second interval for Teams Panel
     const teamsInterval = setInterval(() => {
       setShowTeamsPanel(true);
@@ -224,7 +224,7 @@ const CameraHudOverlay = () => {
 
       {/* Promotional Banner */}
       {showPromoBanner && (
-        <div 
+        <div
           className="overlay-glass anim-fade-in"
           style={{
             position: "absolute",
@@ -257,7 +257,7 @@ const CameraHudOverlay = () => {
       {showTeamsPanel && teams.length > 0 && (
         <div className="overlay-side-panel right anim-slide-in-right" onAnimationEnd={(e) => {
           if (!showTeamsPanel && e.animationName === "slideOutRight") {
-             // cleanup
+            // cleanup
           }
         }}>
           <div className="overlay-panel-title">Teams Overview</div>
@@ -293,14 +293,14 @@ const CameraHudOverlay = () => {
           <div className="overlay-panel-title">Top Players</div>
           {overlayStats.topPlayers.map((player: any) => (
             <div key={player._id} className="overlay-list-item">
-               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                 <img src={getDriveThumbnail(player.photo)} style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", border: `2px solid ${getTeamColor(player.teamName || "")}` }} onError={(e) => e.currentTarget.src = getFallbackAvatar(player.name)} />
-                 <div style={{ display: "flex", flexDirection: "column" }}>
-                    <div className="overlay-item-name">{player.name}</div>
-                    <div className="overlay-item-sub" style={{ color: getTeamColor(player.teamName || "") }}>{player.teamName}</div>
-                 </div>
-               </div>
-               <div className="overlay-item-value" style={{ color: "#fbbf24" }}>{player.amtSold}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <img src={getDriveThumbnail(player.photo)} style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", border: `2px solid ${getTeamColor(player.teamName || "")}` }} onError={(e) => e.currentTarget.src = getFallbackAvatar(player.name)} />
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <div className="overlay-item-name">{player.name}</div>
+                  <div className="overlay-item-sub" style={{ color: getTeamColor(player.teamName || "") }}>{player.teamName}</div>
+                </div>
+              </div>
+              <div className="overlay-item-value" style={{ color: "#fbbf24" }}>{player.amtSold}</div>
             </div>
           ))}
         </div>
@@ -311,15 +311,15 @@ const CameraHudOverlay = () => {
         <div className="overlay-intro-container anim-intro-sequence">
           <div className="overlay-intro-bg" />
           <div className="overlay-intro-content">
-             <img src={getPlayerPhotoUrl(currentPlayer)} className="overlay-intro-photo" onError={(e) => e.currentTarget.src = getFallbackAvatar(currentPlayer.name)} />
-             {currentPlayer.auctionSerialNumber && (
-               <div className="overlay-intro-serial">#{currentPlayer.auctionSerialNumber}</div>
-             )}
-             <div className="overlay-intro-name">{currentPlayer.name}</div>
-             <div style={{ display: "flex", gap: 15, marginTop: 20 }}>
-                {currentPlayer.playerCategory && <span className="overlay-category-badge">{currentPlayer.playerCategory}</span>}
-                {currentPlayer.skill && <span className="overlay-skill-badge">{currentPlayer.skill}</span>}
-             </div>
+            <img src={getPlayerPhotoUrl(currentPlayer)} className="overlay-intro-photo" onError={(e) => e.currentTarget.src = getFallbackAvatar(currentPlayer.name)} />
+            {currentPlayer.auctionSerialNumber && (
+              <div className="overlay-intro-serial">#{currentPlayer.auctionSerialNumber}</div>
+            )}
+            <div className="overlay-intro-name">{currentPlayer.name}</div>
+            <div style={{ display: "flex", gap: 15, marginTop: 20 }}>
+              {currentPlayer.playerCategory && <span className="overlay-category-badge">{currentPlayer.playerCategory}</span>}
+              {currentPlayer.skill && <span className="overlay-skill-badge">{currentPlayer.skill}</span>}
+            </div>
           </div>
         </div>
       )}
@@ -366,94 +366,94 @@ const CameraHudOverlay = () => {
             >
               {/* Player Name & Badges */}
               <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
-              <div
-                style={{
-                  fontSize: 44,
-                  fontWeight: 900,
-                  letterSpacing: -1,
-                  lineHeight: 1.1,
-                  whiteSpace: "normal", // allow wrap
-                  wordWrap: "break-word",
-                }}
-              >
-                {currentPlayer.auctionSerialNumber && (
-                  <span style={{ color: "rgba(255,255,255,0.4)", marginRight: 12 }}>
-                    #{currentPlayer.auctionSerialNumber}
-                  </span>
-                )}
-                {currentPlayer.name}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                {currentPlayer.playerCategory && (
-                  <span className="overlay-category-badge" style={{ fontSize: 15, padding: "4px 16px" }}>
-                    {currentPlayer.playerCategory}
-                  </span>
-                )}
-                {currentPlayer.skill && (
-                  <span className="overlay-skill-badge" style={{ fontSize: 15, padding: "4px 16px" }}>
-                    {currentPlayer.skill}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div style={{ width: 2, height: 80, background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.2), transparent)", flexShrink: 0 }} />
-
-            {/* 3. Current Bid & Team */}
-            <div style={{ textAlign: "right", minWidth: 260, flexShrink: 0 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: 3, marginBottom: 4 }}>
-                CURRENT BID
-              </div>
-              <div
-                className={`overlay-bid-amount ${bidPulse ? "anim-bid-pulse" : ""}`}
-                style={{ fontSize: 68, marginBottom: 8 }}
-              >
-                {currentBid} <span style={{ fontSize: 40 }}>Pts.</span>
-              </div>
-              
-              {leadingTeamData ? (
                 <div
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "flex-end",
-                    gap: 12,
+                    fontSize: 44,
+                    fontWeight: 900,
+                    letterSpacing: -1,
+                    lineHeight: 1.1,
+                    whiteSpace: "normal", // allow wrap
+                    wordWrap: "break-word",
                   }}
                 >
-                  <span
+                  {currentPlayer.auctionSerialNumber && (
+                    <span style={{ color: "rgba(255,255,255,0.4)", marginRight: 12 }}>
+                      #{currentPlayer.auctionSerialNumber}
+                    </span>
+                  )}
+                  {currentPlayer.name}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  {currentPlayer.playerCategory && (
+                    <span className="overlay-category-badge" style={{ fontSize: 15, padding: "4px 16px" }}>
+                      {currentPlayer.playerCategory}
+                    </span>
+                  )}
+                  {currentPlayer.skill && (
+                    <span className="overlay-skill-badge" style={{ fontSize: 15, padding: "4px 16px" }}>
+                      {currentPlayer.skill}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div style={{ width: 2, height: 80, background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.2), transparent)", flexShrink: 0 }} />
+
+              {/* 3. Current Bid & Team */}
+              <div style={{ textAlign: "right", minWidth: 260, flexShrink: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: 3, marginBottom: 4 }}>
+                  CURRENT BID
+                </div>
+                <div
+                  className={`overlay-bid-amount ${bidPulse ? "anim-bid-pulse" : ""}`}
+                  style={{ fontSize: 68, marginBottom: 8 }}
+                >
+                  {currentBid} <span style={{ fontSize: 40 }}>Pts.</span>
+                </div>
+
+                {leadingTeamData ? (
+                  <div
                     style={{
-                      fontSize: 24,
-                      fontWeight: 800,
-                      color: teamColor,
-                      textShadow: "0 2px 8px rgba(0,0,0,0.5)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "flex-end",
+                      gap: 12,
                     }}
                   >
-                    {leadingTeamData.name}
-                  </span>
-                  <img
-                    src={getDriveThumbnail(leadingTeamData.logo)}
-                    alt={leadingTeamData.name}
-                    className="overlay-team-logo-sm"
-                    style={{ width: 36, height: 36 }}
-                    onError={(e) => {
-                      e.currentTarget.src = getTeamFallbackAvatar(
-                        leadingTeamData.name
-                      );
-                    }}
-                  />
-                  <span className="overlay-live-dot" />
-                </div>
-              ) : (
-                <div style={{ fontSize: 18, fontStyle: "italic", color: "rgba(255,255,255,0.3)" }}>
-                  Waiting for bids...
-                </div>
-              )}
+                    <span
+                      style={{
+                        fontSize: 24,
+                        fontWeight: 800,
+                        color: teamColor,
+                        textShadow: "0 2px 8px rgba(0,0,0,0.5)",
+                      }}
+                    >
+                      {leadingTeamData.name}
+                    </span>
+                    <img
+                      src={getDriveThumbnail(leadingTeamData.logo)}
+                      alt={leadingTeamData.name}
+                      className="overlay-team-logo-sm"
+                      style={{ width: 36, height: 36 }}
+                      onError={(e) => {
+                        e.currentTarget.src = getTeamFallbackAvatar(
+                          leadingTeamData.name
+                        );
+                      }}
+                    />
+                    <span className="overlay-live-dot" />
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 18, fontStyle: "italic", color: "rgba(255,255,255,0.3)" }}>
+                    Waiting for bids...
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </>
-    )}
+        </>
+      )}
 
       {/* SOLD Overlay */}
       {showSold && (
@@ -471,7 +471,7 @@ const CameraHudOverlay = () => {
       )}
 
       {/* QR Code Overlay (Top Left) */}
-      {showQR && (
+      {/* showQR && (
         <div className="anim-slide-in-left overlay-glass" style={{
           position: "absolute",
           top: 48,
@@ -498,7 +498,7 @@ const CameraHudOverlay = () => {
             />
           </div>
         </div>
-      )}
+      ) */}
 
       {/* Standby — no player, auction might not be active */}
       {!currentPlayer && !showSold && !showUnsold && (
